@@ -134,6 +134,7 @@ export async function getWeatherSnapshot(sido: string): Promise<WeatherSnapshot>
       .replace(/\\n/g, "\n")
       .replace(/※[^\n]*날씨알리미[^\n]*/g, "")
       .trim(),
+    infoAt: kmaTimeToIso(latestInfo?.tmFc),
     nationwideText: t6.trim(),
   };
 }

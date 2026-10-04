@@ -141,7 +141,10 @@ export function WeatherBar({ weather, sigungu }: { weather: WeatherSnapshot; sig
             )}
           </div>
           <div>
-            <h3 className="mb-2 font-bold">기상정보</h3>
+            <h3 className="mb-2 font-bold">
+              기상정보
+              {weather.infoAt && <span className="ml-2 font-normal text-sub">{fmtDateTime(weather.infoAt)} 발표</span>}
+            </h3>
             <p className="scroll-thin max-h-64 overflow-y-auto whitespace-pre-line leading-relaxed text-sub">
               {weather.infoText || "기상정보 없음"}
             </p>

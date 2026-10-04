@@ -118,7 +118,7 @@ export function OverviewView({
               {editable && (
                 <>
                   <Button variant="ghost" size="sm" disabled={busy} onClick={() => run("wx", () => refreshWeather(id))}>
-                    <RefreshCw size={17} className={busyKey === "wx" ? "animate-spin" : ""} /> 특보 갱신
+                    <RefreshCw size={17} className={busyKey === "wx" ? "animate-spin" : ""} /> {input.sido} 특보 갱신
                   </Button>
                 </>
               )}

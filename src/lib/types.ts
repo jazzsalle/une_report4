@@ -69,6 +69,8 @@ export interface WeatherSnapshot {
   preliminary: string[];
   /** 기상정보 본문 */
   infoText: string;
+  /** 기상정보 발표 시각 (ISO) */
+  infoAt?: string | null;
   /** 전국 특보 현황 원문 */
   nationwideText: string;
 }

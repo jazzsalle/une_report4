@@ -3,6 +3,8 @@ import { requireUser } from "@/lib/auth/session";
 import { getSituation } from "@/lib/data";
 import { fmtPeriod } from "@/lib/format";
 import { STEP_LABEL, type ResponseStep } from "@/lib/types";
+import { ORG_SIDO } from "@/lib/regions";
+import { readLocation } from "@/lib/location";
 import { Badge } from "@/components/ui";
 import { LevelBadge } from "@/components/badges";
 import { SituationTabs } from "./SituationTabs";
@@ -12,6 +14,8 @@ export default async function SituationLayout({ children, params }: LayoutProps<
   const u = await requireUser();
   const s = await getSituation(u, id);
   if (!s) notFound();
+  const sido = s.sido || ORG_SIDO[s.orgId] || "부산광역시";
+  const loc = await readLocation();
   return (
     <div>
       <div className="no-print bg-white px-6 pt-6">
@@ -22,6 +26,8 @@ export default async function SituationLayout({ children, params }: LayoutProps<
             <Badge tone="gray">{s.hazard}</Badge>
             <LevelBadge level={s.alertLevel} />
             <Badge tone="blue">{STEP_LABEL[s.responseStep as ResponseStep] ?? s.responseStep}</Badge>
+            <Badge tone={loc && loc.sido !== sido ? "orange" : "gray"}>발생 {sido}</Badge>
+            {loc && loc.sido !== sido && <span className="text-[15px] text-warning">상단 특보는 현재 위치 {loc.sido} 기준</span>}
             <span className="ml-2 text-[16px] text-sub">{fmtPeriod(s.periodStart, s.periodEnd)}</span>
           </div>
           <SituationTabs id={id} status={s.status} />

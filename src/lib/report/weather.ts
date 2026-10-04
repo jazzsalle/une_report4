@@ -75,7 +75,7 @@ export function weatherSection(s: WeatherReportInput, id = "weather"): ReportSec
 
   const info = infoSentences(w?.infoText ?? "");
   if (info.length) {
-    lines.push("□ **강수 현황과 전망**");
+    lines.push(`□ **강수 현황과 전망**${w?.infoAt ? ` (${shortStamp(w.infoAt)} 기상청 발표)` : ""}`);
     info.forEach((l) => lines.push(`○ ${l}`));
   }
   // T3Q 기상요약(실제 연계 결과)만 반영

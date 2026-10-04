@@ -98,6 +98,9 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
   if (err) return { error: err };
   const levelChanged = s.alertLevel !== v.alertLevel;
   const stepChanged = s.responseStep !== v.step;
+  // 발생 시도가 바뀌면 그 시도의 기상특보를 다시 가져온다
+  const sidoChanged = (s.sido || "") !== v.sido;
+  const weather = sidoChanged ? await getWeatherSnapshot(v.sido) : undefined;
   await touch(id, {
     title: v.title.trim(),
     kind: v.kind,
@@ -109,7 +112,17 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
     periodStart: new Date(fromLocalInput(v.periodStart)),
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
     currentStatus: v.currentStatus,
+    ...(weather ? { weather, weatherSummary: null } : {}),
   });
+  if (weather) {
+    await addEvent(id, {
+      type: "weather",
+      title: `기상특보 갱신 (${v.sido})`,
+      body: weather.active.length ? weather.active.map((a) => a.name).join(", ") : "발효 중인 특보 없음",
+      userName: u.name,
+    });
+    await autoWeatherSummary(id);
+  }
   if (levelChanged) {
     await addEvent(id, { type: "change", title: "위기경보 변경", body: `${s.alertLevel} → ${v.alertLevel}`, userName: u.name });
   }
