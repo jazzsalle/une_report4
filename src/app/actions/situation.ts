@@ -11,9 +11,10 @@ import { ORG_SIDO, orgForSituation } from "@/lib/regions";
 import { sopActions } from "@/lib/t3q/client";
 import { buildContext, responseToSop } from "@/lib/sop/convert";
 import { recipientIds } from "@/lib/sop/recipients";
+import { appendMissions, orderMissions, patchMission, patchSopHead, putMission, removeMission } from "@/lib/sop/store";
 import { composeReport } from "@/lib/report/compose";
 import { fromLocalInput } from "@/lib/format";
-import type { Mission, Sop, WeatherImage } from "@/lib/types";
+import type { Mission, WeatherImage } from "@/lib/types";
 
 async function editable(id: string) {
   const u = await requireUser();
@@ -166,18 +167,12 @@ export async function generateSop(id: string) {
   revalidatePath(`/s/${id}`);
 }
 
-/** SOP 편집 저장 (실행 전) */
-export async function saveSop(id: string, sop: Sop) {
-  await editable(id);
-  await touch(id, { sop });
-}
-
 export async function startSop(id: string) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
-  const sop = { ...s.sop, startedAt: new Date().toISOString(), endedAt: undefined };
-  await touch(id, { sop, status: "running" });
-  await addEvent(id, { type: "sop", title: "SOP 실행 시작", body: `임무 ${sop.missions.length}건`, userName: u.name });
+  await patchSopHead(id, { startedAt: new Date().toISOString(), endedAt: null });
+  await touch(id, { status: "running" });
+  await addEvent(id, { type: "sop", title: "SOP 실행 시작", body: `임무 ${s.sop.missions.length}건`, userName: u.name });
   revalidatePath(`/s/${id}`);
 }
 
@@ -185,12 +180,12 @@ export async function endSop(id: string) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
   const done = s.sop.missions.filter((m) => m.status === "done").length;
-  const sop = { ...s.sop, endedAt: new Date().toISOString() };
-  await touch(id, { sop, status: "done" });
+  await patchSopHead(id, { endedAt: new Date().toISOString() });
+  await touch(id, { status: "done" });
   await addEvent(id, {
     type: "sop",
     title: "SOP 실행 종료",
-    body: `완료 ${done} / 전체 ${sop.missions.length}`,
+    body: `완료 ${done} / 전체 ${s.sop.missions.length}`,
     userName: u.name,
   });
   revalidatePath(`/s/${id}`);
@@ -199,7 +194,8 @@ export async function endSop(id: string) {
 export async function reopenSop(id: string) {
   const { u, s } = await editable(id);
   if (!s.sop) return;
-  await touch(id, { sop: { ...s.sop, endedAt: undefined }, status: "running" });
+  await patchSopHead(id, { endedAt: null });
+  await touch(id, { status: "running" });
   await addEvent(id, { type: "sop", title: "SOP 실행 재개", userName: u.name });
   revalidatePath(`/s/${id}`);
 }
@@ -211,9 +207,7 @@ export async function saveMission(id: string, mission: Mission) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
   const prev = s.sop.missions.find((m) => m.id === mission.id);
-  const exists = !!prev;
-  const missions = exists ? s.sop.missions.map((m) => (m.id === mission.id ? mission : m)) : [...s.sop.missions, mission];
-  await touch(id, { sop: { ...s.sop, missions } });
+  await putMission(id, mission);
   if (s.sop.startedAt && prev && prev.status !== mission.status) {
     await addEvent(id, {
       type: "mission",
@@ -236,7 +230,7 @@ export async function addMissions(id: string, add: Mission[], label: string) {
   if (!s.sop || !add.length) return;
   const have = new Set(s.sop.missions.map((m) => m.code).filter(Boolean));
   const fresh = add.filter((m) => !m.code || !have.has(m.code));
-  await touch(id, { sop: { ...s.sop, missions: [...s.sop.missions, ...fresh] } });
+  await appendMissions(id, fresh);
   if (s.sop.startedAt) {
     await addEvent(id, { type: "mission", title: `임무 추가: ${label}`, body: `${fresh.length}건`, userName: u.name });
   }
@@ -246,15 +240,13 @@ export async function addMissions(id: string, add: Mission[], label: string) {
 export async function deleteMission(id: string, missionId: string) {
   const { s } = await editable(id);
   if (!s.sop) return;
-  await touch(id, { sop: { ...s.sop, missions: s.sop.missions.filter((m) => m.id !== missionId) } });
+  await removeMission(id, missionId);
 }
 
 export async function reorderMissions(id: string, ids: string[]) {
   const { s } = await editable(id);
   if (!s.sop) return;
-  const map = new Map(s.sop.missions.map((m) => [m.id, m]));
-  const missions = ids.map((i) => map.get(i)).filter(Boolean) as Mission[];
-  await touch(id, { sop: { ...s.sop, missions } });
+  await orderMissions(id, ids);
 }
 
 /** 상황전파 (모의 발송 — 실제 발송 모듈 연계 전) */
@@ -300,12 +292,8 @@ export async function propagate(id: string, missionId: string, message: string) 
   await db.insert(schema.dispatches).values(rows);
 
   const recipients = rows.map((r) => `${r.name}(${r.unit})`);
-  const missions = s.sop.missions.map((m) =>
-    m.id === missionId
-      ? { ...m, propagation: { ...m.propagation, message, sentAt: sentAt.toISOString(), sentTo: recipients } }
-      : m,
-  );
-  await touch(id, { sop: { ...s.sop, missions } });
+  const sentMission = { ...mission, propagation: { ...mission.propagation, message, sentAt: sentAt.toISOString(), sentTo: recipients } };
+  await patchMission(id, missionId, { propagation: sentMission.propagation });
   await addEvent(id, {
     type: "propagate",
     title: `상황전파: ${mission.title}`,
@@ -317,7 +305,7 @@ export async function propagate(id: string, missionId: string, message: string) 
   });
   revalidatePath(`/s/${id}/sop`);
   return {
-    mission: missions.find((x) => x.id === missionId)!,
+    mission: sentMission,
     links: rows.map((r) => ({ id: r.id, token: r.token, name: r.name, unit: r.unit, phone: r.phone })) as DispatchLink[],
   };
 }

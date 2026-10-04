@@ -185,16 +185,22 @@ export function SopWorkspace({
     bc.current?.postMessage({ type: "select", id: mid } satisfies SopMessage);
   };
 
-  // 서버에서 SOP가 새로 생성되면 동기화
-  const sopKey = sop?.generatedAt;
-  const [prevKey, setPrevKey] = useState(sopKey);
-  if (sopKey !== prevKey) {
-    setPrevKey(sopKey);
-    setMissions(sop?.missions ?? []);
+  // 서버 값이 바뀌면(다시 생성, 다른 사람의 저장) 동기화 — 내가 고치는 중(저장 대기)인 임무는 내 것을 유지
+  const serverKey = useMemo(
+    () => `${sop?.generatedAt}|${JSON.stringify(sop?.missions ?? [])}`,
+    [sop],
+  );
+  const [prevKey, setPrevKey] = useState(serverKey);
+  if (serverKey !== prevKey) {
+    setPrevKey(serverKey);
+    const fresh = sop?.missions ?? [];
+    setMissions((cur) =>
+      fresh.map((m) =>
+        timers.current.has(m.id) ? (cur.find((x) => x.id === m.id) ?? m) : m,
+      ),
+    );
     setSel(
-      sop?.missions.some((m) => m.id === sel)
-        ? sel
-        : (sop?.missions[0]?.id ?? null),
+      fresh.some((m) => m.id === sel) ? sel : (fresh[0]?.id ?? null),
     );
   }
 

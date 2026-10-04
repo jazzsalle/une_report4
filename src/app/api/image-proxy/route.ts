@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "그림을 가져오지 못했습니다." }, { status: 400 });
     }
     const buf = await res.arrayBuffer();
-    if (buf.byteLength > 8_000_000) return NextResponse.json({ error: "그림이 너무 큽니다." }, { status: 400 });
+    if (buf.byteLength > 4_000_000) return NextResponse.json({ error: "그림이 너무 큽니다." }, { status: 400 });
     return new NextResponse(buf, { headers: { "content-type": type, "cache-control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "그림을 가져오지 못했습니다." }, { status: 400 });

@@ -50,10 +50,13 @@ export async function recomposeReport(rid: string): Promise<ReportContent> {
   return content;
 }
 
+/** 서버 액션 한도(4MB) 안쪽 — base64 기준 */
+const HWPX_MAX_BASE64 = 3_900_000;
+
 /** 한글 편집기 저장본 (base64). null 이면 삭제 */
 export async function saveHwpx(rid: string, base64: string | null) {
   await editable(rid);
-  if (base64 && base64.length > 8_000_000) throw new Error("문서가 너무 큽니다.");
+  if (base64 && base64.length > HWPX_MAX_BASE64) throw new Error("문서가 너무 커서 저장할 수 없습니다. 그림 크기를 줄여 주세요.");
   await patch(rid, { hwpxData: base64, hwpxSavedAt: base64 ? new Date() : null });
   return { savedAt: new Date().toISOString() };
 }

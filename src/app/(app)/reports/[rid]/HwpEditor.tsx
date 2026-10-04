@@ -28,6 +28,7 @@ export function HwpEditor({
   const [error, setError] = useState("");
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
 
   const load = async (fromDraft: boolean) => {
@@ -71,11 +72,16 @@ export function HwpEditor({
   const save = async () => {
     if (!ed.current) return;
     setBusy(true);
+    setSaveError("");
     try {
       const bytes = await ed.current.exportHwpx();
-      const r = await saveHwpx(reportId, bytesToBase64(bytes));
+      const b64 = bytesToBase64(bytes);
+      if (b64.length > 3_900_000) throw new Error("문서가 너무 커서 저장할 수 없습니다. 그림 크기를 줄이거나 「HWPX」로 내려받아 보관하세요.");
+      const r = await saveHwpx(reportId, b64);
       setSavedAt(r.savedAt);
       ed.current.notifySaved(`${filename}.hwpx`).catch(() => {});
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "저장하지 못했습니다.");
     } finally {
       setBusy(false);
     }
@@ -122,7 +128,8 @@ export function HwpEditor({
           <ArrowLeft size={18} /> 초안으로
         </Button>
         <span className="text-[19px] font-bold">한글 편집</span>
-        {savedAt && <span className="text-[15px] text-mute">{fmtTime(savedAt).split(" ")[1]} 저장됨</span>}
+        {savedAt && !saveError && <span className="text-[15px] text-mute">{fmtTime(savedAt).split(" ")[1]} 저장됨</span>}
+        {saveError && <span className="font-semibold text-danger">{saveError}</span>}
         <div className="ml-auto flex gap-2">
           {editable && (
             <Button size="sm" variant="ghost" disabled={state !== "ready" || busy} onClick={() => setConfirmReset(true)}>

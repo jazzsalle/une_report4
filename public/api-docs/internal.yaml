@@ -144,13 +144,6 @@ paths:
       description: T3Q 응답을 임무 목록(`Sop.missions`)으로 변환해 저장. 실행이 시작된 SOP는 다시 생성할 수 없습니다. T3Q 장애 시 매뉴얼 시드로 대체.
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
       responses: { "200": { description: 완료 } }
-  /action/situation/saveSop:
-    post:
-      tags: [SOP 생성·실행]
-      summary: saveSop — SOP 전체 저장
-      requestBody:
-        content: { application/json: { schema: { type: object, properties: { id: { type: string }, sop: { $ref: "#/components/schemas/Sop" } } } } }
-      responses: { "200": { description: 완료 } }
   /action/situation/startSop:
     post: { tags: [SOP 생성·실행], summary: startSop — SOP 실행 시작, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=running" } } }
   /action/situation/endSop:
