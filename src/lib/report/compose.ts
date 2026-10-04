@@ -20,6 +20,17 @@ export interface ComposeInput {
     sop: Sop | null;
   };
   events: { at: Date | string; type: string; title: string; body: string; meta?: Record<string, unknown> | null }[];
+  /** 상황전파 수신자별 현장 응답 */
+  dispatches?: {
+    missionId: string;
+    name: string;
+    unit: string;
+    readAt: Date | string | null;
+    doneAt: Date | string | null;
+    note: string;
+    noteAt: Date | string | null;
+    ackAt: Date | string | null;
+  }[];
   reporter: string;
   dept: string;
   orgName: string;
@@ -48,8 +59,13 @@ function recordsOf(input: ComposeInput, kinds: string[]) {
 
 function missionLines(m: Mission): string[] {
   const lines: string[] = [];
-  const when = m.doneAt ? ` (${fmtTime(m.doneAt)} 완료)` : m.startedAt ? ` (${fmtTime(m.startedAt)} 착수)` : "";
-  lines.push(`□ **${m.title}**${when}`);
+  // 실행이력: 시각 → 실행내역
+  const head = m.doneAt
+    ? `${fmtTime(m.doneAt)} **${m.title}** 완료`
+    : m.startedAt
+      ? `${fmtTime(m.startedAt)} **${m.title}** 착수`
+      : `**${m.title}**`;
+  lines.push(`□ ${head}`);
   if (m.result.trim()) {
     m.result
       .split(/\r?\n/)
@@ -120,22 +136,38 @@ export function composeReport(input: ComposeInput): ReportContent {
     history.length ? { head: ["시각", "임무", "상태", "담당"], rows: history } : undefined,
   );
 
-  // 5. 상황 전파
+  // 5. 상황 전파 — 시각 → 전파 내역, 현장 응답(수신확인·임무완료), 상황실이 확인한 현장 조치사항
+  const ds = input.dispatches ?? [];
   const sent = missions.filter((m) => m.propagation.sentAt);
+  const respOf = (mid: string) => {
+    const list = ds.filter((d) => d.missionId === mid);
+    if (!list.length) return "";
+    return `수신확인 ${list.filter((d) => d.readAt).length} · 임무완료 ${list.filter((d) => d.doneAt).length} / ${list.length}명`;
+  };
   const propLines = sent.length
-    ? sent.map((m) => `□ ${fmtTime(m.propagation.sentAt!)} ${m.title} 관련 전파 (${(m.propagation.sentTo ?? []).length}명)`)
+    ? sent.map((m) => {
+        const n = ds.filter((d) => d.missionId === m.id).length || (m.propagation.sentTo ?? []).length;
+        const r = respOf(m.id);
+        return `□ ${fmtTime(m.propagation.sentAt!)} ${m.title} 관련 전파 (${n}명)${r ? ` — ${r}` : ""}`;
+      })
     : ["□ 상황 전파 내역 없음"];
+  const acked = ds.filter((d) => d.note && d.ackAt).sort((x, y) => String(x.noteAt).localeCompare(String(y.noteAt)));
+  if (acked.length) {
+    propLines.push("□ 현장 조치사항");
+    acked.forEach((d) => propLines.push(`○ ${fmtTime(d.noteAt ?? d.ackAt!)} ${d.name}(${d.unit}): ${d.note.replace(/\s+/g, " ")}`));
+  }
   sec(
     "상황 전파",
     propLines,
     sent.length
       ? {
-          head: ["시각", "수신", "내용"],
+          head: ["시각", "수신", "내용", "응답"],
           rows: sent.map((m) => [
             fmtTime(m.propagation.sentAt!),
             (m.propagation.sentTo ?? []).slice(0, 4).join(", ") +
               ((m.propagation.sentTo ?? []).length > 4 ? ` 외 ${(m.propagation.sentTo ?? []).length - 4}명` : ""),
             m.propagation.message,
+            respOf(m.id) || "-",
           ]),
         }
       : undefined,

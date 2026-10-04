@@ -6,10 +6,15 @@ import { nanoid } from "nanoid";
 import { Badge, Button, Modal } from "@/components/ui";
 import type { Mission } from "@/lib/types";
 import type { ContactsBundle } from "@/lib/data";
-import { propagate } from "@/app/actions/situation";
+import { ackDispatch, propagate, type DispatchLink } from "@/app/actions/situation";
+import { FieldView } from "@/components/FieldView";
+import type { DispatchRow } from "./SopWorkspace";
+import QRCode from "qrcode";
 import { fmtTime } from "@/lib/format";
 import { MISSION_STATUS } from "./SopWorkspace";
 import { RecipientPicker, resolveRecipients } from "./RecipientPicker";
+import { KindIcon } from "./KindIcon";
+import { KIND_LABEL, missionKind } from "@/lib/sop/kind";
 
 /** 매뉴얼 전파대상 문구와 비슷한 전파그룹 추천 */
 function recommended(groups: ContactsBundle["groups"], hints: string[]) {
@@ -40,6 +45,8 @@ export function MissionDetail({
   onChange,
   onDelete,
   onAddMission,
+  dispatches,
+  preview,
 }: {
   mission: Mission;
   mode: "edit" | "run";
@@ -52,9 +59,13 @@ export function MissionDetail({
   onChange: (m: Mission, immediate?: boolean) => void;
   onDelete: () => void;
   onAddMission?: () => void;
+  dispatches: DispatchRow[];
+  preview: { orgName: string; situationTitle: string };
 }) {
   const [picking, setPicking] = useState(false);
   const [confirmSend, setConfirmSend] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sent, setSent] = useState<DispatchLink[] | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [newDetail, setNewDetail] = useState("");
   const [sending, startSend] = useTransition();
@@ -113,6 +124,7 @@ export function MissionDetail({
     <div className="flex h-full flex-col">
       {/* 머리 */}
       <div className="flex flex-wrap items-center gap-3 border-b border-line-weak px-6 py-5">
+        <KindIcon kind={missionKind(m)} size={34} />
         {edit ? (
           <input
             className="min-w-0 flex-1 rounded-md border border-line px-3 py-1.5 text-[20px] font-bold outline-none focus:border-primary"
@@ -139,6 +151,25 @@ export function MissionDetail({
       </div>
 
       <div className="scroll-thin flex-1 space-y-6 overflow-y-auto px-6 py-5">
+        {edit && (
+          <Field label="임무 종류">
+            <div className="flex gap-2">
+              {(["process", "decision", "propagation"] as const).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => set({ kind: k }, true)}
+                  className={clsx(
+                    "flex h-11 items-center gap-2 rounded-md border px-4 font-medium",
+                    missionKind(m) === k ? "border-primary bg-primary-weak text-primary-strong" : "border-line hover:border-primary",
+                  )}
+                >
+                  <KindIcon kind={k} size={24} />
+                  {KIND_LABEL[k]}
+                </button>
+              ))}
+            </div>
+          </Field>
+        )}
         <Field label="임무내용">
           {edit ? (
             <textarea rows={2} className="input" value={m.content} onChange={(e) => set({ content: e.target.value })} />
@@ -311,6 +342,56 @@ export function MissionDetail({
               )}
             </div>
           )}
+          {dispatches.length > 0 && (
+            <div className="mt-5">
+              <div className="mb-2 flex items-center gap-2 font-medium">
+                현장 응답
+                <span className="text-[15px] font-normal text-sub">
+                  수신확인 {dispatches.filter((d) => d.readAt).length} · 임무완료 {dispatches.filter((d) => d.doneAt).length} /{" "}
+                  {dispatches.length}
+                </span>
+              </div>
+              <ul className="divide-y divide-line-weak rounded-md border border-line-weak bg-white">
+                {dispatches.map((d) => (
+                  <li key={d.id} className="px-3 py-2.5">
+                    <div className="flex flex-wrap items-center gap-2 text-[16px]">
+                      <span className="font-medium">{d.name}</span>
+                      <span className="text-sub">{d.unit}</span>
+                      <span className="ml-auto flex flex-wrap gap-1.5">
+                        <Badge tone={d.readAt ? "green" : "gray"}>
+                          {d.readAt ? "수신 " + fmtTime(d.readAt).split(" ")[1] : "미확인"}
+                        </Badge>
+                        {d.doneAt && <Badge tone="blue">{"완료 " + fmtTime(d.doneAt).split(" ")[1]}</Badge>}
+                      </span>
+                    </div>
+                    {d.note && (
+                      <div className="mt-1.5 flex items-start gap-2">
+                        <p className="flex-1 whitespace-pre-line rounded bg-canvas px-3 py-2 text-[15px] leading-snug">{d.note}</p>
+                        {d.ackAt ? (
+                          <Badge tone="green">{"확인 " + fmtTime(d.ackAt).split(" ")[1]}</Badge>
+                        ) : (
+                          editable && (
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              onClick={() =>
+                                startSend(async () => {
+                                  await ackDispatch(situationId, d.id);
+                                  window.dispatchEvent(new Event("r4:refresh"));
+                                })
+                              }
+                            >
+                              확인
+                            </Button>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
 
         {/* 실행 기록 */}
@@ -395,40 +476,95 @@ export function MissionDetail({
         open={confirmSend}
         onClose={() => setConfirmSend(false)}
         title="상황전파"
-        width={620}
+        width={960}
         footer={
           <>
+            {sendError && <span className="mr-auto self-center text-danger">{sendError}</span>}
             <Button onClick={() => setConfirmSend(false)}>취소</Button>
             <Button
               variant="primary"
               disabled={sending}
               onClick={() =>
                 startSend(async () => {
-                  const updated = await propagate(
-                    situationId,
-                    m.id,
-                    recipients.map((r) => `${r.name}(${r.unit})`),
-                    m.propagation.message,
-                  );
-                  onChange(updated);
-                  setConfirmSend(false);
-                  window.dispatchEvent(new Event("r4:refresh"));
+                  setSendError(null);
+                  try {
+                    const r = await propagate(situationId, m.id, m.propagation.message);
+                    onChange(r.mission);
+                    setConfirmSend(false);
+                    setSent(r.links);
+                    window.dispatchEvent(new Event("r4:refresh"));
+                  } catch (e) {
+                    setSendError(e instanceof Error ? e.message : "보내지 못했습니다.");
+                  }
                 })
               }
             >
-              <Send size={17} /> {recipients.length}명에게 전파
+              <Send size={17} /> {recipients.length}명에게 전파 ({m.propagation.channel === "EMAIL" ? "이메일" : "문자"})
             </Button>
           </>
         }
       >
-        <div className="whitespace-pre-line rounded-md bg-canvas p-4 leading-relaxed">{m.propagation.message}</div>
-        <div className="mt-4 text-[16px] text-sub">
-          {recipients
-            .slice(0, 12)
-            .map((r) => r.name)
-            .join(", ")}
-          {recipients.length > 12 && ` 외 ${recipients.length - 12}명`}
+        <div className="grid gap-6 md:grid-cols-[1fr_340px]">
+          <div>
+            <h4 className="mb-2 font-bold">전파 내용</h4>
+            <div className="whitespace-pre-line rounded-md bg-canvas p-4 leading-relaxed">{m.propagation.message}</div>
+            <h4 className="mb-2 mt-5 font-bold">수신 {recipients.length}명</h4>
+            <ul className="scroll-thin max-h-[300px] divide-y divide-line-weak overflow-y-auto rounded-md border border-line-weak">
+              {recipients.map((r) => (
+                <li key={r.id} className="flex items-center gap-3 px-3 py-2 text-[16px]">
+                  <span className="font-medium">{r.name}</span>
+                  <span className="text-sub">{r.unit}</span>
+                  <span className="ml-auto tabular-nums text-sub">{r.phone}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[15px] text-sub">수신자마다 응답 링크가 함께 발송됩니다.</p>
+          </div>
+          <div>
+            <h4 className="mb-2 font-bold">현장 담당자 화면</h4>
+            <div className="mx-auto h-[560px] w-[300px] overflow-hidden rounded-[36px] border-[10px] border-ink bg-white shadow-xl">
+              <div className="scroll-thin h-full overflow-y-auto">
+                <FieldView
+                  data={{
+                    orgName: preview.orgName,
+                    situationTitle: preview.situationTitle,
+                    missionTitle: m.title,
+                    message: m.propagation.message,
+                    details: m.details.map((d) => d.text).slice(0, 8),
+                    name: recipients[0]?.name ?? "담당자",
+                    sentAt: new Date().toISOString(),
+                    readAt: null,
+                    doneAt: null,
+                    note: "",
+                    noteAt: null,
+                    ackAt: null,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={!!sent}
+        onClose={() => setSent(null)}
+        title="전파 완료"
+        width={760}
+        footer={
+          <Button variant="primary" onClick={() => setSent(null)}>
+            확인
+          </Button>
+        }
+      >
+        <p className="mb-3 text-[16px] text-sub">
+          문자·메일 발송 모듈 연계 전입니다. 아래 링크를 현장 담당자에게 보내면 응답을 받을 수 있습니다.
+        </p>
+        <ul className="scroll-thin max-h-[440px] divide-y divide-line-weak overflow-y-auto rounded-md border border-line-weak">
+          {(sent ?? []).map((l) => (
+            <SentLink key={l.id} l={l} />
+          ))}
+        </ul>
       </Modal>
 
       <Modal
@@ -463,5 +599,48 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <div className="mb-2 font-medium text-sub">{label}</div>
       {children}
     </div>
+  );
+}
+
+/** 발송된 수신자 링크 + QR */
+function SentLink({ l }: { l: DispatchLink }) {
+  const [qr, setQr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const url = typeof window !== "undefined" ? window.location.origin + "/m/" + l.token : "/m/" + l.token;
+  return (
+    <li className="px-3 py-2.5">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-medium">{l.name}</span>
+        <span className="text-sub">{l.unit}</span>
+        <span className="tabular-nums text-sub">{l.phone}</span>
+        <span className="ml-auto flex gap-1.5">
+          <Button
+            size="sm"
+            onClick={async () => {
+              await navigator.clipboard.writeText(url).catch(() => {});
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+          >
+            {copied ? "복사됨" : "링크 복사"}
+          </Button>
+          <Button size="sm" onClick={async () => setQr(qr ? null : await QRCode.toDataURL(url, { margin: 1, width: 180 }))}>
+            QR
+          </Button>
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-9 items-center rounded-md border border-line px-3 text-[15px] hover:border-primary"
+          >
+            열기
+          </a>
+        </span>
+      </div>
+      {qr && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={qr} alt={l.name + " 응답 링크 QR"} className="mt-2 h-[180px] w-[180px]" />
+      )}
+    </li>
   );
 }

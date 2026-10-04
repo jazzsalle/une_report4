@@ -142,3 +142,33 @@ export const contactGroups = pgTable("contact_groups", {
   memberIds: jsonb("member_ids").$type<string[]>().notNull().default([]),
   sort: integer("sort").notNull().default(0),
 });
+
+/** 상황전파 수신자별 발송·현장 응답 (링크 토큰 기반, 무인증 모바일 응답) */
+export const dispatches = pgTable(
+  "dispatches",
+  {
+    id: text("id").primaryKey(),
+    token: text("token").notNull().unique(),
+    situationId: text("situation_id").notNull(),
+    missionId: text("mission_id").notNull(),
+    contactId: text("contact_id"),
+    name: text("name").notNull(),
+    unit: text("unit").notNull().default(""),
+    phone: text("phone").notNull().default(""),
+    email: text("email").notNull().default(""),
+    channel: text("channel").notNull().default("SMS"),
+    message: text("message").notNull().default(""),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+    /** 수신확인 */
+    readAt: timestamp("read_at", { withTimezone: true }),
+    /** 임무완료 */
+    doneAt: timestamp("done_at", { withTimezone: true }),
+    /** 현장 조치사항 */
+    note: text("note").notNull().default(""),
+    noteAt: timestamp("note_at", { withTimezone: true }),
+    /** 상황실 확인 (현장에 「확인 완료」로 표시) */
+    ackAt: timestamp("ack_at", { withTimezone: true }),
+    ackBy: text("ack_by").notNull().default(""),
+  },
+  (t) => [index("dispatches_situation_idx").on(t.situationId)],
+);

@@ -93,14 +93,15 @@ function parsePreliminary(text: string, keywords: string[]): string[] {
   return out;
 }
 
-/** 어제~오늘 (KST) — 자정 직후에도 전날 발표분을 받도록 */
+/** 조회 기간: 오늘(KST) */
 function recentRange() {
   const ymd = (d: Date) =>
     new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" })
       .format(d)
       .replace(/-/g, "");
-  const now = new Date();
-  return { fromTmFc: ymd(new Date(now.getTime() - 24 * 3600 * 1000)), toTmFc: ymd(now) };
+  // 항상 오늘(KST) 발표분만 — 지난 발표는 보여주지 않는다
+  const today = ymd(new Date());
+  return { fromTmFc: today, toTmFc: today };
 }
 
 /** 시도 기준 기상특보 (전국 특보현황에서 해당 시도분 추출 + 관할 지점 기상정보) */

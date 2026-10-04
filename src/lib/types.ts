@@ -102,6 +102,9 @@ export interface WeatherImages {
 
 export type MissionStatus = "todo" | "doing" | "done" | "skipped";
 
+/** 임무 종류 — 처리 / 상황판단 / 상황전파 (SOP 컴포넌트 구분) */
+export type MissionKind = "process" | "decision" | "propagation";
+
 export interface MissionDetail {
   id: string;
   text: string;
@@ -124,6 +127,8 @@ export interface Propagation {
 export interface Mission {
   id: string;
   code: string;
+  /** 임무 종류 (비어 있으면 임무명으로 추정) */
+  kind?: MissionKind;
   /** 대응 / 복구 */
   phase: "대응" | "복구";
   stage: string;

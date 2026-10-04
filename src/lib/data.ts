@@ -101,3 +101,26 @@ export async function getContactsBundle(orgId: string) {
   return { units, contacts, groups };
 }
 export type ContactsBundle = Awaited<ReturnType<typeof getContactsBundle>>;
+
+export type Dispatch = typeof schema.dispatches.$inferSelect;
+
+export async function listDispatches(situationId: string) {
+  const db = await getDb();
+  return db
+    .select()
+    .from(schema.dispatches)
+    .where(eq(schema.dispatches.situationId, situationId))
+    .orderBy(asc(schema.dispatches.sentAt));
+}
+
+/** 현장 응답 화면용: 토큰 → 발송 + 상황·임무 */
+export async function getDispatchByToken(token: string) {
+  const db = await getDb();
+  const [d] = await db.select().from(schema.dispatches).where(eq(schema.dispatches.token, token)).limit(1);
+  if (!d) return null;
+  const [s] = await db.select().from(schema.situations).where(eq(schema.situations.id, d.situationId)).limit(1);
+  if (!s) return null;
+  const [org] = await db.select().from(schema.orgs).where(eq(schema.orgs.id, s.orgId)).limit(1);
+  const mission = s.sop?.missions.find((m) => m.id === d.missionId) ?? null;
+  return { d, situation: { title: s.title, hazard: s.hazard, sido: s.sido }, orgName: org?.name ?? "", mission };
+}

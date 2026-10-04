@@ -26,6 +26,7 @@ const TYPE: Record<string, { label: string; tone: "blue" | "gray" | "green" | "o
   mission: { label: "조치", tone: "green" },
   propagate: { label: "전파", tone: "blue" },
   record: { label: "기록", tone: "orange" },
+  response: { label: "현장", tone: "green" },
   report: { label: "일지", tone: "gray" },
 };
 

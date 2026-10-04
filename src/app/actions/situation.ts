@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { canEdit, requireUser } from "@/lib/auth/session";
-import { addEvent, getSituation, listEvents } from "@/lib/data";
+import { addEvent, getContactsBundle, getSituation, listDispatches, listEvents } from "@/lib/data";
 import { getWeatherSnapshot } from "@/lib/weather/kma";
 import { ORG_SIDO, orgForSituation } from "@/lib/regions";
 import { sopActions, t3qMode, weatherSummary } from "@/lib/t3q/client";
@@ -286,24 +286,87 @@ export async function reorderMissions(id: string, ids: string[]) {
 }
 
 /** 상황전파 (모의 발송 — 실제 발송 모듈 연계 전) */
-export async function propagate(id: string, missionId: string, recipients: string[], message: string) {
+export interface DispatchLink {
+  id: string;
+  token: string;
+  name: string;
+  unit: string;
+  phone: string;
+}
+
+/**
+ * 상황전파 발송 — 수신자별 현장 응답 링크(토큰)를 만들고 발송 이력을 남긴다.
+ * 실제 SMS·메일 발송은 UNE 발송 모듈 연계 시 이 함수에서 호출한다 (현재 모의 발송).
+ */
+export async function propagate(id: string, missionId: string, message: string) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
-  const now = new Date().toISOString();
+  const mission = s.sop.missions.find((m) => m.id === missionId);
+  if (!mission) throw new Error("임무를 찾을 수 없습니다.");
+  const bundle = await getContactsBundle(orgForSituation(s.orgId, s.sido));
+  const ids = new Set(mission.propagation.contactIds);
+  bundle.groups.filter((g) => mission.propagation.groupIds.includes(g.id)).forEach((g) => g.memberIds.forEach((x) => ids.add(x)));
+  const unitName = new Map(bundle.units.map((x) => [x.id, x.name]));
+  const people = bundle.contacts.filter((c) => ids.has(c.id));
+  if (!people.length) throw new Error("전파 대상을 선택하세요.");
+
+  const db = await getDb();
+  const sentAt = new Date();
+  const rows = people.map((c) => ({
+    id: nanoid(10),
+    token: nanoid(22),
+    situationId: id,
+    missionId,
+    contactId: c.id,
+    name: c.name,
+    unit: unitName.get(c.unitId) ?? "",
+    phone: c.phone,
+    email: c.email,
+    channel: mission.propagation.channel,
+    message,
+    sentAt,
+  }));
+  await db.insert(schema.dispatches).values(rows);
+
+  const recipients = rows.map((r) => `${r.name}(${r.unit})`);
   const missions = s.sop.missions.map((m) =>
-    m.id === missionId ? { ...m, propagation: { ...m.propagation, message, sentAt: now, sentTo: recipients } } : m,
+    m.id === missionId
+      ? { ...m, propagation: { ...m.propagation, message, sentAt: sentAt.toISOString(), sentTo: recipients } }
+      : m,
   );
   await touch(id, { sop: { ...s.sop, missions } });
-  const m = missions.find((x) => x.id === missionId)!;
   await addEvent(id, {
     type: "propagate",
-    title: `상황전파: ${m.title}`,
-    body: message,
+    title: `상황전파: ${mission.title}`,
+    body: `${message}
+→ ${rows.length}명 (${mission.propagation.channel})`,
     missionId,
     userName: u.name,
-    meta: { recipients, channel: m.propagation.channel },
+    meta: { recipients, channel: mission.propagation.channel },
   });
-  return missions.find((x) => x.id === missionId)!;
+  revalidatePath(`/s/${id}/sop`);
+  return {
+    mission: missions.find((x) => x.id === missionId)!,
+    links: rows.map((r) => ({ id: r.id, token: r.token, name: r.name, unit: r.unit, phone: r.phone })) as DispatchLink[],
+  };
+}
+
+/** 현장 조치사항 확인 → 현장 화면에 「상황실 확인 완료」 표시, 상황일지 반영 대상 */
+export async function ackDispatch(id: string, dispatchId: string) {
+  const { u } = await editable(id);
+  const db = await getDb();
+  const [d] = await db.select().from(schema.dispatches).where(eq(schema.dispatches.id, dispatchId)).limit(1);
+  if (!d || d.situationId !== id) throw new Error("응답을 찾을 수 없습니다.");
+  await db.update(schema.dispatches).set({ ackAt: new Date(), ackBy: u.name }).where(eq(schema.dispatches.id, dispatchId));
+  await addEvent(id, {
+    type: "response",
+    title: `현장 응답 확인: ${d.name}`,
+    body: d.note || (d.doneAt ? "임무완료" : "수신확인"),
+    missionId: d.missionId,
+    userName: u.name,
+    meta: { dispatchId, kind: "ack" },
+  });
+  revalidatePath(`/s/${id}/sop`);
 }
 
 /** 사용자 상황 기록 (피해·대피·통제·자원투입·응급복구·상황) */
@@ -338,6 +401,7 @@ export async function createReport(id: string) {
   const content = composeReport({
     situation: s,
     events,
+    dispatches: await listDispatches(id),
     reporter: u.name,
     dept: u.dept,
     orgName: org?.name ?? "",

@@ -1,8 +1,8 @@
 "use client";
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { FileText, ListChecks, Pencil, Play, Plus, RotateCcw, Sparkles, Square, Workflow, List } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, PanelTopClose, FileText, ListChecks, Pencil, Play, Plus, RotateCcw, Sparkles, Square, Workflow, List } from "lucide-react";
 import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
 import { RESPONSE_STEPS, STEP_LABEL, type Mission, type ResponseStep, type Sop } from "@/lib/types";
 import type { ContactsBundle } from "@/lib/data";
@@ -15,13 +15,32 @@ import {
   startSop,
   createReport,
   addMissions,
+  reorderMissions,
 } from "@/app/actions/situation";
+import { KindIcon } from "./KindIcon";
+import { missionKind } from "@/lib/sop/kind";
 import { missionFromLibrary, missionsFromLibrary } from "@/app/actions/library";
 import { emptyMission } from "@/lib/sop/convert";
 import { fmtDateTime, fmtTime } from "@/lib/format";
 import { MissionDetail } from "./MissionDetail";
 import { Timeline, type EventItem } from "./Timeline";
-import { SopFlow } from "./SopFlow";
+import { SopMetro } from "./SopMetro";
+import { propagationTargets, sopChannel, type SopMessage } from "@/lib/sop/targets";
+
+export type DispatchRow = {
+  id: string;
+  token: string;
+  missionId: string;
+  name: string;
+  unit: string;
+  phone: string;
+  sentAt: string;
+  readAt: string | null;
+  doneAt: string | null;
+  note: string;
+  noteAt: string | null;
+  ackAt: string | null;
+};
 
 export type LibraryItem = { code: string; stage: string; step: string; phase: string; title: string; lead: string };
 
@@ -42,6 +61,9 @@ export function SopWorkspace({
   library,
   hazard,
   step,
+  title,
+  orgName,
+  dispatches,
 }: {
   id: string;
   sop: Sop | null;
@@ -52,6 +74,9 @@ export function SopWorkspace({
   library: LibraryItem[];
   hazard: string;
   step: string;
+  title: string;
+  orgName: string;
+  dispatches: DispatchRow[];
 }) {
   const router = useRouter();
   const [missions, setMissions] = useState<Mission[]>(sop?.missions ?? []);
@@ -64,6 +89,49 @@ export function SopWorkspace({
   const [mode, setMode] = useState<"edit" | "run">(sop?.startedAt ? "run" : "edit");
   // 보기: 목록 / 순서도
   const [view, setView] = useState<"list" | "flow">("list");
+  // SOP 창 분리
+  const [detached, setDetached] = useState(false);
+  const win = useRef<Window | null>(null);
+  const bc = useRef<BroadcastChannel | null>(null);
+  const notify = () => bc.current?.postMessage({ type: "changed" } satisfies SopMessage);
+
+  useEffect(() => {
+    const ch = new BroadcastChannel(sopChannel(id));
+    bc.current = ch;
+    ch.onmessage = (e: MessageEvent<SopMessage>) => {
+      if (e.data.type === "select") setSel(e.data.id);
+      if (e.data.type === "dock") setDetached(false);
+      if (e.data.type === "hello") setDetached(true);
+    };
+    return () => ch.close();
+  }, [id]);
+
+  // 분리 창을 직접 닫으면 제자리로
+  useEffect(() => {
+    if (!detached) return;
+    const t = setInterval(() => {
+      if (win.current && win.current.closed) {
+        win.current = null;
+        setDetached(false);
+      }
+    }, 1000);
+    return () => clearInterval(t);
+  }, [detached]);
+
+  const detach = () => {
+    win.current = window.open(`/board/${id}`, `sop-board-${id}`, "width=1280,height=820");
+    if (win.current) setDetached(true);
+  };
+  const dock = () => {
+    bc.current?.postMessage({ type: "dock" } satisfies SopMessage);
+    win.current?.close();
+    win.current = null;
+    setDetached(false);
+  };
+  const select = (mid: string) => {
+    setSel(mid);
+    bc.current?.postMessage({ type: "select", id: mid } satisfies SopMessage);
+  };
 
   // 서버에서 SOP가 새로 생성되면 동기화
   const sopKey = sop?.generatedAt;
@@ -76,6 +144,14 @@ export function SopWorkspace({
 
   const running = !!sop?.startedAt && !sop?.endedAt;
   const ended = !!sop?.endedAt;
+
+  // 실행 중에는 현장 응답을 주기적으로 받아온다
+  useEffect(() => {
+    if (!running) return;
+    const t = setInterval(() => router.refresh(), 15000);
+    return () => clearInterval(t);
+  }, [running, router]);
+
   const counts = useMemo(() => {
     const c = { todo: 0, doing: 0, done: 0, skipped: 0 };
     missions.forEach((m) => c[m.status]++);
@@ -94,16 +170,31 @@ export function SopWorkspace({
       start(async () => {
         await saveMission(id, m);
         router.refresh();
+        notify();
       });
     } else {
       timers.current.set(
         m.id,
         setTimeout(() => {
           timers.current.delete(m.id);
-          saveMission(id, m);
+          saveMission(id, m).then(notify);
         }, 800),
       );
     }
+  };
+
+  /** 같은 대응단계 안에서 한 칸 위/아래로 */
+  const move = (mid: string, dir: -1 | 1) => {
+    const i = missions.findIndex((m) => m.id === mid);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= missions.length) return;
+    const next = [...missions];
+    [next[i], next[j]] = [next[j], next[i]];
+    setMissions(next);
+    start(async () => {
+      await reorderMissions(id, next.map((m) => m.id));
+      notify();
+    });
   };
 
   const remove = (mid: string) => {
@@ -111,6 +202,7 @@ export function SopWorkspace({
     setSel(missions.find((m) => m.id !== mid)?.id ?? null);
     start(async () => {
       await deleteMission(id, mid);
+      notify();
     });
   };
 
@@ -118,6 +210,7 @@ export function SopWorkspace({
     start(async () => {
       await fn();
       router.refresh();
+      notify();
     });
 
   if (!sop) {
@@ -161,6 +254,15 @@ export function SopWorkspace({
             { value: "flow", label: "순서도", icon: <Workflow size={18} /> },
           ]}
         />
+        {detached ? (
+          <Button size="sm" variant="primary" onClick={dock}>
+            <PanelTopClose size={16} /> 창 복귀
+          </Button>
+        ) : (
+          <Button size="sm" onClick={detach}>
+            <ExternalLink size={16} /> 창 분리
+          </Button>
+        )}
         {running ? (
           <Badge tone="blue">실행 중</Badge>
         ) : ended ? (
@@ -220,15 +322,33 @@ export function SopWorkspace({
         </div>
       </Card>
 
-      {view === "flow" && (
-        <Card className="h-[460px] overflow-hidden">
-          <SopFlow missions={missions} selected={sel} started={!!sop.startedAt} ended={ended} onSelect={setSel} />
+      {detached && (
+        <Card className="flex items-center gap-3 border border-primary-line bg-primary-weak/60 px-6 py-3">
+          <ExternalLink size={18} className="text-primary" />
+          <span className="font-medium">SOP가 별도 창에 열려 있습니다</span>
+          <Button size="sm" className="ml-auto" onClick={() => win.current?.focus()}>
+            창 보기
+          </Button>
+          <Button size="sm" variant="primary" onClick={dock}>
+            <PanelTopClose size={16} /> 창 복귀
+          </Button>
         </Card>
       )}
 
-      <div className={clsx("grid gap-5", view === "list" ? "xl:grid-cols-[360px_1fr_380px]" : "xl:grid-cols-[1fr_380px]")}>
+      {view === "flow" && !detached && (
+        <SopMetro
+          missions={missions}
+          selected={sel}
+          started={!!sop.startedAt}
+          ended={ended}
+          people={{ targets: propagationTargets(missions, contacts) }}
+          onSelect={select}
+        />
+      )}
+
+      <div className={clsx("grid gap-5", view === "list" && !detached ? "xl:grid-cols-[360px_1fr_380px]" : "xl:grid-cols-[1fr_380px]")}>
         {/* SOP 임무 목록 */}
-        {view === "list" && (
+        {view === "list" && !detached && (
         <Card className="flex max-h-[calc(100vh-240px)] min-h-[560px] flex-col overflow-hidden">
           <div className="flex items-center justify-between px-5 pb-2 pt-5">
             <h2 className="text-[19px] font-bold">SOP 임무</h2>
@@ -241,14 +361,18 @@ export function SopWorkspace({
                 {g.items.map((m) => {
                   const st = MISSION_STATUS[m.status];
                   return (
-                    <button
+                    <div
                       key={m.id}
-                      onClick={() => setSel(m.id)}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => select(m.id)}
+                      onKeyDown={(e) => e.key === "Enter" && select(m.id)}
                       className={clsx(
-                        "flex w-full items-start gap-3 border-l-4 px-5 py-3.5 text-left transition",
+                        "group flex w-full cursor-pointer items-start gap-3 border-l-4 px-5 py-3.5 text-left transition",
                         sel === m.id ? "border-primary bg-primary-weak" : "border-transparent hover:bg-canvas",
                       )}
                     >
+                      <KindIcon kind={missionKind(m)} />
                       <div className="min-w-0 flex-1">
                         <div className={clsx("leading-snug", m.status === "skipped" && "text-mute line-through")}>
                           {m.title || "제목 없음"}
@@ -260,14 +384,33 @@ export function SopWorkspace({
                           </div>
                         )}
                       </div>
-                      {sop.startedAt && <Badge tone={st.tone}>{st.label}</Badge>}
-                    </button>
+                      {mode === "edit" && editable ? (
+                        <span className="flex shrink-0 flex-col">
+                          <button
+                            className="rounded p-0.5 text-sub hover:bg-white hover:text-primary"
+                            aria-label="위로"
+                            onClick={(e) => (e.stopPropagation(), move(m.id, -1))}
+                          >
+                            <ChevronUp size={18} />
+                          </button>
+                          <button
+                            className="rounded p-0.5 text-sub hover:bg-white hover:text-primary"
+                            aria-label="아래로"
+                            onClick={(e) => (e.stopPropagation(), move(m.id, 1))}
+                          >
+                            <ChevronDown size={18} />
+                          </button>
+                        </span>
+                      ) : (
+                        sop.startedAt && <Badge tone={st.tone}>{st.label}</Badge>
+                      )}
+                    </div>
                   );
                 })}
               </div>
             ))}
           </div>
-          {editable && !ended && mode === "edit" && (
+          {editable && mode === "edit" && (
             <div className="border-t border-line-weak p-4">
               <Button className="w-full" onClick={() => setAdding(true)}>
                 <Plus size={18} /> 임무 추가
@@ -284,10 +427,12 @@ export function SopWorkspace({
               key={current.id}
               mission={current}
               mode={mode}
+              dispatches={dispatches.filter((d) => d.missionId === current.id)}
+              preview={{ orgName, situationTitle: title }}
               running={running}
               started={!!sop.startedAt}
-              editable={editable && !ended}
-              onAddMission={view === "flow" && mode === "edit" && editable && !ended ? () => setAdding(true) : undefined}
+              editable={editable}
+              onAddMission={view === "flow" && mode === "edit" && editable ? () => setAdding(true) : undefined}
               me={me}
               contacts={contacts}
               situationId={id}

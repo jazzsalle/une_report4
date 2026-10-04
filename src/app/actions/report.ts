@@ -3,7 +3,7 @@ import { and, eq, isNotNull, lt } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { canEdit, requireUser } from "@/lib/auth/session";
-import { getReport, getSituation, listEvents } from "@/lib/data";
+import { getReport, getSituation, listDispatches, listEvents } from "@/lib/data";
 import { composeReport } from "@/lib/report/compose";
 import type { ReportContent } from "@/lib/types";
 
@@ -40,6 +40,7 @@ export async function recomposeReport(rid: string): Promise<ReportContent> {
   const fresh = composeReport({
     situation: s,
     events: await listEvents(s.id),
+    dispatches: await listDispatches(s.id),
     reporter: r.content.reporter,
     dept: r.content.dept,
     orgName: org?.name ?? "",

@@ -31,6 +31,7 @@ tags:
   - name: 휴지통
   - name: 연락망
   - name: 위치
+  - name: 현장 응답
   - name: 계정관리
   - name: HTTP
 paths:
@@ -211,20 +212,39 @@ paths:
   /action/situation/propagate:
     post:
       tags: [상황 기록·전파]
-      summary: propagate — 상황전파 발송 (현재 모의 발송)
-      description: 수신자·문안·시각을 임무에 저장하고 「상황전파」 이벤트를 남깁니다. 실제 SMS 발송 모듈 연계 시 이 함수에서 호출합니다.
+      summary: propagate — 상황전파 발송 (수신자별 현장 응답 링크 생성, 현재 모의 발송)
+      description: |
+        임무의 전파 대상(전파그룹·개별 담당자)을 펼쳐 수신자마다 응답 토큰을 만들고 dispatches 에 저장합니다.
+        실제 SMS·메일 발송 모듈 연계 시 이 함수에서 수신자별로 `/m/{token}` 링크를 포함해 발송합니다.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { id: { type: string }, missionId: { type: string }, message: { type: string } } }
+      responses:
+        "200":
+          description: "{ mission, links: [{ id, token, name, unit, phone }] }"
+  /action/situation/ackDispatch:
+    post:
+      tags: [상황 기록·전파]
+      summary: ackDispatch — 현장 조치사항 확인 (현장 화면에 「상황실 확인 완료」, 상황일지 반영)
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { id: { type: string }, dispatchId: { type: string } } } } }
+      responses: { "200": { description: 완료 } }
+  /action/field/fieldRespond:
+    post:
+      tags: [현장 응답]
+      summary: fieldRespond — 현장 담당자 응답 (로그인 없이 링크 토큰)
+      description: 수신확인(read) → 임무완료(done) → 조치사항(note). 수행 이력에 「현장」으로 기록. 조치사항은 상황실이 확인해야 상황일지에 사실로 들어갑니다.
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                id: { type: string }
-                missionId: { type: string }
-                recipients: { type: array, items: { type: string }, example: ["홍길동(자연재난과)"] }
-                message: { type: string }
-      responses:
-        "200": { description: 갱신된 임무, content: { application/json: { schema: { $ref: "#/components/schemas/Mission" } } } }
+                token: { type: string }
+                kind: { type: string, enum: [read, done, note] }
+                note: { type: string, maxLength: 1000 }
+      responses: { "200": { description: 완료 } }
   /action/situation/addRecord:
     post:
       tags: [상황 기록·전파]
@@ -400,6 +420,18 @@ paths:
       responses: { "200": { description: 완료 } }
 
   # ───────── 실제 HTTP ─────────
+  /m/{token}:
+    get:
+      tags: [HTTP]
+      summary: 현장 담당자 응답 화면 (모바일, 로그인 없음)
+      parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: 화면 } }
+  /board/{id}:
+    get:
+      tags: [HTTP]
+      summary: 분리된 SOP 노선도 창 (로그인 필요, BroadcastChannel 로 본 화면과 동기화)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: 화면 } }
   /api/image-proxy:
     get:
       tags: [HTTP]
@@ -498,6 +530,7 @@ components:
         propagation: { $ref: "#/components/schemas/Propagation" }
         resources: { type: array, items: { type: string } }
         status: { type: string, enum: [todo, doing, done, skipped], description: 대기·진행 중·완료·생략 }
+        kind: { type: string, enum: [process, decision, propagation], description: "임무 종류 — 처리·상황판단·상황전파 (비어 있으면 임무명으로 추정)" }
         startedAt: { type: string, format: date-time }
         doneAt: { type: string, format: date-time }
         result: { type: string, description: 조치결과 (비우고 완료하면 체크한 세부항목으로 채움) }
