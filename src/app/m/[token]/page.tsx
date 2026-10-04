@@ -26,7 +26,6 @@ export default async function FieldPage({ params }: PageProps<"/m/[token]">) {
           situationTitle: r.situation.title,
           missionTitle: r.mission?.title ?? "",
           message: d.message,
-          details: (r.mission?.details ?? []).map((x) => x.text).slice(0, 8),
           name: d.name,
           sentAt: d.sentAt.toISOString(),
           readAt: d.readAt?.toISOString() ?? null,

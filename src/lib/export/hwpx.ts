@@ -52,13 +52,44 @@ function inlineRuns(inl: Inline[], normal: number, bold: number, prefix = "") {
 }
 
 let tblSeq = 1000;
+
+/** 셀 글자가 몇 줄로 접히는지 추정 (11pt: 한글 1100, 영문·숫자·기호 약 560 HWPUNIT) */
+function lineCount(text: string, innerW: number) {
+  const width = (s: string) => {
+    let w = 0;
+    for (const ch of s) w += /[ᄀ-ᇿ㄰-㆏가-힣一-鿿]/.test(ch) ? 1100 : 560;
+    return w;
+  };
+  // 어절 단위로 접는다 (편집기가 어절을 쪼개지 않으므로)
+  let lines = 0;
+  for (const seg of text.split("\n")) {
+    let n = 1;
+    let cur = 0;
+    for (const word of seg.split(" ")) {
+      const w = width(word);
+      if (cur > 0 && cur + 560 + w > innerW) {
+        n++;
+        cur = 0;
+      }
+      if (w > innerW) {
+        n += Math.ceil(w / innerW) - 1;
+        cur = w % innerW;
+      } else cur += (cur > 0 ? 560 : 0) + w;
+    }
+    lines += n;
+  }
+  return lines;
+}
+
 function table(head: string[], rows: string[][]) {
   const cols = Math.max(head.length, ...rows.map((r) => r.length), 1);
   const totalW = 47624;
   const colW = Math.floor(totalW / cols);
-  const rowH = 1948;
   const all = [head, ...rows];
+  // 행 높이를 글자 줄 수에 맞춘다 — 한컴은 열 때 다시 계산하지만 웹 편집기(rhwp)는 저장된 높이를 그대로 쓴다
+  const heights = all.map((r) => Math.max(1948, ...r.map((t) => lineCount(t ?? "", colW - 1020) * 1760 + 282)));
   const cell = (text: string | undefined, c: number, r: number, isHead: boolean) => {
+    const rowH = heights[r];
     const bf = isHead ? 4 : 3;
     const cp = isHead ? CP_TABLE_HEAD : CP_TABLE_BODY;
     const content = text ? run(cp, text) : `<hp:run charPrIDRef="${cp}"/>`;
@@ -67,7 +98,7 @@ function table(head: string[], rows: string[][]) {
   const trs = all
     .map((r, ri) => `<hp:tr>${Array.from({ length: cols }, (_, ci) => cell(r[ci], ci, ri, ri === 0)).join("")}</hp:tr>`)
     .join("");
-  const tbl = `<hp:tbl id="${++tblSeq}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="1" rowCnt="${all.length}" colCnt="${cols}" cellSpacing="0" borderFillIDRef="3" noAdjust="0"><hp:sz width="${colW * cols}" widthRelTo="ABSOLUTE" height="${rowH * all.length}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="283" right="283" top="283" bottom="283"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>${trs}</hp:tbl>`;
+  const tbl = `<hp:tbl id="${++tblSeq}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="1" rowCnt="${all.length}" colCnt="${cols}" cellSpacing="0" borderFillIDRef="3" noAdjust="0"><hp:sz width="${colW * cols}" widthRelTo="ABSOLUTE" height="${heights.reduce((a, b) => a + b, 0)}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="283" right="283" top="283" bottom="283"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>${trs}</hp:tbl>`;
   return para(PP_CENTER, `<hp:run charPrIDRef="${CP_SUBTITLE}">${tbl}<hp:t/></hp:run>`);
 }
 

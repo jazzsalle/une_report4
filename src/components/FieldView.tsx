@@ -10,7 +10,6 @@ export interface FieldData {
   situationTitle: string;
   missionTitle: string;
   message: string;
-  details: string[];
   name: string;
   sentAt: string;
   readAt: string | null;
@@ -72,16 +71,6 @@ export function FieldView({ data, token }: { data: FieldData; token?: string }) 
           <div className="text-[15px] text-sub">{data.name}님 · {hm(data.sentAt)} 수신</div>
           <h2 className="mt-1 text-[19px] font-bold leading-snug">{data.missionTitle}</h2>
           <p className="mt-3 whitespace-pre-line rounded-lg bg-primary-weak p-4 text-[17px] leading-relaxed">{data.message}</p>
-          {data.details.length > 0 && (
-            <ul className="mt-3 space-y-1.5 text-[16px] leading-snug">
-              {data.details.map((d, i) => (
-                <li key={i} className="flex gap-2">
-                  <span className="text-primary">○</span>
-                  {d}
-                </li>
-              ))}
-            </ul>
-          )}
         </section>
 
         <section className="space-y-3">

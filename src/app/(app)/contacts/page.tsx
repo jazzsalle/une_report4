@@ -14,6 +14,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
     <ContactsView
       orgId={orgId}
       orgs={u.role === "admin" ? orgs.map((o) => ({ id: o.id, name: o.name })) : []}
+      orgName={orgs.find((o) => o.id === orgId)?.name ?? ""}
       bundle={bundle}
       canManage={u.role === "admin" || (u.role === "manager" && u.orgId === orgId)}
     />

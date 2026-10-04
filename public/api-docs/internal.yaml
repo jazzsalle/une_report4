@@ -381,6 +381,37 @@ paths:
       summary: deleteGroup — 전파그룹 삭제
       requestBody: { content: { application/json: { schema: { type: object, properties: { orgId: { type: string }, id: { type: string } } } } } }
       responses: { "200": { description: 완료 } }
+  /action/contacts/importContacts:
+    post:
+      tags: [연락망]
+      summary: importContacts — 엑셀 일괄 등록
+      description: |
+        화면에서 엑셀(.xlsx)을 읽어(`src/lib/contacts-xlsx.ts`) 행 목록으로 보냅니다. 기관관리 이상만 가능, 한 번에 3,000명까지.
+        없는 조직(상위 조직 → 조직)·전파그룹은 새로 만들고, 같은 조직의 같은 이름(또는 같은 이름·번호)이면 수정, 없으면 추가합니다. 엑셀에 없는 기존 담당자는 지우지 않습니다.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orgId: { type: string }
+                rows:
+                  type: array
+                  items:
+                    type: object
+                    required: [unit, name]
+                    properties:
+                      upper: { type: string, description: 상위 조직 (비우면 조직이 맨 위) }
+                      unit: { type: string, description: 조직(부서) }
+                      name: { type: string }
+                      title: { type: string }
+                      duty: { type: string }
+                      phone: { type: string, example: 010-1234-5678 }
+                      email: { type: string }
+                      groups: { type: array, items: { type: string }, description: 전파그룹 이름 }
+      responses:
+        "200":
+          description: "{ added, updated, units, groups } — 추가·수정 인원, 새로 만든 조직·전파그룹 수"
 
   # ───────── 계정관리 ─────────
   /action/admin/createUser:

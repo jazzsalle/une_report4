@@ -45,6 +45,7 @@ export function MissionDetail({
   onChange,
   onDelete,
   onAddMission,
+  onDone,
   dispatches,
   preview,
 }: {
@@ -59,6 +60,8 @@ export function MissionDetail({
   onChange: (m: Mission, immediate?: boolean) => void;
   onDelete: () => void;
   onAddMission?: () => void;
+  /** 조치 완료 후 — SOP 흐름도로 돌아가기 */
+  onDone?: () => void;
   dispatches: DispatchRow[];
   preview: { orgName: string; situationTitle: string };
 }) {
@@ -94,6 +97,7 @@ export function MissionDetail({
         if (done.length) patch.result = done.join("\n");
       }
     }
+    if (status === "done") onDone?.();
     if (status === "todo") {
       patch.startedAt = undefined;
       patch.doneAt = undefined;
@@ -513,7 +517,6 @@ export function MissionDetail({
                     situationTitle: preview.situationTitle,
                     missionTitle: m.title,
                     message: m.propagation.message,
-                    details: m.details.map((d) => d.text).slice(0, 8),
                     name: recipients[0]?.name ?? "담당자",
                     sentAt: new Date().toISOString(),
                     readAt: null,

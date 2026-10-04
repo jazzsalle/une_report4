@@ -15,6 +15,7 @@ import {
   type ContactInput,
 } from "@/app/actions/contacts";
 import { EmergencyTree } from "./EmergencyTree";
+import { ContactsExcel } from "./ContactsExcel";
 
 type Tab = "people" | "groups" | "tree";
 type Unit = ContactsBundle["units"][number];
@@ -27,11 +28,13 @@ export function mask(phone: string, show: boolean) {
 
 export function ContactsView({
   orgId,
+  orgName,
   orgs,
   bundle,
   canManage,
 }: {
   orgId: string;
+  orgName: string;
   orgs: { id: string; name: string }[];
   bundle: ContactsBundle;
   canManage: boolean;
@@ -53,9 +56,12 @@ export function ContactsView({
             ))}
           </select>
         )}
-        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setShow((v) => !v)}>
+        <div className="ml-auto flex flex-wrap gap-2">
+          {canManage && <ContactsExcel orgId={orgId} orgName={orgName} bundle={bundle} />}
+        <Button variant="ghost" size="sm" onClick={() => setShow((v) => !v)}>
           {show ? <EyeOff size={18} /> : <Eye size={18} />} {show ? "번호 가리기" : "번호 보기"}
         </Button>
+        </div>
       </div>
       <Tabs
         value={tab}

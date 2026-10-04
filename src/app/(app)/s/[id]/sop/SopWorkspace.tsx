@@ -170,6 +170,16 @@ export function SopWorkspace({
     win.current = null;
     setDetached(false);
   };
+  // 조치 완료 → SOP 흐름도(목록)로 돌아간다. 분리 창이면 그 창을 앞으로.
+  const topRef = useRef<HTMLDivElement | null>(null);
+  const backToFlow = () => {
+    if (detached) {
+      const w = win.current && !win.current.closed ? win.current : window.open("", `sop-board-${id}`);
+      w?.focus();
+      return;
+    }
+    setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+  };
   const select = (mid: string) => {
     setSel(mid);
     bc.current?.postMessage({ type: "select", id: mid } satisfies SopMessage);
@@ -421,6 +431,7 @@ export function SopWorkspace({
         </Card>
       )}
 
+      <div ref={topRef} className="-mb-5 scroll-mt-28" />
       {view === "flow" && !detached && (
         <SopMetro
           missions={missions}
@@ -574,6 +585,7 @@ export function SopWorkspace({
               contacts={contacts}
               situationId={id}
               onChange={update}
+              onDone={backToFlow}
               onDelete={() => remove(current.id)}
             />
           ) : (
