@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState, useTransition } from "react";
+import { useVisibleRefresh } from "@/lib/use-visible-refresh";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { CheckCircle2, Megaphone, Send } from "lucide-react";
@@ -39,12 +40,8 @@ export function FieldView({ data, token }: { data: FieldData; token?: string }) 
   const [error, setError] = useState<string | null>(null);
   const live = !!token;
 
-  // 상황실 확인 여부를 주기적으로 갱신
-  useEffect(() => {
-    if (!live) return;
-    const t = setInterval(() => router.refresh(), 20000);
-    return () => clearInterval(t);
-  }, [live, router]);
+  // 상황실 확인 여부를 주기적으로 갱신 (화면이 보일 때만)
+  useVisibleRefresh(20000, live);
 
   const act = (kind: "read" | "done" | "note") =>
     live &&

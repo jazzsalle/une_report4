@@ -1,4 +1,5 @@
 "use client";
+import { useVisibleRefresh } from "@/lib/use-visible-refresh";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PanelTopClose } from "lucide-react";
@@ -35,13 +36,10 @@ export function BoardView({
       if (e.data.type === "select") setSel(e.data.id);
       if (e.data.type === "dock") window.close();
     };
-    // 다른 사용자의 변경도 반영
-    const t = setInterval(() => router.refresh(), 20000);
-    return () => {
-      clearInterval(t);
-      ch.close();
-    };
+    return () => ch.close();
   }, [id, router]);
+  // 다른 사용자의 변경도 반영 (창이 보일 때만)
+  useVisibleRefresh(20000);
 
   const done = sop.missions.filter((m) => m.status === "done").length;
   return (

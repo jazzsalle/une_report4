@@ -1,4 +1,5 @@
 "use client";
+import { useVisibleRefresh } from "@/lib/use-visible-refresh";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
@@ -207,12 +208,8 @@ export function SopWorkspace({
   const running = !!sop?.startedAt && !sop?.endedAt;
   const ended = !!sop?.endedAt;
 
-  // 실행 중에는 현장 응답을 주기적으로 받아온다
-  useEffect(() => {
-    if (!running) return;
-    const t = setInterval(() => router.refresh(), 15000);
-    return () => clearInterval(t);
-  }, [running, router]);
+  // 실행 중에는 현장 응답·다른 사람의 저장을 주기적으로 받아온다 (화면이 보일 때만)
+  useVisibleRefresh(15000, running);
 
   const counts = useMemo(() => {
     const c = { todo: 0, doing: 0, done: 0, skipped: 0 };
