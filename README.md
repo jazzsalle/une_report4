@@ -3,6 +3,8 @@
 부산광역시(풍수해)·경상북도(산불) 자연재난 담당 공무원이 **기상특보 확인 → 상황 입력 → AI SOP 생성·실행 → 상황일지 자동 작성 → 한글 편집 → HWPX/DOCX/PDF·인쇄**까지 한 흐름으로 처리하는 도구입니다.
 재난관리 단계 중 **대응·복구**를 담당하며, 예방·대비는 파트너 도구인 '재난안전계획서 생성도구'가 담당합니다.
 
+> 다른 버전·계획서 생성도구와 함께 개발할 때는 먼저 **[개발 인계노트](docs/개발_인계노트.md)** 를 보세요 — 결정 배경, 겪은 문제와 해결, 재사용 부품, 운영 절차.
+
 ## 화면 흐름
 
 | 단계 | 화면 | 내용 |
@@ -69,5 +71,5 @@ npm run dev                    # http://localhost:3000
 src/app/(app)/        화면 (홈, new, s/[id], reports/[rid], docs, contacts, trash, admin, me)
 src/app/actions/      서버 액션 (상황·SOP·상황일지·연락망·계정)
 src/lib/              db, auth, t3q, weather(기상청), sop, report(자동 구성), export(HWPX/DOCX)
-docs/                 T3Q API 요청서, 매뉴얼 분석, 제안서
+docs/                 T3Q API 요청서, 매뉴얼 분석, 제안서, 개발 인계노트(결정·함정·재사용 부품)
 ```
