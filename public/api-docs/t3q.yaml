@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: T3Q 연계 API 요청서
-  version: "1.0.0"
+  version: "1.1.0"
   description: |
     **재난상황일지 생성도구 → T3Q** 로 요청하는 API 2종의 규격입니다.
     T3Q 측은 아래 경로·요청·응답 형식대로 구현해 주시기 바랍니다.
@@ -10,6 +10,7 @@ info:
     |---|---|---|
     | API-01 기상요약 | 기상청 공식 특보 원문 + 상황정보 | 자연어 기상요약 (한 줄 요약, 본문, 핵심사항) |
     | API-02 SOP 콘텐츠 | 지역·재난유형·위기경보·현재상황 | 매뉴얼 기반 임무·조치·세부행동·기관·전파대상·필요자원 |
+    | API-03 사용자 인증 | T3Q 링크에 붙은 1회용 토큰 | 토큰 확인 결과 + 사용자 정보(아이디·이름·기관·부서) |
 
     **공통 규칙**
     - 인증: `Authorization: Bearer <서비스 토큰>`
@@ -29,6 +30,22 @@ servers:
 tags:
   - name: API-01 기상요약
   - name: API-02 SOP 콘텐츠
+  - name: API-03 사용자 인증
+    description: |
+      **T3Q 플랫폼에서 링크로 바로 들어오는 로그인**입니다. 사용자는 상황일지 도구에 따로 로그인하지 않습니다.
+
+      **흐름**
+      1. 사용자가 T3Q 플랫폼에서 「재난상황일지」 링크 클릭
+      2. T3Q가 1회용 토큰을 만들어 브라우저를 아래 주소로 보냄
+         `https://unereport4.vercel.app/sso/t3q?token={1회용 토큰}&next={선택: 이동할 화면, 기본 /}`
+      3. 우리 서버가 `POST /auth/verify` 로 토큰을 확인하고 사용자 정보를 받음
+      4. 우리 계정과 연결(처음이면 자동 생성) → 로그인 화면 없이 업무 화면으로 이동
+
+      **T3Q에 요청하는 조건**
+      - 토큰은 **1회용**, 유효시간 **5분 이내**, 확인 후 즉시 폐기
+      - 기관은 **행정표준기관코드**(`orgCode`)로 주세요 — 부산광역시 `6260000`, 경상북도 `6470000`
+      - `userId`는 바뀌지 않는 고유값이어야 합니다 (같은 사람 = 같은 userId)
+      - 권한(`roles`)은 `USER` / `MANAGER` 만 반영합니다. 전체관리 권한은 우리 쪽에서만 부여합니다.
   - name: 연계 상태
 security:
   - bearer: []
@@ -244,6 +261,49 @@ paths:
         "4XX": { $ref: "#/components/responses/Error" }
         "5XX": { $ref: "#/components/responses/Error" }
 
+  /auth/verify:
+    post:
+      tags: [API-03 사용자 인증]
+      summary: 링크 토큰 확인 → 사용자 정보
+      description: 우리 서버(`/sso/t3q`)가 서버 간 통신으로 호출합니다. 브라우저에서 직접 호출하지 않습니다.
+      operationId: authVerify
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthVerifyRequest" }
+            example: { token: "t3q-ott-8f2b0c7e4a1d4b6f9e3c" }
+      responses:
+        "200":
+          description: 확인된 사용자
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthVerifyResponse" }
+              example:
+                meta: { requestId: 3b7f0c2e-1d4a-4e8b-9c6f-2a5d7e9b1c04, traceId: t3q-auth-20261005-000101, generatedAt: "2026-10-05T09:00:03+09:00" }
+                user:
+                  userId: U2026000123
+                  loginId: hong.gildong
+                  name: 홍길동
+                  orgCode: "6260000"
+                  orgName: 부산광역시
+                  deptName: 시민안전실 자연재난과
+                  position: 주무관
+                  email: hong@busan.go.kr
+                  roles: [USER]
+                expiresAt: "2026-10-05T17:00:00+09:00"
+        "401":
+          description: 토큰 없음·만료·이미 사용됨
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/T3QError" }
+              example:
+                error: { code: INVALID_TOKEN, message: 만료되었거나 이미 사용된 토큰입니다. }
+                meta: { requestId: 3b7f0c2e-1d4a-4e8b-9c6f-2a5d7e9b1c04, traceId: t3q-auth-20261005-000102 }
+        "5XX": { $ref: "#/components/responses/Error" }
+
   /health:
     get:
       tags: [연계 상태]
@@ -348,7 +408,7 @@ components:
           properties:
             code:
               type: string
-              enum: [INVALID_REQUEST, UNAUTHORIZED, NO_DOCUMENT, NO_ALERT_CONTEXT, RATE_LIMITED, INTERNAL_ERROR, MODEL_UNAVAILABLE, TIMEOUT]
+              enum: [INVALID_REQUEST, UNAUTHORIZED, INVALID_TOKEN, NO_DOCUMENT, NO_ALERT_CONTEXT, RATE_LIMITED, INTERNAL_ERROR, MODEL_UNAVAILABLE, TIMEOUT]
             message: { type: string }
             detail: {}
         meta:
@@ -505,3 +565,29 @@ components:
               name: { type: string }
               roles: { type: array, items: { type: string, enum: [LEAD, SUPPORT, COOPERATE] } }
               actionCodes: { type: array, items: { type: string } }
+
+    AuthVerifyRequest:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string, description: T3Q 링크에 붙은 1회용 토큰 }
+    T3QUser:
+      type: object
+      required: [userId, name, orgName]
+      properties:
+        userId: { type: string, description: 변하지 않는 사용자 고유값 }
+        loginId: { type: string, description: T3Q 로그인 아이디 (참고) }
+        name: { type: string }
+        orgCode: { type: string, description: "행정표준기관코드 — 부산광역시 6260000 · 경상북도 6470000" }
+        orgName: { type: string }
+        deptName: { type: string, description: "부서 (예: 시민안전실 자연재난과)" }
+        position: { type: string, description: 직위 }
+        email: { type: string }
+        roles: { type: array, items: { type: string, enum: [USER, MANAGER, ADMIN] }, description: "USER 일반 · MANAGER 기관관리 (ADMIN은 반영하지 않음)" }
+    AuthVerifyResponse:
+      type: object
+      required: [meta, user]
+      properties:
+        meta: { $ref: "#/components/schemas/T3QMeta" }
+        user: { $ref: "#/components/schemas/T3QUser" }
+        expiresAt: { type: string, format: date-time, description: T3Q 세션 만료 시각 }

@@ -10,7 +10,7 @@ info:
     - 화면 코드에서는 `import { 함수명 } from "@/app/actions/<파일>"` 후 `await 함수명(인자...)` 로 호출합니다.
     - 요청 본문은 함수 인자를 이름 순서대로 묶어 표시했습니다.
     - 모든 기능은 로그인 세션(쿠키 `r4_session`)이 필요하며 권한은 `canEdit`(본인 또는 기관관리 이상) 규칙을 따릅니다.
-    - 실제 HTTP 엔드포인트는 맨 아래 「HTTP」 태그의 크론 1개뿐입니다.
+    - 실제 HTTP 엔드포인트는 맨 아래 「HTTP」 태그의 2개(T3Q 링크 로그인, 휴지통 크론)입니다.
 
     | 파일 | 기능 |
     |---|---|
@@ -360,6 +360,16 @@ paths:
       responses: { "200": { description: 완료 } }
 
   # ───────── 실제 HTTP ─────────
+  /sso/t3q:
+    get:
+      tags: [HTTP]
+      summary: T3Q 링크 로그인 (API-03)
+      description: T3Q 토큰을 확인해 사용자 연결(없으면 생성) 후 세션을 발급하고 next 로 이동합니다. 실패 시 /login?sso=<사유>. T3Q_MODE=live 일 때만 동작합니다.
+      parameters:
+        - { name: token, in: query, required: true, schema: { type: string } }
+        - { name: next, in: query, schema: { type: string, default: / }, description: 로그인 후 이동할 화면 (내부 경로만) }
+      responses:
+        "307": { description: "성공 → next / 실패 → /login?sso=no-token|invalid|org|inactive" }
   /api/cron/purge-trash:
     get:
       tags: [HTTP]

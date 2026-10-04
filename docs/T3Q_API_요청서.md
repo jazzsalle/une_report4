@@ -8,7 +8,7 @@
 | 항목 | 내용 |
 |---|---|
 | 문서명 | 대화형 AI 재난관리 — T3Q 연계 API 요청서 |
-| 대상 API | ① 기상특보 기반 AI 기상요약 ② 상황 기반 SOP(조치) 콘텐츠 생성 |
+| 대상 API | ① 기상특보 기반 AI 기상요약 ② 상황 기반 SOP(조치) 콘텐츠 생성 ③ 사용자 인증(링크 로그인) |
 | 요청 측 | 대화형 AI 재난관리 신규 앱(Next.js) 개발팀 |
 | 버전 | v0.1 (초안) · 2026-10-04 |
 | 근거 | 요구사항정의서(CADM_PM_1110_01 V0.2) — AI 기상요약 조회, T3Q 조치추천 API 연계, 기본 SOP 자동 구성, 연계 상태 확인, 모의/실제 응답 전환 |
@@ -437,6 +437,49 @@ export interface SopActionsResponse {
 
 ---
 
+## 4-1. API-03 사용자 인증 (T3Q 플랫폼 링크 로그인)
+
+T3Q 플랫폼에서 링크로 들어온 사용자를 **별도 로그인 없이** 상황일지 도구에 들여보내기 위한 API입니다.
+
+### 흐름
+1. 사용자가 T3Q 플랫폼에서 「재난상황일지」 링크 클릭
+2. T3Q가 1회용 토큰을 만들어 브라우저를 `https://unereport4.vercel.app/sso/t3q?token={토큰}&next={이동할 화면, 선택}` 으로 보냄
+3. 우리 서버가 `POST /t3q/v1/auth/verify` 로 토큰 확인 → 사용자 정보 수신
+4. 우리 계정과 연결(처음이면 자동 생성) → 업무 화면으로 이동
+
+### 요청 / 응답
+```ts
+// POST /t3q/v1/auth/verify  (서버 간 통신, Authorization: Bearer <서비스 토큰>)
+interface AuthVerifyRequest { token: string }
+
+interface AuthVerifyResponse {
+  meta: T3QMeta;
+  user: {
+    userId: string;        // 변하지 않는 고유값
+    loginId?: string;
+    name: string;
+    orgCode?: string;      // 행정표준기관코드 — 부산광역시 6260000, 경상북도 6470000
+    orgName: string;
+    deptName?: string;     // 예: 시민안전실 자연재난과
+    position?: string;
+    email?: string;
+    roles?: Array<'USER' | 'MANAGER' | 'ADMIN'>;  // USER·MANAGER만 반영
+  };
+  expiresAt?: string;      // T3Q 세션 만료 시각
+}
+// 실패: 401 { error: { code: 'INVALID_TOKEN', message } }
+```
+
+### T3Q에 요청하는 조건
+| 항목 | 요청 |
+|---|---|
+| 토큰 | 1회용, 유효시간 5분 이내, 확인 후 즉시 폐기 |
+| 기관 | 행정표준기관코드(`orgCode`)로 전달 |
+| 사용자 ID | 같은 사람은 항상 같은 `userId` |
+| 권한 | `USER`(일반) / `MANAGER`(기관관리)만 반영. 전체관리는 우리 쪽에서만 부여 |
+
+> 우리 쪽 구현은 완료되어 있습니다 (`src/app/sso/t3q/route.ts`). `T3Q_MODE=live` 와 T3Q 주소·서비스 토큰만 설정하면 동작합니다. 기존 아이디/비밀번호 로그인은 운영자용으로 유지합니다.
+
 ## 5. 기존 `__compn__` 계약 호환 규격
 
 ### 5.1 기존 계약 (UNE SOP 자동생성 모듈, 변경 불가 필드)
@@ -570,6 +613,7 @@ data: [DONE]
 ## 7. 오류 코드
 | HTTP | code | 의미 | 신규 앱 처리 |
 |---|---|---|---|
+| 401 | `INVALID_TOKEN` | (API-03) 링크 토큰 만료·재사용 | 로그인 화면에 재접속 안내 |
 | 400 | `INVALID_REQUEST` | 필수값 누락·형식 오류 | 입력 확인 안내 |
 | 401 | `UNAUTHORIZED` | 토큰 없음·만료 | 토큰 재발급 후 1회 재시도 |
 | 404 | `NO_DOCUMENT` | 재난유형·지역에 맞는 매뉴얼 없음 | 매뉴얼 조치 수동 선택 |
@@ -597,3 +641,4 @@ data: [DONE]
 4. SSE 지원 여부 및 `__status__:"end"` 송신 가능 여부
 5. 인증 방식(서비스 계정 Bearer 토큰) 및 토큰 유효기간
 6. `compns` 직접 생성(includeCompns) 지원 여부 — 미지원 시 신규 앱이 §5.3 규칙으로 변환
+7. (API-03) 링크 토큰 발급 방식·유효시간, 사용자 정보 항목, 기관코드 제공 가능 여부

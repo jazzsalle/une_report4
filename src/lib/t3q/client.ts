@@ -1,5 +1,6 @@
 import "server-only";
 import type {
+  AuthVerifyResponse,
   SopActionsRequest,
   SopActionsResponse,
   WeatherSummaryRequest,
@@ -59,4 +60,10 @@ export async function sopActions(
     }
   }
   return { data: await mockSopActions(req), fallback: false };
+}
+
+/** API-03 — T3Q 링크 토큰 확인. 실제 연계(live)일 때만 동작하며 모의 응답은 없다. */
+export async function verifyUserToken(token: string): Promise<AuthVerifyResponse> {
+  if (t3qMode() !== "live") throw new Error("T3Q 연계가 설정되지 않았습니다.");
+  return post<AuthVerifyResponse>("/auth/verify", { token }, 10000);
 }

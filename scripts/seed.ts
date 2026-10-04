@@ -3,6 +3,7 @@
  *   로컬(PGlite):  npm run db:seed          (개발 서버를 끈 상태에서)
  *   운영(Neon):    DATABASE_URL=... npm run db:seed
  * 새로 만든 계정의 비밀번호는 accounts/계정목록_<시각>.csv 로 저장된다(깃 제외 폴더).
+ * SEED_PASSWORD 를 주면 모든 계정을 같은 비밀번호로 만든다 (시험 기간용).
  */
 import "dotenv/config";
 import { config } from "dotenv";
@@ -100,7 +101,7 @@ async function main() {
   for (const a of ACCOUNTS) {
     const exist = await db.select().from(schema.users).where(eq(schema.users.loginId, a.loginId)).limit(1);
     if (exist.length) continue;
-    const pw = password();
+    const pw = process.env.SEED_PASSWORD || password();
     await db.insert(schema.users).values({
       id: crypto.randomUUID(),
       ...a,

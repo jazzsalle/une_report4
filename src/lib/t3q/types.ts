@@ -158,3 +158,30 @@ export interface SopActionsResponse {
   actions: SopAction[];
   organizationSummary?: { name: string; roles: OrgRef["role"][]; actionCodes: string[] }[];
 }
+
+/* ---------- API-03 사용자 인증 (T3Q 플랫폼 링크 로그인) ---------- */
+
+export interface AuthVerifyRequest {
+  /** T3Q 플랫폼이 링크에 붙여 준 1회용 토큰 */
+  token: string;
+}
+
+export interface T3QUser {
+  userId: string;
+  loginId?: string;
+  name: string;
+  /** 행정표준기관코드 (부산광역시 6260000, 경상북도 6470000) */
+  orgCode?: string;
+  orgName: string;
+  deptName?: string;
+  position?: string;
+  email?: string;
+  roles?: Array<"USER" | "MANAGER" | "ADMIN">;
+}
+
+export interface AuthVerifyResponse {
+  meta: T3QMeta;
+  user: T3QUser;
+  /** T3Q 세션 만료 시각 */
+  expiresAt?: string;
+}
