@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* KRDS 기반 토큰 — 계획서 생성도구와 동일한 룩앤필 */
+@theme {
+  --font-sans: "Pretendard GOV", "Pretendard", -apple-system, "Malgun Gothic", sans-serif;
+
+  --color-primary: #256ef4;
+  --color-primary-strong: #0b50d0;
+  --color-primary-weak: #ecf2fe;
+  --color-primary-line: #b1cefb;
+
+  --color-ink: #1e2124;
+  --color-sub: #464c53;
+  --color-mute: #6d7882;
+  --color-placeholder: #8a949e;
+  --color-tab: #052b57;
+  --color-info: #096ab3;
+  --color-info-weak: #e7f4fe;
+  --color-line: #cdd1d5;
+  --color-line-weak: #e6e8ea;
+  --color-canvas: #f4f5f6;
+  --color-utility: #eef2f7;
+
+  --color-danger: #bd2c0f;
+  --color-danger-weak: #fdefec;
+  --color-warning: #8a5c00;
+  --color-warning-weak: #fff3db;
+  --color-success: #267337;
+  --color-success-weak: #eaf6ec;
+
+  --radius-card: 12px;
+}
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 입력 공통 */
+.input {
+  @apply h-12 w-full rounded-md border border-line bg-white px-4 text-[17px] text-ink outline-none transition placeholder:text-placeholder focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-canvas;
+}
+textarea.input {
+  @apply h-auto py-3 leading-relaxed;
+}
+select.input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%231e2124' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  padding-right: 44px;
+}
+
+.card {
+  @apply rounded-[var(--radius-card)] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.08)];
+}
+
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #cdd1d5;
+  border-radius: 8px;
+}
+
+/* 인쇄 — 문서 영역만 A4 로 */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm 18mm;
+  }
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+}
