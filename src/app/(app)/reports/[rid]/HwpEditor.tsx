@@ -45,7 +45,7 @@ export function HwpEditor({
         const { createEditor } = await import("@rhwp/editor");
         if (!box.current) return;
         const editor = await createEditor(box.current, {
-          studioUrl: process.env.NEXT_PUBLIC_RHWP_STUDIO_URL || undefined,
+          studioUrl: process.env.NEXT_PUBLIC_RHWP_STUDIO_URL || `${window.location.origin}/rhwp-studio/`,
           height: "100%",
         });
         if (!alive) return editor.destroy();

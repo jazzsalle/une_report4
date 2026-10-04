@@ -44,22 +44,11 @@ function password() {
 
 const ACCOUNTS: { loginId: string; name: string; dept: string; orgId: string; role: string }[] = [
   { loginId: "admin", name: "운영관리자", dept: "운영", orgId: "une", role: "admin" },
+  { loginId: "admin2", name: "운영관리자2", dept: "운영", orgId: "une", role: "admin" },
   { loginId: "busan-admin", name: "부산 관리자", dept: "자연재난과", orgId: "busan", role: "manager" },
+  { loginId: "busan01", name: "부산 사용자", dept: "자연재난과", orgId: "busan", role: "user" },
   { loginId: "gb-admin", name: "경북 관리자", dept: "자연재난과", orgId: "gyeongbuk", role: "manager" },
-  ...Array.from({ length: 20 }, (_, i) => ({
-    loginId: `busan${String(i + 1).padStart(2, "0")}`,
-    name: `부산 사용자${i + 1}`,
-    dept: "자연재난과",
-    orgId: "busan",
-    role: "user",
-  })),
-  ...Array.from({ length: 20 }, (_, i) => ({
-    loginId: `gb${String(i + 1).padStart(2, "0")}`,
-    name: `경북 사용자${i + 1}`,
-    dept: "자연재난과",
-    orgId: "gyeongbuk",
-    role: "user",
-  })),
+  { loginId: "gb01", name: "경북 사용자", dept: "자연재난과", orgId: "gyeongbuk", role: "user" },
 ];
 
 async function main() {

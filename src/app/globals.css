@@ -2,7 +2,7 @@
 
 /* KRDS 기반 토큰 — 계획서 생성도구와 동일한 룩앤필 */
 @theme {
-  --font-sans: "Pretendard GOV", "Pretendard", -apple-system, "Malgun Gothic", sans-serif;
+  --font-sans: "Pretendard GOV Variable", "Pretendard GOV", -apple-system, "Malgun Gothic", sans-serif;
 
   --color-primary: #256ef4;
   --color-primary-strong: #0b50d0;
