@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { ImagePlus, X } from "lucide-react";
 import type { WeatherImage } from "@/lib/types";
@@ -46,6 +46,22 @@ export function ImageDrop({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const hovered = useRef(false);
+  const takeRef = useRef<(b: Blob | null) => void>(() => {});
+
+  // 마우스를 칸 위에 올려 둔 채 Ctrl+V → 클립보드 그림 넣기
+  useEffect(() => {
+    if (!editable) return;
+    const h = (e: ClipboardEvent) => {
+      if (!hovered.current || !e.clipboardData) return;
+      const item = [...e.clipboardData.items].find((i) => i.type.startsWith("image/"));
+      if (!item) return;
+      e.preventDefault();
+      takeRef.current(item.getAsFile());
+    };
+    document.addEventListener("paste", h);
+    return () => document.removeEventListener("paste", h);
+  }, [editable]);
 
   const take = async (blob: Blob | null) => {
     if (!blob) return;
@@ -59,6 +75,10 @@ export function ImageDrop({
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    takeRef.current = take;
+  });
 
   const fromUrl = async (url: string) => {
     const res = await fetch(`/api/image-proxy?url=${encodeURIComponent(url)}`);
@@ -105,6 +125,8 @@ export function ImageDrop({
           setOver(true);
         }}
         onDragLeave={() => setOver(false)}
+        onMouseEnter={() => (hovered.current = true)}
+        onMouseLeave={() => (hovered.current = false)}
         onDrop={onDrop}
         onPaste={onPaste}
         onClick={() => editable && !value && input.current?.click()}
@@ -120,7 +142,7 @@ export function ImageDrop({
         ) : (
           <div className="flex flex-col items-center gap-2 px-4 text-center text-sub">
             <ImagePlus size={34} className="text-placeholder" />
-            {busy ? "그림 넣는 중" : editable ? "그림을 끌어다 놓거나 붙여넣기" : "그림 없음"}
+            {busy ? "그림 넣는 중" : editable ? "끌어다 놓기 · 클릭 · 마우스 올리고 Ctrl+V" : "그림 없음"}
           </div>
         )}
         {value && editable && (

@@ -73,3 +73,15 @@ export function sidoShort(name: string) {
   if (/^(충청|전라|경상)[남북]도$/.test(name)) return name[0] + name[2];
   return name.slice(0, 2);
 }
+
+/** 시도 → 시범 기관 (연락망·문서 소속). 기관이 없는 시도는 null */
+export const SIDO_ORG: Record<string, string> = {
+  부산광역시: "busan",
+  경상북도: "gyeongbuk",
+};
+
+/** 상황이 속할 기관: 운영관리 계정이 만든 상황은 발생 시도의 기관으로 */
+export function orgForSituation(userOrg: string, sido: string) {
+  if (userOrg !== "une") return userOrg;
+  return SIDO_ORG[sido] ?? userOrg;
+}

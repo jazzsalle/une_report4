@@ -8,7 +8,6 @@ import {
   generateSop,
   refreshWeather,
   saveWeatherImage,
-  summarizeWeather,
   trashSituation,
   updateSituation,
   type SituationInput,
@@ -120,9 +119,6 @@ export function OverviewView({
                 <>
                   <Button variant="ghost" size="sm" disabled={busy} onClick={() => run("wx", () => refreshWeather(id))}>
                     <RefreshCw size={17} className={busyKey === "wx" ? "animate-spin" : ""} /> 특보 갱신
-                  </Button>
-                  <Button variant="ghost" size="sm" disabled={busy} onClick={() => run("sum", () => summarizeWeather(id))}>
-                    <Sparkles size={17} /> {busyKey === "sum" ? "요약 중" : "AI 요약"}
                   </Button>
                 </>
               )}

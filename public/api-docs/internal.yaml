@@ -70,7 +70,7 @@ paths:
     post:
       tags: [상황·기상]
       summary: createSituation — 새 상황 등록 (+선택 시 SOP 생성)
-      description: 기상청 특보를 함께 저장하고 이벤트 「상황 등록」「기상특보 확인」을 남깁니다. `generate=true`면 T3Q API-02 호출까지 수행. 성공 시 `/s/{id}` 로 이동.
+      description: 기상청 특보를 함께 저장하고 이벤트 「상황 등록」「기상특보 확인」을 남깁니다. T3Q 연계(live) 시 기상요약(API-01)을 자동 호출하고, `generate=true`면 SOP(API-02)까지 수행. 성공 시 `/s/{id}` 로 이동.
       requestBody:
         content:
           application/json:
@@ -95,18 +95,9 @@ paths:
   /action/situation/refreshWeather:
     post:
       tags: [상황·기상]
-      summary: refreshWeather — 기상특보 다시 조회
+      summary: refreshWeather — 기상특보 다시 조회 (T3Q 연계 시 기상요약 API-01 자동 호출)
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
       responses: { "200": { description: 완료 } }
-  /action/situation/summarizeWeather:
-    post:
-      tags: [상황·기상]
-      summary: summarizeWeather — AI 기상요약 (T3Q API-01)
-      requestBody: { $ref: "#/components/requestBodies/SituationId" }
-      responses:
-        "200":
-          description: 요약 (상황에 저장됨)
-          content: { application/json: { schema: { $ref: "#/components/schemas/WeatherSummary" } } }
   /action/situation/saveWeatherImage:
     post:
       tags: [상황·기상]

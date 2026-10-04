@@ -78,7 +78,8 @@ export function weatherSection(s: WeatherReportInput, id = "weather"): ReportSec
     lines.push("□ **강수 현황과 전망**");
     info.forEach((l) => lines.push(`○ ${l}`));
   }
-  if (s.weatherSummary) {
+  // T3Q 기상요약(실제 연계 결과)만 반영
+  if (s.weatherSummary && s.weatherSummary.source === "t3q") {
     const extra = s.weatherSummary.keyPoints.filter(
       (k) => !k.startsWith("예비특보") && !/^\((현황|전망)\)/.test(k) && !(w?.active ?? []).some((a) => k.startsWith(a.name)),
     );

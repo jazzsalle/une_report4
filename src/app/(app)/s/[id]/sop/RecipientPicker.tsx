@@ -129,6 +129,14 @@ export function RecipientPicker({
         </>
       }
     >
+      {b.contacts.length === 0 && (
+        <div className="mb-4 rounded-md bg-warning-weak px-4 py-4 text-warning">
+          등록된 연락망이 없습니다.{" "}
+          <a href="/contacts" className="font-bold underline">
+            연락망 관리
+          </a>
+        </div>
+      )}
       <h4 className="mb-2 font-bold">전파그룹</h4>
       <div className="mb-6 flex flex-wrap gap-2">
         {b.groups.map((gr) => (

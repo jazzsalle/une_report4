@@ -250,6 +250,14 @@ export function MissionDetail({
           />
           <div className="mt-4">
             <div className="mb-2 font-medium">전파 대상</div>
+            {contacts.contacts.length === 0 && (
+              <div className="mb-2 rounded-md bg-warning-weak px-4 py-3 text-warning">
+                등록된 연락망이 없습니다.{" "}
+                <a href="/contacts" className="font-bold underline">
+                  연락망 관리
+                </a>
+              </div>
+            )}
             <div className="flex flex-wrap gap-2">
               {contacts.groups.map((g) => {
                 const on = m.propagation.groupIds.includes(g.id);

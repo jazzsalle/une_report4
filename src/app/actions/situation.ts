@@ -7,8 +7,8 @@ import { getDb, schema } from "@/lib/db";
 import { canEdit, requireUser } from "@/lib/auth/session";
 import { addEvent, getSituation, listEvents } from "@/lib/data";
 import { getWeatherSnapshot } from "@/lib/weather/kma";
-import { ORG_SIDO } from "@/lib/regions";
-import { sopActions, weatherSummary } from "@/lib/t3q/client";
+import { ORG_SIDO, orgForSituation } from "@/lib/regions";
+import { sopActions, t3qMode, weatherSummary } from "@/lib/t3q/client";
 import { buildContext, responseToSop, snapshotToAlerts } from "@/lib/sop/convert";
 import { composeReport } from "@/lib/report/compose";
 import { fromLocalInput } from "@/lib/format";
@@ -65,7 +65,7 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
   const id = nanoid(10);
   await db.insert(schema.situations).values({
     id,
-    orgId: u.orgId,
+    orgId: orgForSituation(u.orgId, v.sido),
     ownerId: u.id,
     title: v.title.trim(),
     kind: v.kind,
@@ -87,6 +87,7 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
     body: weather.active.length ? weather.active.map((a) => a.name).join(", ") : "발효 중인 특보 없음",
     userName: u.name,
   });
+  await autoWeatherSummary(id);
   if (generate) await runSopGeneration(id, u.name);
   redirect(`/s/${id}`);
 }
@@ -129,27 +130,34 @@ export async function refreshWeather(id: string) {
     body: weather.active.length ? weather.active.map((a) => a.name).join(", ") : "발효 중인 특보 없음",
     userName: u.name,
   });
+  await autoWeatherSummary(id);
   revalidatePath(`/s/${id}`);
 }
 
-export async function summarizeWeather(id: string): Promise<WeatherSummary> {
-  const { s } = await editable(id);
-  const { data } = await weatherSummary({
+/**
+ * T3Q 기상요약(API-01) — T3Q 연계(live) 상태에서만 상황 등록·특보 갱신 때 자동 실행.
+ * 연계 전에는 기상특보 보고가 기상청 원문으로 구성되므로 호출하지 않는다.
+ */
+async function autoWeatherSummary(id: string) {
+  if (t3qMode() !== "live") return;
+  const db = await getDb();
+  const [s] = await db.select().from(schema.situations).where(eq(schema.situations.id, id)).limit(1);
+  if (!s) return;
+  const { data, fallback } = await weatherSummary({
     context: buildContext(s),
     alerts: snapshotToAlerts(s.weather),
     weatherInfoText: s.weather?.infoText,
     options: { style: "REPORT", maxChars: 400 },
   });
+  if (fallback || data.meta.mock) return;
   const ws: WeatherSummary = {
     headline: data.summary.headline,
     body: data.summary.body,
     keyPoints: data.summary.keyPoints,
-    source: data.meta.mock ? "mock" : "t3q",
+    source: "t3q",
     generatedAt: new Date().toISOString(),
   };
   await touch(id, { weatherSummary: ws });
-  revalidatePath(`/s/${id}`);
-  return ws;
 }
 
 async function runSopGeneration(id: string, userName: string) {
