@@ -68,11 +68,14 @@ export type WorkType = 'REAL' | 'DRILL';            // 실제재난 | 안전한�
 /** 위기경보 수준 */
 export type AlertLevel = 'INTEREST' | 'CAUTION' | 'ALERT' | 'SERIOUS'; // 관심|주의|경계|심각
 
-/** 재난유형 (추가 가능 — 코드 테이블은 상호 합의) */
+/** 재난유형 (10종)
+ *  HEAT_WAVE 폭염 · TYPHOON_HEAVY_RAIN 태풍/호우 · EARTHQUAKE 지진 · YELLOW_DUST 황사 (자연재난)
+ *  WILDFIRE 산불 · INFECTIOUS_DISEASE 감염병 · LIVESTOCK_DISEASE 가축질병 · CROWDED_BUILDING_COLLAPSE 다중밀집건축물붕괴대형사고
+ *  GOV_MAJOR_FACILITY 정부주요시설 · SCHOOL_FACILITY 학교시설 (사회재난) */
 export interface DisasterType {
-  code: string;            // 예: 'HEAVY_RAIN' | 'TYPHOON' | 'HEAVY_SNOW' | 'WILDFIRE'
-  name: string;            // 예: '호우'
-  group?: string;          // 예: '풍수해'
+  code: string;            // 10종 — 아래 표
+  name: string;            // 예: '태풍/호우'
+  group?: string;          // '자연재난' | '사회재난'
 }
 
 /** 행정구역 (법정동 코드 10자리 기준) */
@@ -185,7 +188,7 @@ export interface WeatherSummaryResponse {
       { "code": "2635000000", "name": "해운대구", "level": "SIGUNGU" },
       { "code": "2644000000", "name": "강서구", "level": "SIGUNGU" }
     ],
-    "disasterType": { "code": "HEAVY_RAIN", "name": "호우", "group": "풍수해" },
+    "disasterType": { "code": "TYPHOON_HEAVY_RAIN", "name": "태풍/호우", "group": "자연재난" },
     "alertLevel": "ALERT",
     "baseTime": "2026-07-16T14:30:00+09:00",
     "title": "7.16. 부산 집중호우 대응"
@@ -349,7 +352,7 @@ export interface SopActionsResponse {
     "workType": "REAL",
     "responsibleRegion": { "code": "2600000000", "name": "부산광역시", "level": "SIDO" },
     "affectedRegions": [{ "code": "2635000000", "name": "해운대구", "level": "SIGUNGU" }],
-    "disasterType": { "code": "HEAVY_RAIN", "name": "호우", "group": "풍수해" },
+    "disasterType": { "code": "TYPHOON_HEAVY_RAIN", "name": "태풍/호우", "group": "자연재난" },
     "alertLevel": "ALERT",
     "baseTime": "2026-07-16T14:30:00+09:00",
     "currentSituation": "해운대구 저지대 도로 일부 침수 신고 접수"
@@ -369,7 +372,7 @@ export interface SopActionsResponse {
     "model": "t3q-sop-v1",
     "mock": false
   },
-  "disasterType": { "code": "HEAVY_RAIN", "name": "호우", "group": "풍수해" },
+  "disasterType": { "code": "TYPHOON_HEAVY_RAIN", "name": "태풍/호우", "group": "자연재난" },
   "missions": [
     { "missionCode": "M01", "missionName": "상황관리", "leadOrg": "시민안전실 자연재난과", "actionCodes": ["HR-R-001"] },
     { "missionCode": "M02", "missionName": "인명보호", "leadOrg": "해운대구 안전총괄과", "actionCodes": ["HR-R-002"] }

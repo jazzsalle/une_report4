@@ -10,11 +10,18 @@ export const LEVEL_CODE: Record<string, AlertLevelCode> = {
   심각: "SERIOUS",
 };
 
-const HAZARD_CODE: Record<string, { code: string; group: string }> = {
-  호우: { code: "HEAVY_RAIN", group: "풍수해" },
-  태풍: { code: "TYPHOON", group: "풍수해" },
-  대설: { code: "HEAVY_SNOW", group: "풍수해" },
-  산불: { code: "WILDFIRE", group: "산불" },
+/** 재난유형 → T3Q 코드 (API 요청서 DisasterType.code 와 동일) */
+export const HAZARD_CODE: Record<string, { code: string; group: string }> = {
+  폭염: { code: "HEAT_WAVE", group: "자연재난" },
+  "태풍/호우": { code: "TYPHOON_HEAVY_RAIN", group: "자연재난" },
+  지진: { code: "EARTHQUAKE", group: "자연재난" },
+  황사: { code: "YELLOW_DUST", group: "자연재난" },
+  산불: { code: "WILDFIRE", group: "사회재난" },
+  감염병: { code: "INFECTIOUS_DISEASE", group: "사회재난" },
+  가축질병: { code: "LIVESTOCK_DISEASE", group: "사회재난" },
+  다중밀집건축물붕괴대형사고: { code: "CROWDED_BUILDING_COLLAPSE", group: "사회재난" },
+  정부주요시설: { code: "GOV_MAJOR_FACILITY", group: "사회재난" },
+  학교시설: { code: "SCHOOL_FACILITY", group: "사회재난" },
 };
 
 const REGION: Record<string, { code: string; name: string }> = {

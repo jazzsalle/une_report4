@@ -1,5 +1,6 @@
 import busan from "@/data/busan-flood.json";
 import { GB_WILDFIRE, GB_WILDFIRE_SOURCE } from "@/data/gb-wildfire";
+import { COMMON_SOURCE, commonActions } from "@/data/common-sop";
 import type { AlertLevel } from "@/lib/types";
 
 export interface SeedAction {
@@ -49,12 +50,16 @@ export const BUSAN_FLOOD: SeedAction[] = (busan as { actions: SeedAction[] }).ac
   content: prettifyTitle(a.content),
 }));
 
+/** 재난유형별 매뉴얼 시드: 태풍/호우 = 부산 풍수해 매뉴얼, 산불 = 경북 산불 샘플, 그 외 = 공통 기본 SOP */
 export function seedLibrary(hazard: string): { source: string; actions: SeedAction[] } {
   if (hazard === "산불") return { source: GB_WILDFIRE_SOURCE, actions: GB_WILDFIRE };
-  return {
-    source: BUSAN_SOURCE,
-    actions: BUSAN_FLOOD.filter((a) => a.hazard.includes(hazard) || a.hazard.length === 0),
-  };
+  if (hazard === "태풍/호우") {
+    return {
+      source: BUSAN_SOURCE,
+      actions: BUSAN_FLOOD.filter((a) => a.hazard.includes("호우") || a.hazard.includes("태풍") || a.hazard.length === 0),
+    };
+  }
+  return { source: COMMON_SOURCE, actions: commonActions(hazard) };
 }
 
 /** 위기경보 수준별 기본 SOP 구성 (부산 매뉴얼: 징후감지=관심, 초기대응=주의, 비상대응=경계, 수습·복구=심각) */
@@ -70,7 +75,7 @@ export function selectSeed(hazard: string, level: AlertLevel): { source: string;
   const resp = lib.actions.filter((a) => mine(a) && a.phase !== "복구" && stagesFor[level].includes(a.stage));
   const recovery =
     level === "경계" || level === "심각"
-      ? lib.actions.filter((a) => mine(a) && a.phase === "복구").slice(0, hazard === "산불" ? 10 : 8)
+      ? lib.actions.filter((a) => mine(a) && a.phase === "복구").slice(0, hazard === "태풍/호우" ? 8 : 10)
       : [];
   return { source: lib.source, actions: [...resp, ...recovery] };
 }

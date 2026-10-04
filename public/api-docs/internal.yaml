@@ -163,7 +163,7 @@ paths:
       tags: [SOP 생성·실행]
       summary: missionFromLibrary — 매뉴얼 행동카드를 임무로 변환 (임무 추가)
       requestBody:
-        content: { application/json: { schema: { type: object, properties: { hazard: { type: string, example: 호우 }, code: { type: string, example: BSN-FL-001 } } } } }
+        content: { application/json: { schema: { type: object, properties: { hazard: { type: string, example: 태풍/호우 }, code: { type: string, example: BSN-FL-001 } } } } }
       responses:
         "200": { description: 임무 또는 null, content: { application/json: { schema: { $ref: "#/components/schemas/Mission" } } } }
 
@@ -396,9 +396,9 @@ components:
       type: object
       required: [title, kind, hazard, alertLevel, areas, periodStart, currentStatus]
       properties:
-        title: { type: string, example: 26.10.04. 부산 호우 대응 }
+        title: { type: string, example: 26.10.04. 부산 태풍/호우 대응 }
         kind: { type: string, enum: [real, drill], description: 실제재난 / 안전한국훈련 }
-        hazard: { type: string, enum: [호우, 태풍, 대설, 산불] }
+        hazard: { type: string, enum: [폭염, 태풍/호우, 지진, 황사, 산불, 감염병, 가축질병, 다중밀집건축물붕괴대형사고, 정부주요시설, 학교시설] }
         alertLevel: { type: string, enum: [관심, 주의, 경계, 심각] }
         areas: { type: array, items: { type: string }, example: [해운대구] }
         periodStart: { type: string, example: "2026-10-04T22:00", description: datetime-local (KST) }

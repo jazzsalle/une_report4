@@ -152,7 +152,7 @@ export function SopWorkspace({
         <span className="text-[17px] font-medium">
           완료 {counts.done} · 진행 중 {counts.doing} · 대기 {counts.todo} · 생략 {counts.skipped}
         </span>
-        {sop.source === "mock" && !sop.startedAt && <Badge tone="gray">매뉴얼 기준 생성</Badge>}
+        {sop.source === "mock" && !sop.startedAt && <Badge tone="gray">기본 SOP</Badge>}
         <div className="ml-auto flex flex-wrap gap-2">
           {editable && !sop.startedAt && (
             <>

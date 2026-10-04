@@ -59,7 +59,13 @@ export function SituationFields({
       <FieldRow label="재난유형" required>
         <div className="flex flex-wrap gap-2">
           {HAZARDS.map((h) => (
-            <Chip key={h} on={value.hazard === h} onClick={() => set("hazard", h)}>
+            <Chip
+              key={h}
+              on={value.hazard === h}
+              onClick={() =>
+                onChange({ ...value, hazard: h, title: value.title.includes(value.hazard) ? value.title.replace(value.hazard, h) : value.title })
+              }
+            >
               {h}
             </Chip>
           ))}
@@ -89,14 +95,14 @@ export function SituationFields({
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="datetime-local"
-            className="input w-[240px]"
+            className="input w-[270px]"
             value={value.periodStart}
             onChange={(e) => set("periodStart", e.target.value)}
           />
           <span className="text-sub">~</span>
           <input
             type="datetime-local"
-            className="input w-[240px]"
+            className="input w-[270px]"
             disabled={value.periodEnd === null}
             value={value.periodEnd ?? ""}
             onChange={(e) => set("periodEnd", e.target.value)}
@@ -118,7 +124,7 @@ export function SituationFields({
         <textarea
           rows={5}
           className="input"
-          placeholder="예) 해운대구 우동 지하차도 침수 신고 접수, 온천천 산책로 통제 중"
+          placeholder="예) ○○ 지하차도 침수 신고 접수, 하천 산책로 통제 중"
           value={value.currentStatus}
           onChange={(e) => set("currentStatus", e.target.value)}
         />

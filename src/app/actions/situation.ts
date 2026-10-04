@@ -149,7 +149,7 @@ async function runSopGeneration(id: string, userName: string) {
   await addEvent(id, {
     type: "sop",
     title: "SOP 생성",
-    body: `임무 ${sop.missions.length}건 (${sop.source === "t3q" ? "AI" : "매뉴얼 기준"})`,
+    body: `임무 ${sop.missions.length}건 (${sop.source === "t3q" ? "AI" : "기본 SOP"})`,
     userName,
   });
 }

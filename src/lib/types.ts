@@ -9,7 +9,18 @@ export interface SessionUser {
   role: Role;
 }
 
-export const HAZARDS = ["호우", "태풍", "대설", "산불"] as const;
+export const HAZARDS = [
+  "폭염",
+  "태풍/호우",
+  "지진",
+  "황사",
+  "산불",
+  "감염병",
+  "가축질병",
+  "다중밀집건축물붕괴대형사고",
+  "정부주요시설",
+  "학교시설",
+] as const;
 export type Hazard = (typeof HAZARDS)[number];
 
 export const ALERT_LEVELS = ["관심", "주의", "경계", "심각"] as const;

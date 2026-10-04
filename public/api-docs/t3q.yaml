@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: T3Q 연계 API 요청서
-  version: "1.1.0"
+  version: "1.2.0"
   description: |
     **재난상황일지 생성도구 → T3Q** 로 요청하는 API 2종의 규격입니다.
     T3Q 측은 아래 경로·요청·응답 형식대로 구현해 주시기 바랍니다.
@@ -73,7 +73,7 @@ paths:
                 affectedRegions:
                   - { code: "", name: 해운대구, level: SIGUNGU }
                   - { code: "", name: 강서구, level: SIGUNGU }
-                disasterType: { code: HEAVY_RAIN, name: 호우, group: 풍수해 }
+                disasterType: { code: TYPHOON_HEAVY_RAIN, name: 태풍/호우, group: 자연재난 }
                 alertLevel: ALERT
                 baseTime: "2026-07-16T14:30:00+09:00"
                 title: 26.07.16. 부산 호우 대응
@@ -163,7 +163,7 @@ paths:
                 workType: REAL
                 responsibleRegion: { code: "2600000000", name: 부산광역시, level: SIDO }
                 affectedRegions: [{ code: "", name: 해운대구, level: SIGUNGU }]
-                disasterType: { code: HEAVY_RAIN, name: 호우, group: 풍수해 }
+                disasterType: { code: TYPHOON_HEAVY_RAIN, name: 태풍/호우, group: 자연재난 }
                 alertLevel: ALERT
                 baseTime: "2026-07-16T14:30:00+09:00"
                 title: 26.07.16. 부산 호우 대응
@@ -183,7 +183,7 @@ paths:
                   generatedAt: "2026-07-16T14:31:08+09:00"
                   model: t3q-sop-v1
                   mock: false
-                disasterType: { code: HEAVY_RAIN, name: 호우, group: 풍수해 }
+                disasterType: { code: TYPHOON_HEAVY_RAIN, name: 태풍/호우, group: 자연재난 }
                 missions:
                   - { missionCode: M01, missionName: 상황관리, leadOrg: 시민안전실 자연재난과, actionCodes: [HR-R-001] }
                   - { missionCode: M02, missionName: 인명보호, leadOrg: 해운대구 안전총괄과, actionCodes: [HR-R-002] }
@@ -361,9 +361,25 @@ components:
       type: object
       required: [code, name]
       properties:
-        code: { type: string, description: "HEAVY_RAIN(호우) · TYPHOON(태풍) · HEAVY_SNOW(대설) · WILDFIRE(산불)" }
-        name: { type: string, example: 호우 }
-        group: { type: string, example: 풍수해 }
+        code:
+          type: string
+          description: |
+            재난유형 코드 (10종)
+            | 코드 | 재난유형 | 구분 |
+            |---|---|---|
+            | HEAT_WAVE | 폭염 | 자연재난 |
+            | TYPHOON_HEAVY_RAIN | 태풍/호우 | 자연재난 |
+            | EARTHQUAKE | 지진 | 자연재난 |
+            | YELLOW_DUST | 황사 | 자연재난 |
+            | WILDFIRE | 산불 | 사회재난 |
+            | INFECTIOUS_DISEASE | 감염병 | 사회재난 |
+            | LIVESTOCK_DISEASE | 가축질병 | 사회재난 |
+            | CROWDED_BUILDING_COLLAPSE | 다중밀집건축물붕괴대형사고 | 사회재난 |
+            | GOV_MAJOR_FACILITY | 정부주요시설 | 사회재난 |
+            | SCHOOL_FACILITY | 학교시설 | 사회재난 |
+          enum: [HEAT_WAVE, TYPHOON_HEAVY_RAIN, EARTHQUAKE, YELLOW_DUST, WILDFIRE, INFECTIOUS_DISEASE, LIVESTOCK_DISEASE, CROWDED_BUILDING_COLLAPSE, GOV_MAJOR_FACILITY, SCHOOL_FACILITY]
+        name: { type: string, example: 태풍/호우 }
+        group: { type: string, enum: [자연재난, 사회재난] }
     Region:
       type: object
       required: [code, name, level]
