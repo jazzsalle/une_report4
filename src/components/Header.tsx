@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useState } from "react";
-import { ChevronDown, LogOut, UserRound } from "lucide-react";
+import { ChevronDown, FileCode2, LogOut, UserRound } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { logout } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/types";
@@ -66,6 +66,16 @@ export function Header({ user, orgName }: { user: SessionUser; orgName: string }
               >
                 <UserRound size={18} /> 내 정보
               </Link>
+              {user.role === "admin" && (
+                <a
+                  href="/api-docs"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 px-4 py-3 text-[16px] hover:bg-canvas"
+                >
+                  <FileCode2 size={18} /> API 문서
+                </a>
+              )}
               <form action={logout}>
                 <button className="flex w-full items-center gap-2 px-4 py-3 text-left text-[16px] hover:bg-canvas">
                   <LogOut size={18} /> 로그아웃

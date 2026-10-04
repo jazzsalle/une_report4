@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/rhwp-studio", destination: "/rhwp-studio/index.html" },
       { source: "/rhwp-studio/", destination: "/rhwp-studio/index.html" },
+      // API 문서 (Swagger UI) — public/api-docs
+      { source: "/api-docs", destination: "/api-docs/index.html" },
     ];
   },
 };

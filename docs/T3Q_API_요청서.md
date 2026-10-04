@@ -1,5 +1,10 @@
 # T3Q 연계 API 요청서
 
+> **최종 규격(정본)은 Swagger 문서입니다:** https://unereport4.vercel.app/api-docs (① T3Q 연계 API 요청서)
+> 원본 파일 `public/api-docs/t3q.yaml` · 코드 계약 `src/lib/t3q/types.ts` — 이 문서는 배경 설명용입니다.
+>
+> v1.0 반영 사항: `SituationContext.period`(대응 기간) 추가, API-01 요청에 `weatherInfoText`(기상청 기상정보 본문) 추가, `WeatherAlert.level`에 `PRELIMINARY`(예비특보) 추가.
+
 | 항목 | 내용 |
 |---|---|
 | 문서명 | 대화형 AI 재난관리 — T3Q 연계 API 요청서 |

@@ -1,0 +1,507 @@
+openapi: 3.1.0
+info:
+  title: T3Q 연계 API 요청서
+  version: "1.0.0"
+  description: |
+    **재난상황일지 생성도구 → T3Q** 로 요청하는 API 2종의 규격입니다.
+    T3Q 측은 아래 경로·요청·응답 형식대로 구현해 주시기 바랍니다.
+
+    | API | 우리가 보내는 것 | T3Q가 돌려줄 것 |
+    |---|---|---|
+    | API-01 기상요약 | 기상청 공식 특보 원문 + 상황정보 | 자연어 기상요약 (한 줄 요약, 본문, 핵심사항) |
+    | API-02 SOP 콘텐츠 | 지역·재난유형·위기경보·현재상황 | 매뉴얼 기반 임무·조치·세부행동·기관·전파대상·필요자원 |
+
+    **공통 규칙**
+    - 인증: `Authorization: Bearer <서비스 토큰>`
+    - 문자셋 UTF-8, 시각은 ISO 8601 + KST(`2026-07-16T14:00:00+09:00`)
+    - 요청 헤더 `X-Request-Id`(UUID)를 응답 `meta.requestId`로 그대로 돌려주세요.
+    - 모델명은 응답 `meta.model`로만 알려 주세요 (요청 측에서 모델명을 고정하지 않습니다).
+    - 공식 특보에 없는 수치·예측·위험도 판단은 만들지 않습니다.
+    - 출처(문서·쪽)는 보관용이며 화면 노드에는 표시하지 않습니다.
+
+    상세 설명 문서: `docs/T3Q_API_요청서.md`
+servers:
+  - url: "{T3Q_BASE_URL}/t3q/v1"
+    variables:
+      T3Q_BASE_URL:
+        default: https://t3q.example.go.kr
+        description: T3Q 측이 알려줄 주소 (환경변수 T3Q_BASE_URL)
+tags:
+  - name: API-01 기상요약
+  - name: API-02 SOP 콘텐츠
+  - name: 연계 상태
+security:
+  - bearer: []
+paths:
+  /weather/summary:
+    post:
+      tags: [API-01 기상요약]
+      summary: 기상특보 → 자연어 기상요약
+      description: |
+        우리가 기상청 공식 API로 조회한 특보 원문과 기상정보 본문을 보내면, 담당자가 읽기 쉬운 자연어 요약을 돌려줍니다.
+        결과는 상단 기상특보 화면, 상황·기상 탭의 「AI 기상 요약」, 상황일지 「기상 현황」에 쓰입니다.
+      operationId: weatherSummary
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WeatherSummaryRequest" }
+            example:
+              context:
+                situationId: Xk3p9aB2cD
+                workType: REAL
+                responsibleRegion: { code: "2600000000", name: 부산광역시, level: SIDO }
+                affectedRegions:
+                  - { code: "", name: 해운대구, level: SIGUNGU }
+                  - { code: "", name: 강서구, level: SIGUNGU }
+                disasterType: { code: HEAVY_RAIN, name: 호우, group: 풍수해 }
+                alertLevel: ALERT
+                baseTime: "2026-07-16T14:30:00+09:00"
+                title: 26.07.16. 부산 호우 대응
+                currentSituation: 해운대구 우동 지하차도 침수 신고 접수
+                period: { start: "2026-07-16T14:00:00+09:00" }
+              alerts:
+                - alertId: WA-1
+                  source: KMA
+                  kind: 호우경보
+                  level: WARNING
+                  command: ISSUE
+                  areas: [{ code: "", name: 부산 }]
+                  announcedAt: "2026-07-16T14:00:00+09:00"
+                  effectiveAt: "2026-07-16T14:00:00+09:00"
+                  retrievedAt: "2026-07-16T14:05:12+09:00"
+                - alertId: WP-1
+                  source: KMA
+                  kind: 예비특보
+                  level: PRELIMINARY
+                  command: PRELIMINARY
+                  areas: []
+                  announcedAt: "2026-07-16T14:00:00+09:00"
+                  effectiveAt: "2026-07-16T14:00:00+09:00"
+                  retrievedAt: "2026-07-16T14:05:12+09:00"
+                  text: "강풍 예비특보 · 07월 16일 밤(18시~24시) : 부산"
+              weatherInfoText: |
+                <강수 현황과 전망>
+                ○ (현황) 현재(14시), 부산에 시간당 30~50mm의 강한 비가 내리고 있습니다.
+                ○ (전망) 오늘(16일) 밤까지 부산에 30~80mm의 비가 더 내리겠습니다.
+              options: { maxChars: 400, style: REPORT }
+      responses:
+        "200":
+          description: 기상요약
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WeatherSummaryResponse" }
+              example:
+                meta:
+                  requestId: 7c1e0f3a-5b7d-4a8e-9a51-0d3c2f1a9b10
+                  traceId: t3q-wx-20260716-000123
+                  generatedAt: "2026-07-16T14:05:20+09:00"
+                  model: t3q-weather-v1
+                  mock: false
+                  elapsedMs: 2310
+                summary:
+                  headline: 부산 전역 호우경보 발효 (7.16. 14:00)
+                  body: 기상청은 7월 16일 14시 부산 지역에 호우경보를 발표·발효함. 현재 시간당 30~50mm의 강한 비가 내리고 있으며 밤까지 30~80mm의 비가 더 내릴 것으로 예보됨.
+                  keyPoints:
+                    - 7.16.(목) 14:00 부산 호우경보 발표·발효
+                    - (현황) 시간당 30~50mm 강한 비
+                    - (전망) 16일 밤까지 30~80mm 추가 강수
+                  timeline:
+                    - { time: "2026-07-16T14:00:00+09:00", text: 호우경보 발표·발효(부산) }
+                  affectedRegions:
+                    - { code: "2600000000", name: 부산광역시, level: SIDO }
+                  cautions: [공식 특보 해제 전까지 경보 상태 유지]
+                basis:
+                  alertIds: [WA-1, WP-1]
+                  sourceLabel: 기상청 기상특보(2026-07-16 14:00 발표)
+                disclaimer: 본 요약은 AI가 공식 기상특보를 정리한 것으로, 공식 특보 원문이 우선합니다.
+        "4XX": { $ref: "#/components/responses/Error" }
+        "5XX": { $ref: "#/components/responses/Error" }
+
+  /sop/actions:
+    post:
+      tags: [API-02 SOP 콘텐츠]
+      summary: 지역·상황·재난유형 → SOP 임무·조치
+      description: |
+        상황정보를 보내면, T3Q가 매뉴얼(RAG)에서 해당 위기경보 단계의 **임무 → 조치 → 세부행동**을 찾아
+        담당·지원·협업기관, 전파대상·전파문안, 필요자원, 피해(복구)조치 구분과 함께 **한 번에** 돌려줍니다.
+
+        - 우리 앱은 `actions` 배열을 `orderHint` 순서대로 SOP 임무 목록으로 만듭니다.
+        - `actionName` → 임무명, `summary` → 임무내용, `detailTasks[].title` → 세부항목, `propagation[0].messageTemplate` → 전파 문안
+        - `category=DAMAGE` 또는 `phase=RECOVERY` 인 조치는 「복구」 임무로 분류됩니다.
+        - 필수/선택 여부, 선후행 관계, 분기조건은 **요청하지 않습니다**.
+      operationId: sopActions
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SopActionsRequest" }
+            example:
+              context:
+                situationId: Xk3p9aB2cD
+                workType: REAL
+                responsibleRegion: { code: "2600000000", name: 부산광역시, level: SIDO }
+                affectedRegions: [{ code: "", name: 해운대구, level: SIGUNGU }]
+                disasterType: { code: HEAVY_RAIN, name: 호우, group: 풍수해 }
+                alertLevel: ALERT
+                baseTime: "2026-07-16T14:30:00+09:00"
+                title: 26.07.16. 부산 호우 대응
+                currentSituation: 해운대구 저지대 도로 일부 침수 신고 접수
+                period: { start: "2026-07-16T14:00:00+09:00" }
+              filter: { maxActions: 40 }
+      responses:
+        "200":
+          description: SOP 콘텐츠 (조치 목록 + 상세 1회 응답)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SopActionsResponse" }
+              example:
+                meta:
+                  requestId: a9f2c1d4-0e6b-4d71-8c3a-6b2f9e7d1c55
+                  traceId: t3q-sop-20260716-000456
+                  generatedAt: "2026-07-16T14:31:08+09:00"
+                  model: t3q-sop-v1
+                  mock: false
+                disasterType: { code: HEAVY_RAIN, name: 호우, group: 풍수해 }
+                missions:
+                  - { missionCode: M01, missionName: 상황관리, leadOrg: 시민안전실 자연재난과, actionCodes: [HR-R-001] }
+                  - { missionCode: M02, missionName: 인명보호, leadOrg: 해운대구 안전총괄과, actionCodes: [HR-R-002] }
+                  - { missionCode: M03, missionName: 수습·복구, leadOrg: 시민안전실 자연재난과, actionCodes: [HR-D-001] }
+                actions:
+                  - actionCode: HR-R-001
+                    actionName: 재난안전대책본부 비상 2단계 가동 및 상황 전파
+                    phase: RESPONSE
+                    phaseLabel: 3단계 비상대응
+                    category: RESPONSE
+                    missionCode: M01
+                    orderHint: 1
+                    summary: 호우경보 발효에 따라 비상 2단계 근무체계로 전환하고 유관기관에 상황을 전파한다.
+                    organizations:
+                      - { name: 시민안전실 자연재난과, role: LEAD }
+                      - { name: 16개 구·군 재난안전과, role: SUPPORT }
+                      - { name: 부산지방기상청, role: COOPERATE }
+                    detailTasks:
+                      - { seq: 1, title: 비상근무 인원 소집, content: 비상 2단계 근무명령에 따라 협업부서 인원을 소집한다. }
+                      - { seq: 2, title: 기상상황 모니터링, content: 강우량·하천수위를 1시간 단위로 확인하여 상황판에 게시한다., note: 특보 해제 시까지 }
+                    propagation:
+                      - target: 16개 구·군 재난안전과
+                        targetType: ORG
+                        channelHint: SMS
+                        messageTemplate: "[부산시] 호우경보 발효(7.16. 14:00). 비상 2단계 근무 돌입, 취약지역 예찰 강화 바랍니다."
+                    resources:
+                      - { category: 인력, name: 비상근무 인원, quantity: 20, unit: 명 }
+                    sources:
+                      - { docId: DOC-BUSAN-FLOOD-2026, docTitle: 부산시 풍수해 재난 현장조치 행동매뉴얼, page: 150 }
+                  - actionCode: HR-R-002
+                    actionName: 침수 우려 지하차도·하천변 출입 통제
+                    phase: RESPONSE
+                    phaseLabel: 3단계 비상대응
+                    category: RESPONSE
+                    missionCode: M02
+                    orderHint: 2
+                    summary: 침수 우려 지하차도와 하천변 산책로의 출입을 통제한다.
+                    organizations:
+                      - { name: 해운대구 안전총괄과, role: LEAD }
+                      - { name: 해운대경찰서, role: COOPERATE }
+                    detailTasks:
+                      - { seq: 1, title: 지하차도 차량 통제, content: 수위 기준 초과 시 진입 차단기를 작동하고 우회 안내한다. }
+                      - { seq: 2, title: 하천변 산책로 통제, content: 출입구 통제선 설치 및 현장 안내요원을 배치한다. }
+                    propagation:
+                      - target: 읍면동 주민
+                        targetType: PUBLIC
+                        channelHint: BROADCAST
+                        messageTemplate: 호우경보로 하천변 산책로 및 지하차도 출입을 통제합니다.
+                    resources:
+                      - { category: 장비, name: 통제선·차단기, quantity: 10, unit: 개소 }
+                      - { category: 인력, name: 현장 안내요원, quantity: 8, unit: 명 }
+                    sources:
+                      - { docId: DOC-BUSAN-FLOOD-2026, docTitle: 부산시 풍수해 재난 현장조치 행동매뉴얼, page: 162 }
+                  - actionCode: HR-D-001
+                    actionName: 피해 상황 조사 및 NDMS 입력
+                    phase: RECOVERY
+                    phaseLabel: 4단계 수습·복구
+                    category: DAMAGE
+                    missionCode: M03
+                    orderHint: 3
+                    summary: 인명·재산 피해를 조사하여 NDMS에 입력하고 보고한다.
+                    organizations:
+                      - { name: 시민안전실 자연재난과, role: LEAD }
+                      - { name: 16개 구·군 재난안전과, role: SUPPORT }
+                    detailTasks:
+                      - { seq: 1, title: 구·군 피해 현황 취합, content: 구·군별 인명·주택·공공시설 피해를 취합한다. }
+                      - { seq: 2, title: NDMS 피해 입력, content: 행정안전부 보고 시각(05·10·17·22시) 전 NDMS에 입력한다. }
+                    propagation: []
+                    resources: []
+                    sources:
+                      - { docId: DOC-BUSAN-FLOOD-2026, docTitle: 부산시 풍수해 재난 현장조치 행동매뉴얼, page: 201 }
+                organizationSummary:
+                  - { name: 시민안전실 자연재난과, roles: [LEAD], actionCodes: [HR-R-001, HR-D-001] }
+                  - { name: 해운대구 안전총괄과, roles: [LEAD], actionCodes: [HR-R-002] }
+        "4XX": { $ref: "#/components/responses/Error" }
+        "5XX": { $ref: "#/components/responses/Error" }
+
+  /health:
+    get:
+      tags: [연계 상태]
+      summary: 연계 상태 확인
+      operationId: health
+      responses:
+        "200":
+          description: 상태
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [UP, DEGRADED, DOWN] }
+                  services:
+                    type: object
+                    properties:
+                      weather: { type: string, enum: [UP, DOWN] }
+                      sop: { type: string, enum: [UP, DOWN] }
+                  checkedAt: { type: string, format: date-time }
+              example: { status: UP, services: { weather: UP, sop: UP }, checkedAt: "2026-07-16T14:00:00+09:00" }
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      description: T3Q 측이 발급하는 서비스 계정 토큰
+  parameters:
+    RequestId:
+      name: X-Request-Id
+      in: header
+      required: true
+      description: 요청 추적용 UUID. 응답 meta.requestId 로 그대로 반환
+      schema: { type: string, format: uuid }
+  responses:
+    Error:
+      description: 오류
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/T3QError" }
+          example:
+            error: { code: NO_DOCUMENT, message: 재난유형·지역에 맞는 매뉴얼이 없습니다. }
+            meta: { requestId: a9f2c1d4-0e6b-4d71-8c3a-6b2f9e7d1c55, traceId: t3q-sop-20260716-000457 }
+  schemas:
+    WorkType:
+      type: string
+      enum: [REAL, DRILL]
+      description: "REAL: 실제재난 / DRILL: 안전한국훈련"
+    AlertLevelCode:
+      type: string
+      enum: [INTEREST, CAUTION, ALERT, SERIOUS]
+      description: "위기경보 수준 — 관심 / 주의 / 경계 / 심각"
+    DisasterType:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string, description: "HEAVY_RAIN(호우) · TYPHOON(태풍) · HEAVY_SNOW(대설) · WILDFIRE(산불)" }
+        name: { type: string, example: 호우 }
+        group: { type: string, example: 풍수해 }
+    Region:
+      type: object
+      required: [code, name, level]
+      properties:
+        code: { type: string, description: 법정동 코드 10자리 (모르면 빈 문자열) }
+        name: { type: string }
+        level: { type: string, enum: [SIDO, SIGUNGU, EUPMYEONDONG] }
+    SituationContext:
+      type: object
+      description: API-01·02 공통 상황정보
+      required: [situationId, workType, responsibleRegion, disasterType, alertLevel, baseTime]
+      properties:
+        situationId: { type: string, description: 우리 앱의 상황 ID }
+        workType: { $ref: "#/components/schemas/WorkType" }
+        responsibleRegion: { $ref: "#/components/schemas/Region" }
+        affectedRegions: { type: array, items: { $ref: "#/components/schemas/Region" } }
+        disasterType: { $ref: "#/components/schemas/DisasterType" }
+        alertLevel: { $ref: "#/components/schemas/AlertLevelCode" }
+        baseTime: { type: string, format: date-time, description: 기준시각 }
+        title: { type: string, description: 상황 제목 }
+        currentSituation: { type: string, description: 현재상황 (참고용 자유 텍스트, 사실로 취급하지 않음) }
+        period:
+          type: object
+          properties:
+            start: { type: string, format: date-time }
+            end: { type: string, format: date-time }
+    T3QMeta:
+      type: object
+      required: [requestId, traceId, generatedAt]
+      properties:
+        requestId: { type: string }
+        traceId: { type: string, description: T3Q 내부 추적 ID }
+        generatedAt: { type: string, format: date-time }
+        model: { type: string, description: 참고 표시용 모델명 }
+        mock: { type: boolean }
+        elapsedMs: { type: integer }
+    T3QError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              enum: [INVALID_REQUEST, UNAUTHORIZED, NO_DOCUMENT, NO_ALERT_CONTEXT, RATE_LIMITED, INTERNAL_ERROR, MODEL_UNAVAILABLE, TIMEOUT]
+            message: { type: string }
+            detail: {}
+        meta:
+          type: object
+          properties:
+            requestId: { type: string }
+            traceId: { type: string }
+
+    WeatherAlert:
+      type: object
+      description: 기상특보 1건 — 기상청 공식 API 조회 원문
+      required: [alertId, source, kind, level, command, areas, announcedAt, effectiveAt, retrievedAt]
+      properties:
+        alertId: { type: string }
+        source: { type: string, enum: [KMA], description: 출처 기상청 }
+        kind: { type: string, description: "특보 종류 (호우경보, 건조주의보, 예비특보 …)" }
+        level: { type: string, enum: [WATCH, WARNING, PRELIMINARY], description: 주의보 / 경보 / 예비특보 }
+        command: { type: string, enum: [ISSUE, CHANGE, EXTEND, RELEASE, PRELIMINARY], description: 발표·변경·연장·해제·예비 }
+        areas: { type: array, items: { type: object, properties: { code: { type: string }, name: { type: string } } } }
+        announcedAt: { type: string, format: date-time }
+        effectiveAt: { type: string, format: date-time }
+        releasedAt: { type: string, format: date-time }
+        retrievedAt: { type: string, format: date-time, description: 우리 시스템 조회시각 }
+        text: { type: string, description: 특보 원문 (예비특보 내용 등) }
+    WeatherSummaryRequest:
+      type: object
+      required: [context, alerts]
+      properties:
+        context: { $ref: "#/components/schemas/SituationContext" }
+        alerts: { type: array, items: { $ref: "#/components/schemas/WeatherAlert" }, description: 0건 허용 (특보 없음 요약) }
+        weatherInfoText: { type: string, description: "기상청 기상정보 본문 (getWthrInfo t1)" }
+        options:
+          type: object
+          properties:
+            maxChars: { type: integer, default: 400, description: 본문 최대 글자수 }
+            style: { type: string, enum: [BRIEF, REPORT], description: "BRIEF 짧은 요약 / REPORT 보고서 문체(~함, ~임)" }
+    WeatherSummaryResponse:
+      type: object
+      required: [meta, summary, basis, disclaimer]
+      properties:
+        meta: { $ref: "#/components/schemas/T3QMeta" }
+        summary:
+          type: object
+          required: [headline, body, keyPoints, affectedRegions]
+          properties:
+            headline: { type: string, description: 한 줄 요약 (화면 제목) }
+            body: { type: string, description: 자연어 본문 }
+            keyPoints: { type: array, items: { type: string }, description: 핵심 사항 — 상황일지 ○ 항목으로 그대로 사용 }
+            timeline:
+              type: array
+              items: { type: object, properties: { time: { type: string, format: date-time }, text: { type: string } } }
+            affectedRegions: { type: array, items: { $ref: "#/components/schemas/Region" } }
+            cautions: { type: array, items: { type: string }, description: 공식 특보 문구 범위 내 유의사항 }
+        basis:
+          type: object
+          properties:
+            alertIds: { type: array, items: { type: string } }
+            sourceLabel: { type: string }
+        disclaimer: { type: string }
+
+    SopActionsRequest:
+      type: object
+      required: [context]
+      properties:
+        context: { $ref: "#/components/schemas/SituationContext" }
+        filter:
+          type: object
+          properties:
+            phases: { type: array, items: { $ref: "#/components/schemas/ResponsePhase" } }
+            categories: { type: array, items: { type: string, enum: [RESPONSE, DAMAGE] } }
+            maxActions: { type: integer, default: 40 }
+    ResponsePhase:
+      type: string
+      enum: [PREVENTION, PREPAREDNESS, RESPONSE, RECOVERY]
+      description: 예방 / 대비 / 대응 / 복구
+    OrgRef:
+      type: object
+      required: [name, role]
+      properties:
+        name: { type: string, example: 시민안전실 자연재난과 }
+        role: { type: string, enum: [LEAD, SUPPORT, COOPERATE], description: 담당(주관) / 지원 / 협업 }
+        orgCode: { type: string, description: 행정표준기관코드 (가능 시) }
+    DetailTask:
+      type: object
+      required: [seq, title, content]
+      properties:
+        seq: { type: integer }
+        title: { type: string, description: 세부행동 (화면 세부항목) }
+        content: { type: string }
+        note: { type: string, description: 시점·기준 등 비고 }
+    PropagationTarget:
+      type: object
+      required: [target, targetType]
+      properties:
+        target: { type: string, description: 전파대상 (참고정보 — 실제 수신자는 사용자가 연락망에서 지정) }
+        targetType: { type: string, enum: [ORG, ROLE, PUBLIC] }
+        channelHint: { type: string, enum: [SMS, EMAIL, BROADCAST, PHONE] }
+        messageTemplate: { type: string, description: 전파 문안 초안 }
+    ResourceNeed:
+      type: object
+      required: [category, name]
+      properties:
+        category: { type: string, description: "인력 · 장비 · 물자 · 시설" }
+        name: { type: string }
+        quantity: { type: number }
+        unit: { type: string }
+    SourceRef:
+      type: object
+      required: [docId, docTitle]
+      properties:
+        docId: { type: string }
+        docTitle: { type: string }
+        page: { type: integer, description: 매뉴얼 인쇄 쪽번호 }
+        excerpt: { type: string, maxLength: 200 }
+    SopAction:
+      type: object
+      description: 조치 1건 = 우리 화면의 SOP 임무 1개
+      required: [actionCode, actionName, phase, category, missionCode, orderHint, organizations, detailTasks, propagation, resources, sources]
+      properties:
+        actionCode: { type: string, description: 조치코드 (같은 요청·문서 버전이면 같은 코드) }
+        actionName: { type: string, description: 조치명 → 임무명 }
+        phase: { $ref: "#/components/schemas/ResponsePhase" }
+        phaseLabel: { type: string, description: "매뉴얼 원문 단계명 (예: 3단계 비상대응)" }
+        category: { type: string, enum: [RESPONSE, DAMAGE], description: 대응조치 / 피해(복구)조치 }
+        missionCode: { type: string }
+        orderHint: { type: integer, description: 매뉴얼 기재 순서 (선후행 관계 아님) }
+        summary: { type: string, description: 조치 요약 → 임무내용 }
+        organizations: { type: array, items: { $ref: "#/components/schemas/OrgRef" } }
+        detailTasks: { type: array, items: { $ref: "#/components/schemas/DetailTask" } }
+        propagation: { type: array, items: { $ref: "#/components/schemas/PropagationTarget" } }
+        resources: { type: array, items: { $ref: "#/components/schemas/ResourceNeed" } }
+        sources: { type: array, items: { $ref: "#/components/schemas/SourceRef" } }
+    SopMission:
+      type: object
+      required: [missionCode, missionName, actionCodes]
+      properties:
+        missionCode: { type: string }
+        missionName: { type: string, example: 상황관리 }
+        leadOrg: { type: string }
+        actionCodes: { type: array, items: { type: string } }
+    SopActionsResponse:
+      type: object
+      required: [meta, disasterType, missions, actions]
+      properties:
+        meta: { $ref: "#/components/schemas/T3QMeta" }
+        disasterType: { $ref: "#/components/schemas/DisasterType" }
+        missions: { type: array, items: { $ref: "#/components/schemas/SopMission" } }
+        actions: { type: array, items: { $ref: "#/components/schemas/SopAction" } }
+        organizationSummary:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              roles: { type: array, items: { type: string, enum: [LEAD, SUPPORT, COOPERATE] } }
+              actionCodes: { type: array, items: { type: string } }

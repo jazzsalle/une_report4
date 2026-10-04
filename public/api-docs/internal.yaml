@@ -1,0 +1,483 @@
+openapi: 3.1.0
+info:
+  title: 내부 API (화면 ↔ 서버)
+  version: "1.0.0"
+  description: |
+    재난상황일지 생성도구의 화면(FE)과 서버(BE) 사이 기능 목록입니다. **내부 개발자 참고용**입니다.
+
+    **호출 방식 안내**
+    - 이 앱은 Next.js **Server Action** 으로 통신합니다. 아래 경로(`/action/...`)는 문서 정리를 위한 이름이며 실제 HTTP 주소가 아닙니다.
+    - 화면 코드에서는 `import { 함수명 } from "@/app/actions/<파일>"` 후 `await 함수명(인자...)` 로 호출합니다.
+    - 요청 본문은 함수 인자를 이름 순서대로 묶어 표시했습니다.
+    - 모든 기능은 로그인 세션(쿠키 `r4_session`)이 필요하며 권한은 `canEdit`(본인 또는 기관관리 이상) 규칙을 따릅니다.
+    - 실제 HTTP 엔드포인트는 맨 아래 「HTTP」 태그의 크론 1개뿐입니다.
+
+    | 파일 | 기능 |
+    |---|---|
+    | `src/app/actions/auth.ts` | 로그인·로그아웃·내 정보 |
+    | `src/app/actions/situation.ts` | 상황·기상·SOP 생성/실행·상황전파·상황 기록·상황일지 생성 |
+    | `src/app/actions/report.ts` | 상황일지 저장·다시 구성·한글 편집 저장본·확정·휴지통 |
+    | `src/app/actions/contacts.ts` | 연락망 (조직·담당자·전파그룹) |
+    | `src/app/actions/admin.ts` | 계정관리 |
+    | `src/app/actions/library.ts` | 매뉴얼 행동카드 → 임무 |
+servers:
+  - url: /
+tags:
+  - name: 인증
+  - name: 상황·기상
+  - name: SOP 생성·실행
+  - name: 상황 기록·전파
+  - name: 상황일지
+  - name: 휴지통
+  - name: 연락망
+  - name: 계정관리
+  - name: HTTP
+paths:
+  # ───────── 인증 ─────────
+  /action/auth/login:
+    post:
+      tags: [인증]
+      summary: login — 로그인
+      description: "FormData. 성공 시 세션 쿠키 발급 후 `/` 로 이동. 실패 시 `{ error }`"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema: { type: object, required: [loginId, password], properties: { loginId: { type: string }, password: { type: string, format: password } } }
+      responses:
+        "200": { $ref: "#/components/responses/ErrorOnly" }
+  /action/auth/logout:
+    post: { tags: [인증], summary: logout — 로그아웃, responses: { "303": { description: "/login 이동" } } }
+  /action/auth/updateMe:
+    post:
+      tags: [인증]
+      summary: updateMe — 내 정보(이름·부서·비밀번호) 변경
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                dept: { type: string }
+                current: { type: string, format: password, description: 비밀번호 변경 시 필수 }
+                next: { type: string, format: password, minLength: 6 }
+      responses:
+        "200": { description: "{ ok } 또는 { error }" }
+
+  # ───────── 상황·기상 ─────────
+  /action/situation/createSituation:
+    post:
+      tags: [상황·기상]
+      summary: createSituation — 새 상황 등록 (+선택 시 SOP 생성)
+      description: 기상청 특보를 함께 저장하고 이벤트 「상황 등록」「기상특보 확인」을 남깁니다. `generate=true`면 T3Q API-02 호출까지 수행. 성공 시 `/s/{id}` 로 이동.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                v: { $ref: "#/components/schemas/SituationInput" }
+                generate: { type: boolean }
+      responses:
+        "200": { $ref: "#/components/responses/ErrorOnly" }
+  /action/situation/updateSituation:
+    post:
+      tags: [상황·기상]
+      summary: updateSituation — 상황 정보 수정
+      description: 위기경보가 바뀌면 「위기경보 변경」 이벤트 기록
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { id: { type: string }, v: { $ref: "#/components/schemas/SituationInput" } } }
+      responses:
+        "200": { $ref: "#/components/responses/ErrorOnly" }
+  /action/situation/refreshWeather:
+    post:
+      tags: [상황·기상]
+      summary: refreshWeather — 기상특보 다시 조회
+      requestBody: { $ref: "#/components/requestBodies/SituationId" }
+      responses: { "200": { description: 완료 } }
+  /action/situation/summarizeWeather:
+    post:
+      tags: [상황·기상]
+      summary: summarizeWeather — AI 기상요약 (T3Q API-01)
+      requestBody: { $ref: "#/components/requestBodies/SituationId" }
+      responses:
+        "200":
+          description: 요약 (상황에 저장됨)
+          content: { application/json: { schema: { $ref: "#/components/schemas/WeatherSummary" } } }
+  /action/situation/trashSituation:
+    post:
+      tags: [상황·기상]
+      summary: trashSituation — 상황 휴지통으로
+      requestBody: { $ref: "#/components/requestBodies/SituationId" }
+      responses: { "303": { description: "/ 이동" } }
+
+  # ───────── SOP ─────────
+  /action/situation/generateSop:
+    post:
+      tags: [SOP 생성·실행]
+      summary: generateSop — SOP 생성 (T3Q API-02)
+      description: T3Q 응답을 임무 목록(`Sop.missions`)으로 변환해 저장. 실행이 시작된 SOP는 다시 생성할 수 없습니다. T3Q 장애 시 매뉴얼 시드로 대체.
+      requestBody: { $ref: "#/components/requestBodies/SituationId" }
+      responses: { "200": { description: 완료 } }
+  /action/situation/saveSop:
+    post:
+      tags: [SOP 생성·실행]
+      summary: saveSop — SOP 전체 저장
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { id: { type: string }, sop: { $ref: "#/components/schemas/Sop" } } } } }
+      responses: { "200": { description: 완료 } }
+  /action/situation/startSop:
+    post: { tags: [SOP 생성·실행], summary: startSop — SOP 실행 시작, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=running" } } }
+  /action/situation/endSop:
+    post: { tags: [SOP 생성·실행], summary: endSop — SOP 실행 종료, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=done, 완료/전체 건수 이벤트 기록" } } }
+  /action/situation/reopenSop:
+    post: { tags: [SOP 생성·실행], summary: reopenSop — 실행 재개, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=running" } } }
+  /action/situation/saveMission:
+    post:
+      tags: [SOP 생성·실행]
+      summary: saveMission — 임무 저장 (추가·수정·상태 변경)
+      description: |
+        화면에서 내용 수정은 0.8초 뒤, 상태 변경은 즉시 호출합니다.
+        실행 중 상태가 바뀌면 「임무명 착수/완료/생략」 이벤트를 기록합니다. 없는 id면 새 임무로 추가합니다.
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { id: { type: string }, mission: { $ref: "#/components/schemas/Mission" } } } } }
+      responses: { "200": { description: "{ ok: true }" } }
+  /action/situation/deleteMission:
+    post:
+      tags: [SOP 생성·실행]
+      summary: deleteMission — 임무 삭제
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { id: { type: string }, missionId: { type: string } } } } }
+      responses: { "200": { description: 완료 } }
+  /action/situation/reorderMissions:
+    post:
+      tags: [SOP 생성·실행]
+      summary: reorderMissions — 임무 순서 변경
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { id: { type: string }, ids: { type: array, items: { type: string } } } } } }
+      responses: { "200": { description: 완료 } }
+  /action/library/missionFromLibrary:
+    post:
+      tags: [SOP 생성·실행]
+      summary: missionFromLibrary — 매뉴얼 행동카드를 임무로 변환 (임무 추가)
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { hazard: { type: string, example: 호우 }, code: { type: string, example: BSN-FL-001 } } } } }
+      responses:
+        "200": { description: 임무 또는 null, content: { application/json: { schema: { $ref: "#/components/schemas/Mission" } } } }
+
+  # ───────── 기록·전파 ─────────
+  /action/situation/propagate:
+    post:
+      tags: [상황 기록·전파]
+      summary: propagate — 상황전파 발송 (현재 모의 발송)
+      description: 수신자·문안·시각을 임무에 저장하고 「상황전파」 이벤트를 남깁니다. 실제 SMS 발송 모듈 연계 시 이 함수에서 호출합니다.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+                missionId: { type: string }
+                recipients: { type: array, items: { type: string }, example: ["홍길동(자연재난과)"] }
+                message: { type: string }
+      responses:
+        "200": { description: 갱신된 임무, content: { application/json: { schema: { $ref: "#/components/schemas/Mission" } } } }
+  /action/situation/addRecord:
+    post:
+      tags: [상황 기록·전파]
+      summary: addRecord — 상황 기록 추가 (피해·대피·통제·자원투입·응급복구·상황)
+      description: 상황일지 「피해 현황」「복구 및 피해 조치」「상황 개요」의 원천 자료가 됩니다.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, kind, text]
+              properties:
+                id: { type: string }
+                kind: { type: string, enum: [상황, 피해, 대피, 통제, 자원투입, 응급복구] }
+                text: { type: string, example: ○○동 주택 3동 침수, 인명피해 없음 }
+                at: { type: string, example: "2026-10-04T22:30", description: "발생 시각 (datetime-local, KST). 생략 시 현재" }
+      responses: { "200": { description: 완료 } }
+  /action/situation/deleteRecord:
+    post:
+      tags: [상황 기록·전파]
+      summary: deleteRecord — 상황 기록 삭제
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { id: { type: string }, eventId: { type: string } } } } }
+      responses: { "200": { description: 완료 } }
+
+  # ───────── 상황일지 ─────────
+  /action/situation/createReport:
+    post:
+      tags: [상황일지]
+      summary: createReport — 상황일지 자동 작성
+      description: |
+        `src/lib/report/compose.ts` 가 상황정보 + 기상특보·요약 + SOP 실행이력 + 상황 기록으로 본문을 구성합니다.
+        기본 목차: 상황 개요 / 기상 현황 / 피해 현황 / 대응 조치 / 상황 전파 / 복구 및 피해 조치 / 향후 계획.
+        성공 시 `/reports/{rid}` 로 이동.
+      requestBody: { $ref: "#/components/requestBodies/SituationId" }
+      responses: { "303": { description: 상황일지 편집 화면 이동 } }
+  /action/report/saveReport:
+    post:
+      tags: [상황일지]
+      summary: saveReport — 상황일지 저장 (화면에서 1초 자동 저장)
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { rid: { type: string }, content: { $ref: "#/components/schemas/ReportContent" } } } } }
+      responses: { "200": { description: "{ savedAt }" } }
+  /action/report/recomposeReport:
+    post:
+      tags: [상황일지]
+      summary: recomposeReport — 최신 이력으로 다시 구성
+      description: 제목은 유지, 본문은 새로 만듭니다. 한글 편집 저장본은 지워집니다.
+      requestBody: { $ref: "#/components/requestBodies/ReportId" }
+      responses: { "200": { description: 새 본문, content: { application/json: { schema: { $ref: "#/components/schemas/ReportContent" } } } } }
+  /action/report/saveHwpx:
+    post:
+      tags: [상황일지]
+      summary: saveHwpx — 한글 편집기 저장본 저장
+      description: rhwp 편집기에서 `exportHwpx()` 한 바이트를 base64로 저장 (최대 약 6MB). null 이면 삭제.
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { rid: { type: string }, base64: { type: [string, "null"] } } } } }
+      responses: { "200": { description: "{ savedAt }" } }
+  /action/report/getHwpx:
+    post:
+      tags: [상황일지]
+      summary: getHwpx — 한글 편집기 저장본 가져오기
+      requestBody: { $ref: "#/components/requestBodies/ReportId" }
+      responses: { "200": { description: base64 문자열 또는 null } }
+  /action/report/setReportStatus:
+    post:
+      tags: [상황일지]
+      summary: setReportStatus — 확정 / 확정 해제
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { rid: { type: string }, status: { type: string, enum: [draft, final] } } } } }
+      responses: { "200": { description: 완료 } }
+
+  # ───────── 휴지통 ─────────
+  /action/report/trashReport:
+    post: { tags: [휴지통], summary: trashReport — 상황일지 휴지통으로, requestBody: { $ref: "#/components/requestBodies/ReportId" }, responses: { "200": { description: 완료 } } }
+  /action/report/restoreReport:
+    post: { tags: [휴지통], summary: restoreReport — 상황일지 복원, requestBody: { $ref: "#/components/requestBodies/ReportId" }, responses: { "200": { description: 완료 } } }
+  /action/report/purgeReport:
+    post: { tags: [휴지통], summary: purgeReport — 상황일지 영구 삭제, requestBody: { $ref: "#/components/requestBodies/ReportId" }, responses: { "200": { description: 완료 } } }
+  /action/report/restoreSituation:
+    post: { tags: [휴지통], summary: restoreSituation — 상황 복원, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: 완료 } } }
+  /action/report/purgeSituation:
+    post: { tags: [휴지통], summary: purgeSituation — 상황 영구 삭제 (이벤트 포함), requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: 완료 } } }
+  /action/report/purgeExpired:
+    post: { tags: [휴지통], summary: purgeExpired — 7일 지난 휴지통 정리, responses: { "200": { description: "{ situations, reports } 삭제 건수" } } }
+
+  # ───────── 연락망 ─────────
+  /action/contacts/saveContact:
+    post:
+      tags: [연락망]
+      summary: saveContact — 담당자 추가·수정 (기관관리 이상)
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ContactInput" } } } }
+      responses: { "200": { description: 완료 } }
+  /action/contacts/deleteContact:
+    post:
+      tags: [연락망]
+      summary: deleteContact — 담당자 삭제 (전파그룹에서도 제거)
+      requestBody: { content: { application/json: { schema: { type: object, properties: { orgId: { type: string }, id: { type: string } } } } } }
+      responses: { "200": { description: 완료 } }
+  /action/contacts/saveUnit:
+    post:
+      tags: [연락망]
+      summary: saveUnit — 조직 추가·수정
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 수정 시 }
+                orgId: { type: string }
+                parentId: { type: [string, "null"] }
+                name: { type: string }
+                kind: { type: string, enum: [hq, team, dept, agency], description: 본부·실무반·부서·유관기관 }
+      responses: { "200": { description: 완료 } }
+  /action/contacts/deleteUnit:
+    post:
+      tags: [연락망]
+      summary: deleteUnit — 조직 삭제 (하위 조직·담당자가 없을 때만)
+      requestBody: { content: { application/json: { schema: { type: object, properties: { orgId: { type: string }, id: { type: string } } } } } }
+      responses: { "200": { description: 완료 } }
+  /action/contacts/saveGroup:
+    post:
+      tags: [연락망]
+      summary: saveGroup — 전파그룹 추가·수정
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { id: { type: string }, orgId: { type: string }, name: { type: string }, memberIds: { type: array, items: { type: string } } } }
+      responses: { "200": { description: 완료 } }
+  /action/contacts/deleteGroup:
+    post:
+      tags: [연락망]
+      summary: deleteGroup — 전파그룹 삭제
+      requestBody: { content: { application/json: { schema: { type: object, properties: { orgId: { type: string }, id: { type: string } } } } } }
+      responses: { "200": { description: 완료 } }
+
+  # ───────── 계정관리 ─────────
+  /action/admin/createUser:
+    post:
+      tags: [계정관리]
+      summary: createUser — 계정 추가 (비밀번호 자동 발급)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                loginId: { type: string, pattern: "^[a-z0-9._-]{3,30}$" }
+                name: { type: string }
+                dept: { type: string }
+                orgId: { type: string, enum: [busan, gyeongbuk, une] }
+                role: { type: string, enum: [admin, manager, user] }
+      responses: { "200": { description: "{ password } — 화면에 1회 표시" } }
+  /action/admin/resetPassword:
+    post:
+      tags: [계정관리]
+      summary: resetPassword — 비밀번호 초기화
+      requestBody: { content: { application/json: { schema: { type: object, properties: { id: { type: string } } } } } }
+      responses: { "200": { description: "{ password }" } }
+  /action/admin/updateUser:
+    post:
+      tags: [계정관리]
+      summary: updateUser — 이름·부서·권한·사용 여부 변경
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+                patch: { type: object, properties: { name: { type: string }, dept: { type: string }, role: { type: string, enum: [admin, manager, user] }, active: { type: boolean } } }
+      responses: { "200": { description: 완료 } }
+
+  # ───────── 실제 HTTP ─────────
+  /api/cron/purge-trash:
+    get:
+      tags: [HTTP]
+      summary: 휴지통 정리 크론 (매일 03:00 KST, Vercel Cron)
+      security: [{ cron: [] }]
+      responses:
+        "200": { description: 삭제 건수, content: { application/json: { example: { situations: 0, reports: 1 } } } }
+        "401": { description: CRON_SECRET 불일치 }
+
+components:
+  securitySchemes:
+    cron: { type: http, scheme: bearer, description: "환경변수 CRON_SECRET" }
+  requestBodies:
+    SituationId:
+      content: { application/json: { schema: { type: object, required: [id], properties: { id: { type: string, description: 상황 ID } } } } }
+    ReportId:
+      content: { application/json: { schema: { type: object, required: [rid], properties: { rid: { type: string, description: 상황일지 ID } } } } }
+  responses:
+    ErrorOnly:
+      description: "검증 실패 시 { error: string }, 성공 시 페이지 이동"
+      content: { application/json: { schema: { type: object, properties: { error: { type: string } } } } }
+  schemas:
+    SituationInput:
+      type: object
+      required: [title, kind, hazard, alertLevel, areas, periodStart, currentStatus]
+      properties:
+        title: { type: string, example: 26.10.04. 부산 호우 대응 }
+        kind: { type: string, enum: [real, drill], description: 실제재난 / 안전한국훈련 }
+        hazard: { type: string, enum: [호우, 태풍, 대설, 산불] }
+        alertLevel: { type: string, enum: [관심, 주의, 경계, 심각] }
+        areas: { type: array, items: { type: string }, example: [해운대구] }
+        periodStart: { type: string, example: "2026-10-04T22:00", description: datetime-local (KST) }
+        periodEnd: { type: [string, "null"], description: null 이면 종료 미정 }
+        currentStatus: { type: string }
+    WeatherSummary:
+      type: object
+      properties:
+        headline: { type: string }
+        body: { type: string }
+        keyPoints: { type: array, items: { type: string } }
+        source: { type: string, enum: [t3q, mock] }
+        generatedAt: { type: string, format: date-time }
+    MissionDetail:
+      type: object
+      properties:
+        id: { type: string }
+        text: { type: string }
+        done: { type: boolean }
+        doneAt: { type: string, format: date-time }
+    Propagation:
+      type: object
+      properties:
+        message: { type: string, description: 전파 문안 }
+        targetHint: { type: array, items: { type: string }, description: 매뉴얼(T3Q) 전파대상 — 참고 }
+        contactIds: { type: array, items: { type: string }, description: 연락망 담당자 }
+        groupIds: { type: array, items: { type: string }, description: 전파그룹 }
+        channel: { type: string, enum: [SMS, EMAIL] }
+        sentAt: { type: string, format: date-time }
+        sentTo: { type: array, items: { type: string } }
+    Mission:
+      type: object
+      description: SOP 임무 1개 (T3Q SopAction 1건에서 변환)
+      properties:
+        id: { type: string }
+        code: { type: string, description: T3Q actionCode }
+        phase: { type: string, enum: [대응, 복구] }
+        stage: { type: string, description: 매뉴얼 단계명 }
+        title: { type: string, description: 임무명 }
+        content: { type: string, description: 임무내용 }
+        lead: { type: string }
+        support: { type: array, items: { type: string } }
+        collab: { type: array, items: { type: string } }
+        details: { type: array, items: { $ref: "#/components/schemas/MissionDetail" } }
+        propagation: { $ref: "#/components/schemas/Propagation" }
+        resources: { type: array, items: { type: string } }
+        status: { type: string, enum: [todo, doing, done, skipped], description: 대기·진행 중·완료·생략 }
+        startedAt: { type: string, format: date-time }
+        doneAt: { type: string, format: date-time }
+        result: { type: string, description: 조치결과 (비우고 완료하면 체크한 세부항목으로 채움) }
+        damage: { type: string, description: 피해·복구 조치 }
+        assignee: { type: string, description: 실제 담당자 (기본 현재 사용자) }
+    Sop:
+      type: object
+      properties:
+        source: { type: string, enum: [t3q, mock] }
+        generatedAt: { type: string, format: date-time }
+        missions: { type: array, items: { $ref: "#/components/schemas/Mission" } }
+        startedAt: { type: string, format: date-time }
+        endedAt: { type: string, format: date-time }
+    ReportSection:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string, description: 목차명 }
+        body: { type: string, description: "줄 단위 본문. 줄 앞 기호로 수준 표시 — □ / ○ / - / ·, **굵게**" }
+        table:
+          type: object
+          properties:
+            head: { type: array, items: { type: string } }
+            rows: { type: array, items: { type: array, items: { type: string } } }
+    ReportContent:
+      type: object
+      description: 상황일지 본문 — HWPX(AI 행정문서 템플릿)·DOCX·화면이 모두 이 구조에서 만들어집니다
+      properties:
+        title: { type: string }
+        reporter: { type: string }
+        dept: { type: string }
+        reportedAt: { type: string, format: date-time }
+        sections: { type: array, items: { $ref: "#/components/schemas/ReportSection" } }
+    ContactInput:
+      type: object
+      required: [orgId, unitId, name]
+      properties:
+        id: { type: string, description: 수정 시 }
+        orgId: { type: string }
+        unitId: { type: string }
+        name: { type: string }
+        title: { type: string, description: 직위 }
+        duty: { type: string, description: 임무 }
+        phone: { type: string }
+        email: { type: string }

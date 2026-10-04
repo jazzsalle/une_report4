@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API 문서 · 재난상황일지 생성도구</title>
+  <link rel="stylesheet" href="/fonts/pretendard-gov/pretendardvariable-gov-dynamic-subset.css" />
+  <link rel="stylesheet" href="/api-docs/swagger-ui.css" />
+  <style>
+    body { margin: 0; background: #f4f5f6; font-family: "Pretendard GOV Variable", "Malgun Gothic", sans-serif; }
+    .swagger-ui, .swagger-ui .info .title, .swagger-ui .opblock-tag, .swagger-ui table, .swagger-ui .opblock .opblock-summary-description,
+    .swagger-ui .markdown p, .swagger-ui .markdown td, .swagger-ui .renderedMarkdown p { font-family: inherit !important; }
+    .swagger-ui .topbar { background: #052b57; padding: 12px 0; }
+    .swagger-ui .topbar .download-url-wrapper .select-label { color: #fff; font-family: inherit; }
+    .swagger-ui .topbar-wrapper .link { visibility: hidden; }
+    .swagger-ui .topbar-wrapper .link::before { content: "재난상황일지 생성도구 · API 문서"; visibility: visible; color: #fff; font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .swagger-ui .topbar .download-url-wrapper .select-label span { font-size: 0; }
+    .swagger-ui .topbar .download-url-wrapper .select-label span::before { content: "문서 선택"; font-size: 16px; }
+    .swagger-ui .wrapper { max-width: 1280px; }
+    .swagger-ui .info .title { color: #1e2124; }
+    .swagger-ui .markdown table, .swagger-ui .renderedMarkdown table { border-collapse: collapse; }
+    .swagger-ui .markdown td, .swagger-ui .markdown th { border: 1px solid #cdd1d5; padding: 6px 10px; }
+    .swagger-ui .scheme-container { box-shadow: none; background: transparent; }
+  </style>
+</head>
+<body>
+  <div id="ui"></div>
+  <script src="/api-docs/swagger-ui-bundle.js"></script>
+  <script src="/api-docs/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.ui = SwaggerUIBundle({
+      dom_id: "#ui",
+      urls: [
+        { url: "/api-docs/t3q.yaml", name: "① T3Q 연계 API 요청서" },
+        { url: "/api-docs/internal.yaml", name: "② 내부 API (화면 ↔ 서버)" },
+        { url: "/api-docs/kma.yaml", name: "③ 기상청 기상특보 (외부)" }
+      ],
+      "urls.primaryName": new URLSearchParams(location.search).get("doc") || "① T3Q 연계 API 요청서",
+      presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+      layout: "StandaloneLayout",
+      supportedSubmitMethods: [],
+      docExpansion: "list",
+      defaultModelsExpandDepth: 0,
+      defaultModelExpandDepth: 3,
+      tryItOutEnabled: false,
+      validatorUrl: null
+    });
+  </script>
+</body>
+</html>
