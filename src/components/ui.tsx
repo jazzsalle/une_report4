@@ -83,7 +83,7 @@ const TONES = {
 
 export function Badge({ tone = "gray", children }: { tone?: keyof typeof TONES; children: ReactNode }) {
   return (
-    <span className={clsx("inline-flex h-7 items-center rounded px-2.5 text-[14px] font-semibold", TONES[tone])}>
+    <span className={clsx("inline-flex h-7 shrink-0 items-center whitespace-nowrap rounded px-2.5 text-[14px] font-semibold", TONES[tone])}>
       {children}
     </span>
   );

@@ -3,6 +3,7 @@
 > **최종 규격(정본)은 Swagger 문서입니다:** https://unereport4.vercel.app/api-docs (① T3Q 연계 API 요청서)
 > 원본 파일 `public/api-docs/t3q.yaml` · 코드 계약 `src/lib/t3q/types.ts` — 이 문서는 배경 설명용입니다.
 >
+> v1.7 반영 사항: 추출 규칙 R10~R17 추가(다른 매뉴얼 4종 검증), `SopMission.functionCode/functionName`, `SopAction.linkedActionCodes` 추가.
 > v1.6 반영 사항: **API-01 기상요약 폐지** (기상청 기상정보 원문 사용). SOP 응답에 `condition`·`notes`·`SopMission.responseStep`·`PropagationTarget.method` 추가, [매뉴얼 ↔ JSON 대응 설명서](https://unereport4.vercel.app/api-docs/mapping.html) 추가.
 > v1.3 반영 사항: `SituationContext.responseStep`(대응단계: 징후감지·초기대응·비상대응·수습복구) 추가 — API-02는 이 단계의 조치만 반환, `SopAction.responseStep` 추가.
 > v1.0 반영 사항: `SituationContext.period`(대응 기간) 추가, API-01 요청에 `weatherInfoText`(기상청 기상정보 본문) 추가, `WeatherAlert.level`에 `PRELIMINARY`(예비특보) 추가.
@@ -186,6 +187,16 @@ export interface SopActionsRequest {
 | R7 | 상위 `[n]` 없이 `[n-m]`만 있음 | 임무를 만들고 이름은 행동카드 조치목록 |
 | R8 | `(필요시)`, `＊○○시` | `condition` (제목에서 떼어 냄) |
 | R9 | `-` 줄이 없는 조치 | 행동카드 표준행동을 `detailTasks`로 |
+| R10 | 원문자 코드 `①-1-1` | 숫자로 `1-1-1` (①=협업기능 → `functionCode`, ①-1=임무, ①-1-1=조치) |
+| R11 | 같은 코드가 여러 단계에 나옴 | 단계별로 따로, 요청한 단계 것만 응답 |
+| R12 | 「○○단계 참고」 한 줄 | 참고 단계의 같은 코드에서 `detailTasks` 상속, `notes`에 표시 |
+| R13 | 세부행동 기호가 문서마다 다름 | 조치 바로 아래 첫 깊이 = `detailTasks[].title`, 그 아래 = `content` |
+| R14 | 쪽이 넘어가며 코드 없이 시작 | 앞 쪽 마지막 조치에 이어 붙임 |
+| R15 | 하위 항목이 「시기/전파기관:」 같은 속성 | 부모 1건, 전파기관 → `propagation`, 협조기관 → `organizations` |
+| R16 | 중앙부처·공사 등 기관 매뉴얼 | 지자체가 실행하는 조치만 (없으면 `actions: []`) |
+| R17 | 실명·전화번호 | 보내지 않음 (기관·직위만) |
+
+검증한 매뉴얼: 영천 풍수해(흐름표 142건 = 행동카드 142장, 잘 맞음) · 기후부 풍수해 실무 · 환경부 산불 실무 · 인천항만공사 해양선박사고.
 
 ```ts
 export interface OrgRef {
@@ -231,7 +242,8 @@ export interface SopAction {
   category: 'RESPONSE' | 'DAMAGE';     // 대응조치 | 피해(복구)조치
   missionCode: string;                 // 소속 임무 [n]
   condition?: string;                  // 수행 조건 (필요시 …) — 원문 그대로
-  notes?: string[];                    // 비고 (※ 줄)
+  notes?: string[];                    // 비고 (※·* 줄, 「관심단계 참고」)
+  linkedActionCodes?: string[];        // 행동카드 연계코드
   orderHint: number;                   // 매뉴얼상 기재 순서(선후행 관계 아님)
   summary?: string;                    // 조치 요약 1~2문장
   organizations: OrgRef[];             // 담당·지원·협업기관
@@ -245,6 +257,8 @@ export interface SopMission {          // 임무(조치 묶음)
   missionCode: string;
   missionName: string;                 // 예: '기상특보 전파', '주민대피'
   responseStep?: ResponseStepCode;     // 임무가 속한 대응단계
+  functionCode?: string;               // 협업기능 번호 (행안부 표준 ①~⑬ → '1'~'13')
+  functionName?: string;               // 예: '재난상황관리'
   leadOrg?: string;
   actionCodes: string[];
 }

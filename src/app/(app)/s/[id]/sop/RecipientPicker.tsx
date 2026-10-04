@@ -193,7 +193,7 @@ export function RecipientPicker({
                 >
                   {on ? <Check size={18} /> : <Users size={18} className="text-sub" />}
                   {g.name}
-                  {!on && recommended.has(g.id) && <span className="rounded bg-warning-weak px-1.5 text-[14px] text-warning">추천</span>}
+                  {!on && recommended.has(g.id) && <span className="shrink-0 whitespace-nowrap rounded bg-warning-weak px-1.5 text-[14px] text-warning">추천</span>}
                   <span className={clsx("ml-auto font-medium", on ? "text-white" : "text-sub")}>{g.memberIds.length}명</span>
                 </button>
               );

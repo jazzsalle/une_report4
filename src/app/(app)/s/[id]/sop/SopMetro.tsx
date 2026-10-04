@@ -345,7 +345,7 @@ function HoverCard({
       style={{ left, top: below ? rect.bottom + 8 : undefined, bottom: below ? undefined : window.innerHeight - rect.top + 8 }}
     >
       <div className="mb-2 flex items-center gap-2 text-[14px] text-sub">
-        <span className="rounded bg-canvas px-2 py-0.5 font-semibold">{KIND_LABEL[kind]}</span>
+        <span className="shrink-0 whitespace-nowrap rounded bg-canvas px-2 py-0.5 font-semibold">{KIND_LABEL[kind]}</span>
         <span>{s.lane}</span>
         {m.doneAt && (
           <span className="ml-auto flex items-center gap-1 text-success">
@@ -360,7 +360,7 @@ function HoverCard({
       )}
       <div className="mb-2 text-[17px] font-bold leading-snug">
         {m.title}
-        {m.condition && <span className="ml-1.5 rounded bg-warning-weak px-1.5 text-[13px] text-warning">{m.condition}</span>}
+        {m.condition && <span className="ml-1.5 rounded bg-warning-weak px-1.5 text-[13px] text-warning box-decoration-clone">{m.condition}</span>}
       </div>
       {m.details.length > 0 && (
         <div className="mb-3">

@@ -154,7 +154,7 @@ export function ReportEditor({
             )}
             <Button size="sm" variant="ghost" onClick={async () => (await flush(), setHwp(true))}>
               <FilePenLine size={17} /> 한글 편집
-              {hwpx.has && <span className="ml-1 rounded bg-primary-weak px-1.5 text-[13px] text-primary">저장본</span>}
+              {hwpx.has && <span className="ml-1 whitespace-nowrap rounded bg-primary-weak px-1.5 text-[13px] text-primary">저장본</span>}
             </Button>
             <div className="relative">
               <Button size="sm" variant="ghost" onClick={() => setExportOpen((v) => !v)}>

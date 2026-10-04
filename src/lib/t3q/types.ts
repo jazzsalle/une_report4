@@ -103,8 +103,10 @@ export interface SopAction {
   responseStep?: ResponseStepCode;
   /** 수행 조건 — "필요시", "태풍 한반도 북상 우려시" 등 (매뉴얼 원문 그대로) */
   condition?: string;
-  /** 비고 — 매뉴얼의 ※ 줄 */
+  /** 비고 — 매뉴얼의 ※·* 줄 */
   notes?: string[];
+  /** 행동카드 연계코드 */
+  linkedActionCodes?: string[];
   category: "RESPONSE" | "DAMAGE";
   missionCode: string;
   orderHint: number;
@@ -121,6 +123,9 @@ export interface SopMission {
   missionCode: string;
   missionName: string;
   responseStep?: ResponseStepCode;
+  /** 협업기능 (행안부 표준 ①~⑬ → "1"~"13") */
+  functionCode?: string;
+  functionName?: string;
   leadOrg?: string;
   /** 이 임무에 속한 조치 [n-m] — 매뉴얼 기재 순서 */
   actionCodes: string[];

@@ -503,7 +503,7 @@ export function SopWorkspace({
                               )}
                               {m.title || "제목 없음"}
                               {m.condition && (
-                                <span className="ml-1.5 rounded bg-warning-weak px-1.5 py-0.5 text-[13px] font-semibold text-warning">
+                                <span className="ml-1.5 rounded bg-warning-weak px-1.5 py-0.5 text-[13px] font-semibold text-warning box-decoration-clone">
                                   {m.condition}
                                 </span>
                               )}
