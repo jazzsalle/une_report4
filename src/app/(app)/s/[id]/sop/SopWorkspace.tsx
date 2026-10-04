@@ -2,7 +2,7 @@
 import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { FileText, Play, Plus, RotateCcw, Sparkles, Square } from "lucide-react";
+import { FileText, ListChecks, Pencil, Play, Plus, RotateCcw, Sparkles, Square, Workflow, List } from "lucide-react";
 import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
 import { RESPONSE_STEPS, STEP_LABEL, type Mission, type ResponseStep, type Sop } from "@/lib/types";
 import type { ContactsBundle } from "@/lib/data";
@@ -21,6 +21,7 @@ import { emptyMission } from "@/lib/sop/convert";
 import { fmtDateTime, fmtTime } from "@/lib/format";
 import { MissionDetail } from "./MissionDetail";
 import { Timeline, type EventItem } from "./Timeline";
+import { SopFlow } from "./SopFlow";
 
 export type LibraryItem = { code: string; stage: string; step: string; phase: string; title: string; lead: string };
 
@@ -59,6 +60,10 @@ export function SopWorkspace({
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [adding, setAdding] = useState(false);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  // 편집: 임무·세부항목 구성 / 실행: 체크·착수·완료·전파
+  const [mode, setMode] = useState<"edit" | "run">(sop?.startedAt ? "run" : "edit");
+  // 보기: 목록 / 순서도
+  const [view, setView] = useState<"list" | "flow">("list");
 
   // 서버에서 SOP가 새로 생성되면 동기화
   const sopKey = sop?.generatedAt;
@@ -131,7 +136,7 @@ export function SopWorkspace({
   }
 
   // 대응단계별 묶음 (1단계 → 4단계 → 직접 추가)
-  const groupOf = (m: Mission) => (/^d단계/.test(m.stage) ? m.stage : m.phase === "복구" ? STEP_LABEL.수습복구 : "직접 추가");
+  const groupOf = (m: Mission) => (/^[0-9]단계/.test(m.stage) ? m.stage : m.phase === "복구" ? STEP_LABEL.수습복구 : "직접 추가");
   const groups = Array.from(new Set(missions.map(groupOf)))
     .sort((a, b) => (a === "직접 추가" ? 1 : b === "직접 추가" ? -1 : a.localeCompare(b)))
     .map((label) => ({ label, items: missions.filter((m) => groupOf(m) === label) }));
@@ -140,6 +145,22 @@ export function SopWorkspace({
     <div className="space-y-5">
       {/* 실행 상태 바 */}
       <Card className="flex flex-wrap items-center gap-x-5 gap-y-3 px-6 py-4">
+        <Segmented
+          value={mode}
+          onChange={setMode}
+          items={[
+            { value: "edit", label: "SOP 편집", icon: <Pencil size={17} /> },
+            { value: "run", label: "SOP 실행", icon: <ListChecks size={18} /> },
+          ]}
+        />
+        <Segmented
+          value={view}
+          onChange={setView}
+          items={[
+            { value: "list", label: "목록", icon: <List size={18} /> },
+            { value: "flow", label: "순서도", icon: <Workflow size={18} /> },
+          ]}
+        />
         {running ? (
           <Badge tone="blue">실행 중</Badge>
         ) : ended ? (
@@ -163,7 +184,14 @@ export function SopWorkspace({
               <Button disabled={busy} onClick={() => act(() => generateSop(id))}>
                 <Sparkles size={18} /> 다시 생성
               </Button>
-              <Button variant="primary" disabled={busy || !missions.length} onClick={() => act(() => startSop(id))}>
+              <Button
+                variant="primary"
+                disabled={busy || !missions.length}
+                onClick={() => {
+                  setMode("run");
+                  act(() => startSop(id));
+                }}
+              >
                 <Play size={18} /> SOP 실행 시작
               </Button>
             </>
@@ -175,7 +203,13 @@ export function SopWorkspace({
           )}
           {editable && ended && (
             <>
-              <Button disabled={busy} onClick={() => act(() => reopenSop(id))}>
+              <Button
+                disabled={busy}
+                onClick={() => {
+                  setMode("run");
+                  act(() => reopenSop(id));
+                }}
+              >
                 <RotateCcw size={18} /> 실행 재개
               </Button>
               <Button variant="primary" disabled={busy} onClick={() => start(() => createReport(id))}>
@@ -186,8 +220,15 @@ export function SopWorkspace({
         </div>
       </Card>
 
-      <div className="grid gap-5 xl:grid-cols-[360px_1fr_380px]">
-        {/* 기준 SOP */}
+      {view === "flow" && (
+        <Card className="h-[460px] overflow-hidden">
+          <SopFlow missions={missions} selected={sel} started={!!sop.startedAt} ended={ended} onSelect={setSel} />
+        </Card>
+      )}
+
+      <div className={clsx("grid gap-5", view === "list" ? "xl:grid-cols-[360px_1fr_380px]" : "xl:grid-cols-[1fr_380px]")}>
+        {/* SOP 임무 목록 */}
+        {view === "list" && (
         <Card className="flex max-h-[calc(100vh-240px)] min-h-[560px] flex-col overflow-hidden">
           <div className="flex items-center justify-between px-5 pb-2 pt-5">
             <h2 className="text-[19px] font-bold">SOP 임무</h2>
@@ -226,7 +267,7 @@ export function SopWorkspace({
               </div>
             ))}
           </div>
-          {editable && !ended && (
+          {editable && !ended && mode === "edit" && (
             <div className="border-t border-line-weak p-4">
               <Button className="w-full" onClick={() => setAdding(true)}>
                 <Plus size={18} /> 임무 추가
@@ -234,6 +275,7 @@ export function SopWorkspace({
             </div>
           )}
         </Card>
+        )}
 
         {/* 임무 상세 */}
         <Card className="min-h-[560px]">
@@ -241,9 +283,11 @@ export function SopWorkspace({
             <MissionDetail
               key={current.id}
               mission={current}
+              mode={mode}
               running={running}
               started={!!sop.startedAt}
               editable={editable && !ended}
+              onAddMission={view === "flow" && mode === "edit" && editable && !ended ? () => setAdding(true) : undefined}
               me={me}
               contacts={contacts}
               situationId={id}
@@ -421,5 +465,33 @@ function AddMission({
         })}
       </div>
     </Modal>
+  );
+}
+
+function Segmented<T extends string>({
+  value,
+  onChange,
+  items,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  items: { value: T; label: string; icon: React.ReactNode }[];
+}) {
+  return (
+    <div className="flex rounded-lg bg-canvas p-1">
+      {items.map((it) => (
+        <button
+          key={it.value}
+          onClick={() => onChange(it.value)}
+          className={clsx(
+            "flex h-10 items-center gap-1.5 rounded-md px-4 text-[16px] font-semibold transition",
+            value === it.value ? "bg-white text-tab shadow-sm" : "text-sub hover:text-ink",
+          )}
+        >
+          {it.icon}
+          {it.label}
+        </button>
+      ))}
+    </div>
   );
 }
