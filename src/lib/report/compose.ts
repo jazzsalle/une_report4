@@ -1,5 +1,6 @@
-import { STEP_LABEL, type ResponseStep, type Mission, type ReportContent, type ReportSection, type Sop, type WeatherSnapshot, type WeatherSummary } from "@/lib/types";
-import { fmtDateTime, fmtTime, fmtPeriod } from "@/lib/format";
+import { STEP_LABEL, type ResponseStep, type Mission, type ReportContent, type ReportSection, type Sop, type WeatherSnapshot, type WeatherSummary, type WeatherImages } from "@/lib/types";
+import { weatherSection } from "./weather";
+import { fmtTime, fmtPeriod } from "@/lib/format";
 
 export interface ComposeInput {
   situation: {
@@ -8,12 +9,14 @@ export interface ComposeInput {
     hazard: string;
     alertLevel: string;
     responseStep: string;
+    sido: string;
     areas: string[];
     periodStart: Date | string;
     periodEnd: Date | string | null;
     currentStatus: string;
     weather: WeatherSnapshot | null;
     weatherSummary: WeatherSummary | null;
+    weatherImages: WeatherImages | null;
     sop: Sop | null;
   };
   events: { at: Date | string; type: string; title: string; body: string; meta?: Record<string, unknown> | null }[];
@@ -24,7 +27,7 @@ export interface ComposeInput {
 
 export const DEFAULT_TOC = [
   "상황 개요",
-  "기상 현황",
+  "기상특보",
   "피해 현황",
   "대응 조치",
   "상황 전파",
@@ -75,7 +78,7 @@ export function composeReport(input: ComposeInput): ReportContent {
     `□ 위기경보: ${s.alertLevel} (대응단계: ${STEP_LABEL[s.responseStep as ResponseStep] ?? s.responseStep})`,
     `□ 대응기간: ${fmtPeriod(s.periodStart, s.periodEnd)}`,
   ];
-  if (s.areas.length) overview.push(`□ 대상지역: ${s.areas.join(", ")}`);
+  if (s.sido || s.areas.length) overview.push(`□ 발생지역: ${[s.sido, s.areas.join(", ")].filter(Boolean).join(" ")}`);
   if (s.currentStatus.trim()) {
     overview.push("□ 현재 상황");
     s.currentStatus
@@ -86,23 +89,9 @@ export function composeReport(input: ComposeInput): ReportContent {
   recordsOf(input, ["상황"]).forEach((e) => overview.push(`○ (${fmtTime(e.at)}) ${e.body || e.title}`));
   sec("상황 개요", overview);
 
-  // 2. 기상 현황
-  const wx: string[] = [];
-  const w = s.weather;
-  if (w) {
-    wx.push(`□ 기상특보 (기상청, ${w.announcedAt ? fmtDateTime(w.announcedAt) : fmtDateTime(w.retrievedAt)} 기준)`);
-    if (w.active.length) w.active.forEach((a) => wx.push(`○ ${a.name}: ${a.areas}`));
-    else wx.push("○ 발효 중인 특보 없음");
-    w.preliminary.slice(0, 3).forEach((p) => wx.push(`- 예비특보 ${p}`));
-  }
-  if (s.weatherSummary) {
-    wx.push(`□ 기상 상황: ${s.weatherSummary.headline}`);
-    s.weatherSummary.keyPoints
-      .filter((k) => !k.startsWith("예비특보") && !(w?.active ?? []).some((a) => k.startsWith(a.name)))
-      .forEach((k) => wx.push(`○ ${k}`));
-  }
-  if (!wx.length) wx.push("□ 기상특보 정보 없음");
-  sec("기상 현황", wx);
+  // 2. 기상특보 — 기상특보 보고(특보 요약 + 특보발표현황·레이더 영상)
+  const ws = weatherSection({ weather: s.weather, weatherSummary: s.weatherSummary, weatherImages: s.weatherImages }, `s${sections.length + 1}`);
+  sections.push(ws);
 
   // 3. 피해 현황 (사용자 입력)
   const dmg = recordsOf(input, ["피해", "대피", "통제"]);

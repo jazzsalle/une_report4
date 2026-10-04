@@ -1,13 +1,9 @@
 import "server-only";
 import type { WeatherAlertItem, WeatherSnapshot } from "@/lib/types";
+import { SIDO_WEATHER } from "@/lib/regions";
 
 const BASE = "https://apis.data.go.kr/1360000/WthrWrnInfoService";
 
-export const STATIONS: Record<string, { name: string; keywords: string[] }> = {
-  "159": { name: "부산", keywords: ["부산"] },
-  "143": { name: "대구·경북", keywords: ["경상북도", "경북", "대구", "울릉도"] },
-  "108": { name: "전국", keywords: [] },
-};
 
 type Item = Record<string, string | number | undefined>;
 
@@ -65,9 +61,15 @@ export function parseActive(t6: string, keywords: string[]): WeatherAlertItem[] 
     const areas = splitAreas(m[2]);
     const hit = keywords.length ? areas.filter((a) => keywords.some((k) => a.includes(k))) : areas;
     if (!hit.length) continue;
+    // "경상북도(포항, 경주, 영천)" → [포항, 경주, 영천] / 괄호 없으면 시도 전체
+    const subs = hit.flatMap((a) => {
+      const inner = a.match(/\((.+)\)/)?.[1];
+      return inner ? inner.split(/[,·.]\s*/).map((x) => x.trim()).filter(Boolean) : [a.trim()];
+    });
     result.push({
       name,
       areas: hit.join(", "),
+      subs,
       kind: name.endsWith("경보") ? "warning" : "watch",
     });
   }
@@ -91,12 +93,24 @@ function parsePreliminary(text: string, keywords: string[]): string[] {
   return out;
 }
 
-export async function getWeatherSnapshot(stnId: string): Promise<WeatherSnapshot> {
-  const st = STATIONS[stnId] ?? STATIONS["108"];
+/** 어제~오늘 (KST) — 자정 직후에도 전날 발표분을 받도록 */
+function recentRange() {
+  const ymd = (d: Date) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" })
+      .format(d)
+      .replace(/-/g, "");
+  const now = new Date();
+  return { fromTmFc: ymd(new Date(now.getTime() - 24 * 3600 * 1000)), toTmFc: ymd(now) };
+}
+
+/** 시도 기준 기상특보 (전국 특보현황에서 해당 시도분 추출 + 관할 지점 기상정보) */
+export async function getWeatherSnapshot(sido: string): Promise<WeatherSnapshot> {
+  const st = SIDO_WEATHER[sido] ?? SIDO_WEATHER["부산광역시"];
+  const stnId = st.stnId;
   const [status, info, pwn] = await Promise.all([
     call("getPwnStatus", {}),
-    call("getWthrInfo", { stnId }),
-    call("getWthrPwn", { stnId }),
+    call("getWthrInfo", { stnId, ...recentRange() }),
+    call("getWthrPwn", { stnId, ...recentRange() }),
   ]);
   const s = status[0] ?? {};
   const t6 = String(s.t6 ?? "");
@@ -105,16 +119,16 @@ export async function getWeatherSnapshot(stnId: string): Promise<WeatherSnapshot
   const latestPwn = [...pwn].sort((a, b) => Number(b.tmFc) - Number(a.tmFc))[0];
 
   const preliminary = [
-    ...parsePreliminary(t7, st.keywords),
+    ...parsePreliminary(t7, st.keys),
     ...(latestPwn?.pwn ? parsePreliminary(String(latestPwn.pwn), []) : []),
   ];
 
   return {
     stnId,
-    stnName: st.name,
+    stnName: sido,
     announcedAt: kmaTimeToIso(s.tmFc),
     retrievedAt: new Date().toISOString(),
-    active: parseActive(t6, st.keywords),
+    active: parseActive(t6, st.keys),
     preliminary: Array.from(new Set(preliminary)),
     infoText: String(latestInfo?.t1 ?? "")
       .replace(/\\n/g, "\n")

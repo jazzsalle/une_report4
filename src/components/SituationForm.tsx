@@ -3,19 +3,21 @@ import { useState, useTransition } from "react";
 import clsx from "clsx";
 import { FieldRow } from "./ui";
 import { HAZARDS, ALERT_LEVELS, RESPONSE_STEPS, STEP_LABEL, STEP_BY_LEVEL, type AlertLevel } from "@/lib/types";
-import { REGIONS } from "@/lib/regions";
+import { sidoShort } from "@/lib/regions";
+import { RegionPicker } from "./RegionPicker";
 import { toLocalInput } from "@/lib/format";
 import type { SituationInput } from "@/app/actions/situation";
 
-export function defaultInput(orgId: string, hazard: string): SituationInput {
+export function defaultInput(sido: string, hazard: string): SituationInput {
   const now = toLocalInput(new Date());
   const ymd = now.slice(0, 10).replace(/-/g, ".").slice(2);
   return {
-    title: `${ymd}. ${orgId === "gyeongbuk" ? "경북" : "부산"} ${hazard} 대응`,
+    title: `${ymd}. ${sidoShort(sido)} ${hazard} 대응`,
     kind: "real",
     hazard,
     alertLevel: "주의",
     step: "초기대응",
+    sido,
     areas: [],
     periodStart: now,
     periodEnd: null,
@@ -26,16 +28,11 @@ export function defaultInput(orgId: string, hazard: string): SituationInput {
 export function SituationFields({
   value,
   onChange,
-  orgId,
 }: {
   value: SituationInput;
   onChange: (v: SituationInput) => void;
-  orgId: string;
 }) {
   const set = <K extends keyof SituationInput>(k: K, v: SituationInput[K]) => onChange({ ...value, [k]: v });
-  const regions = REGIONS[orgId] ?? REGIONS.busan;
-  const toggleArea = (a: string) =>
-    set("areas", value.areas.includes(a) ? value.areas.filter((x) => x !== a) : [...value.areas, a]);
 
   return (
     <div>
@@ -94,14 +91,21 @@ export function SituationFields({
           ))}
         </div>
       </FieldRow>
-      <FieldRow label="대상지역" top>
-        <div className="flex flex-wrap gap-2">
-          {regions.map((r) => (
-            <Chip key={r} small on={value.areas.includes(r)} onClick={() => toggleArea(r)}>
-              {r}
-            </Chip>
-          ))}
-        </div>
+      <FieldRow label="발생지역" top>
+        <RegionPicker
+          sido={value.sido}
+          areas={value.areas}
+          onChange={(sido, areas) => {
+            const prev = sidoShort(value.sido);
+            const next = sidoShort(sido);
+            onChange({
+              ...value,
+              sido,
+              areas,
+              title: sido !== value.sido && value.title.includes(prev) ? value.title.replace(prev, next) : value.title,
+            });
+          }}
+        />
       </FieldRow>
 
       <h3 className="mb-2 mt-10 text-[18px] font-bold">기간</h3>

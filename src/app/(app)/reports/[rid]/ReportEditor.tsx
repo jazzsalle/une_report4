@@ -23,7 +23,8 @@ import { nanoid } from "nanoid";
 import { Badge, Button, Modal } from "@/components/ui";
 import type { ReportContent, ReportSection } from "@/lib/types";
 import { recomposeReport, saveReport, setReportStatus, trashReport, getHwpx } from "@/app/actions/report";
-import { contentToBlocks, subtitleOf, safeFilename } from "@/lib/export/blocks";
+import { subtitleOf, safeFilename } from "@/lib/export/blocks";
+import { DocBlocks } from "@/components/DocView";
 import { downloadBytes, exportDocx, exportHwpx, base64ToBytes } from "@/lib/export/client";
 import { fmtTime } from "@/lib/format";
 
@@ -380,52 +381,8 @@ function DocHeader({ c, ro, onChange }: { c: ReportContent; ro: boolean; onChang
   );
 }
 
-const INDENT: Record<number, string> = { 1: "pl-[1.4em]", 2: "pl-[2.8em]", 3: "pl-[3.8em]", 4: "pl-[4.6em]" };
-
 function SectionView({ no, s }: { no: number; s: ReportSection }) {
-  const blocks = contentToBlocks({ title: "", reporter: "", dept: "", reportedAt: "", sections: [s] }).slice(1);
-  return (
-    <div className="text-[17.5px] leading-[1.8]">
-      <h2 className="mb-2 text-[20px] font-bold">
-        {no}. {s.title}
-      </h2>
-      {blocks.map((b, i) =>
-        b.type === "item" ? (
-          <p key={i} className={clsx("-indent-[1.2em]", INDENT[b.level])}>
-            {b.prefix}{" "}
-            {b.inlines.map((x, k) => (x.bold ? <b key={k}>{x.text}</b> : <span key={k}>{x.text}</span>))}
-          </p>
-        ) : b.type === "caption" ? (
-          <p key={i} className="text-center font-bold">
-            {b.text}
-          </p>
-        ) : b.type === "table" ? (
-          <table key={i} className="mt-3 w-full border-collapse font-sans text-[15px] leading-normal">
-            <thead>
-              <tr>
-                {b.head.map((h, k) => (
-                  <th key={k} className="border border-ink bg-[#dfe6f7] px-2 py-1.5 font-bold">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {b.rows.map((r, k) => (
-                <tr key={k}>
-                  {b.head.map((_, j) => (
-                    <td key={j} className="border border-ink px-2 py-1.5 align-top">
-                      {r[j]}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : null,
-      )}
-    </div>
-  );
+  return <DocBlocks s={s} no={no} />;
 }
 
 function SectionEdit({

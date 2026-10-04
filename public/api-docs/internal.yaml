@@ -30,6 +30,7 @@ tags:
   - name: 상황일지
   - name: 휴지통
   - name: 연락망
+  - name: 위치
   - name: 계정관리
   - name: HTTP
 paths:
@@ -106,6 +107,36 @@ paths:
         "200":
           description: 요약 (상황에 저장됨)
           content: { application/json: { schema: { $ref: "#/components/schemas/WeatherSummary" } } }
+  /action/situation/saveWeatherImage:
+    post:
+      tags: [상황·기상]
+      summary: saveWeatherImage — 기상특보 보고 그림 저장 (특보발표현황 / 레이더 영상)
+      description: 화면에서 1400px 이하 JPEG 로 줄인 data URL 을 저장합니다 (약 3MB 이하). img=null 이면 삭제. 상황일지 「기상특보」 장과 HWPX·DOCX 에 그대로 들어갑니다.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+                which: { type: string, enum: [alert, radar] }
+                img: { oneOf: [{ $ref: "#/components/schemas/WeatherImage" }, { type: "null" }] }
+      responses: { "200": { description: 완료 } }
+  /action/location/locateByGps:
+    post:
+      tags: [위치]
+      summary: locateByGps — 브라우저 좌표 → 시도·시군구 판별 후 저장 (쿠키)
+      description: 사용자가 직접 설정한 위치가 있으면 덮어쓰지 않습니다. 판별 실패(국외 등) 시 null.
+      requestBody: { content: { application/json: { schema: { type: object, properties: { lat: { type: number }, lng: { type: number } } } } } }
+      responses: { "200": { description: "{ sido, sigungu, src } 또는 null" } }
+  /action/location/setLocation:
+    post:
+      tags: [위치]
+      summary: setLocation — 현재 위치 직접 설정
+      requestBody: { content: { application/json: { schema: { type: object, properties: { sido: { type: string }, sigungu: { type: string } } } } } }
+      responses: { "200": { description: "{ sido, sigungu, src: manual }" } }
+  /action/location/clearLocation:
+    post: { tags: [위치], summary: clearLocation — 직접 설정 해제(다시 자동 확인), responses: { "200": { description: 완료 } } }
   /action/situation/trashSituation:
     post:
       tags: [상황·기상]
@@ -378,6 +409,16 @@ paths:
       responses: { "200": { description: 완료 } }
 
   # ───────── 실제 HTTP ─────────
+  /api/image-proxy:
+    get:
+      tags: [HTTP]
+      summary: 공공기관 사이트 그림 가져오기 (끌어다 놓기용)
+      description: 다른 사이트에서 끌어온 그림 주소를 서버가 대신 받아 돌려줍니다. *.go.kr · typhoon.or.kr 만 허용, 8MB 이하, 로그인 필요.
+      parameters:
+        - { name: url, in: query, required: true, schema: { type: string } }
+      responses:
+        "200": { description: 그림 바이트 }
+        "400": { description: 허용되지 않은 주소 또는 그림 아님 }
   /sso/t3q:
     get:
       tags: [HTTP]
@@ -419,7 +460,8 @@ components:
         hazard: { type: string, enum: [폭염, 태풍/호우, 지진, 황사, 산불, 감염병, 가축질병, 다중밀집건축물붕괴대형사고, 정부주요시설, 학교시설] }
         alertLevel: { type: string, enum: [관심, 주의, 경계, 심각] }
         step: { type: string, enum: [징후감지, 초기대응, 비상대응, 수습복구], description: "대응단계 — SOP 구성 기준 (위기경보 선택 시 자동 추천)" }
-        areas: { type: array, items: { type: string }, example: [해운대구] }
+        sido: { type: string, example: 부산광역시, description: "발생 시도 (전국 17개). 기상특보 조회 지역도 이 시도로 정한다" }
+        areas: { type: array, items: { type: string }, example: [해운대구 우동, 수영구], description: "발생지역 — 시군구 또는 '시군구 읍면동'" }
         periodStart: { type: string, example: "2026-10-04T22:00", description: datetime-local (KST) }
         periodEnd: { type: [string, "null"], description: null 이면 종료 미정 }
         currentStatus: { type: string }
@@ -483,7 +525,11 @@ components:
       properties:
         id: { type: string }
         title: { type: string, description: 목차명 }
-        body: { type: string, description: "줄 단위 본문. 줄 앞 기호로 수준 표시 — □ / ○ / - / ·, **굵게**" }
+        body: { type: string, description: "줄 단위 본문. 줄 앞 기호로 수준 표시 — □ / ○ / - / ·, **굵게**, '[그림]' 줄은 그림 자리" }
+        images:
+          type: array
+          description: "그림 (나란히 배치) — 본문의 '[그림]' 줄 자리에 들어감"
+          items: { type: object, properties: { src: { type: string }, caption: { type: string }, width: { type: integer }, height: { type: integer } } }
         table:
           type: object
           properties:
@@ -498,6 +544,13 @@ components:
         dept: { type: string }
         reportedAt: { type: string, format: date-time }
         sections: { type: array, items: { $ref: "#/components/schemas/ReportSection" } }
+    WeatherImage:
+      type: object
+      properties:
+        src: { type: string, description: "data:image/jpeg;base64,..." }
+        at: { type: string, format: date-time, description: 캡션 기준 시각 }
+        width: { type: integer }
+        height: { type: integer }
     ContactInput:
       type: object
       required: [orgId, unitId, name]

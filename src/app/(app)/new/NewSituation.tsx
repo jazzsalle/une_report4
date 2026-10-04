@@ -5,8 +5,8 @@ import { Button, Card, CardHead } from "@/components/ui";
 import { SituationFields, defaultInput, useSubmit } from "@/components/SituationForm";
 import { createSituation, type SituationInput } from "@/app/actions/situation";
 
-export function NewSituation({ orgId, hazard }: { orgId: string; hazard: string }) {
-  const [v, setV] = useState<SituationInput>(() => defaultInput(orgId, hazard));
+export function NewSituation({ sido, hazard }: { sido: string; hazard: string }) {
+  const [v, setV] = useState<SituationInput>(() => defaultInput(sido, hazard));
   const withSop = useSubmit((x: SituationInput) => createSituation(x, true));
   const only = useSubmit((x: SituationInput) => createSituation(x, false));
   const pending = withSop.pending || only.pending;
@@ -17,7 +17,7 @@ export function NewSituation({ orgId, hazard }: { orgId: string; hazard: string 
       <Card>
         <CardHead title="새 상황 시작" />
         <div className="px-6 pb-8">
-          <SituationFields value={v} onChange={setV} orgId={orgId} />
+          <SituationFields value={v} onChange={setV} />
         </div>
       </Card>
       <div className="mt-6 flex items-center justify-end gap-3">

@@ -7,11 +7,12 @@ import { getDb, schema } from "@/lib/db";
 import { canEdit, requireUser } from "@/lib/auth/session";
 import { addEvent, getSituation, listEvents } from "@/lib/data";
 import { getWeatherSnapshot } from "@/lib/weather/kma";
+import { ORG_SIDO } from "@/lib/regions";
 import { sopActions, weatherSummary } from "@/lib/t3q/client";
 import { buildContext, responseToSop, snapshotToAlerts } from "@/lib/sop/convert";
 import { composeReport } from "@/lib/report/compose";
 import { fromLocalInput } from "@/lib/format";
-import type { Mission, Sop, WeatherSummary } from "@/lib/types";
+import type { Mission, Sop, WeatherImage, WeatherSummary } from "@/lib/types";
 
 async function editable(id: string) {
   const u = await requireUser();
@@ -36,6 +37,8 @@ export interface SituationInput {
   alertLevel: string;
   /** 대응단계 (징후감지/초기대응/비상대응/수습복구) */
   step: string;
+  /** 발생 시도 */
+  sido: string;
   areas: string[];
   periodStart: string; // datetime-local
   periodEnd: string | null;
@@ -47,6 +50,7 @@ function validate(v: SituationInput) {
   if (!v.hazard) return "재난유형을 선택하세요.";
   if (!v.alertLevel) return "위기경보 수준을 선택하세요.";
   if (!v.step) return "대응단계를 선택하세요.";
+  if (!v.sido) return "발생 시도를 선택하세요.";
   if (!v.periodStart) return "시작 일시를 입력하세요.";
   return null;
 }
@@ -57,8 +61,7 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
   const err = validate(v);
   if (err) return { error: err };
   const db = await getDb();
-  const [org] = await db.select().from(schema.orgs).where(eq(schema.orgs.id, u.orgId)).limit(1);
-  const weather = await getWeatherSnapshot(org?.stnId ?? "159");
+  const weather = await getWeatherSnapshot(v.sido);
   const id = nanoid(10);
   await db.insert(schema.situations).values({
     id,
@@ -69,6 +72,7 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
     hazard: v.hazard,
     alertLevel: v.alertLevel,
     responseStep: v.step,
+    sido: v.sido,
     areas: v.areas,
     periodStart: new Date(fromLocalInput(v.periodStart)),
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
@@ -99,6 +103,7 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
     hazard: v.hazard,
     alertLevel: v.alertLevel,
     responseStep: v.step,
+    sido: v.sido,
     areas: v.areas,
     periodStart: new Date(fromLocalInput(v.periodStart)),
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
@@ -116,9 +121,7 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
 
 export async function refreshWeather(id: string) {
   const { u, s } = await editable(id);
-  const db = await getDb();
-  const [org] = await db.select().from(schema.orgs).where(eq(schema.orgs.id, s.orgId)).limit(1);
-  const weather = await getWeatherSnapshot(org?.stnId ?? "159");
+  const weather = await getWeatherSnapshot(s.sido || ORG_SIDO[s.orgId] || "부산광역시");
   await touch(id, { weather });
   await addEvent(id, {
     type: "weather",
@@ -336,4 +339,23 @@ export async function trashSituation(id: string) {
   await touch(id, { deletedAt: new Date() });
   revalidatePath("/");
   redirect("/");
+}
+
+/** 기상특보 보고 그림 저장 (특보발표현황 / 레이더 영상). img=null 이면 삭제 */
+export async function saveWeatherImage(id: string, which: "alert" | "radar", img: WeatherImage | null) {
+  const { u, s } = await editable(id);
+  if (img && img.src.length > 3_000_000) throw new Error("그림이 너무 큽니다.");
+  if (img && !/^data:image\/(jpeg|png);base64,/.test(img.src)) throw new Error("그림 형식이 올바르지 않습니다.");
+  const next = { ...(s.weatherImages ?? {}) };
+  if (img) next[which] = img;
+  else delete next[which];
+  await touch(id, { weatherImages: next });
+  if (img) {
+    await addEvent(id, {
+      type: "weather",
+      title: which === "alert" ? "특보발표현황 그림 첨부" : "레이더 영상 첨부",
+      userName: u.name,
+    });
+  }
+  revalidatePath(`/s/${id}`);
 }

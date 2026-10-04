@@ -7,8 +7,19 @@ import { ChevronDown, FileCode2, LogOut, UserRound } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { logout } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/types";
+import { LocationChip } from "./LocationChip";
 
-export function Header({ user, orgName }: { user: SessionUser; orgName: string }) {
+export function Header({
+  user,
+  orgName,
+  location,
+  fallbackSido,
+}: {
+  user: SessionUser;
+  orgName: string;
+  location: { sido: string; sigungu: string; src: "gps" | "manual" } | null;
+  fallbackSido: string;
+}) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const nav = [
@@ -46,7 +57,10 @@ export function Header({ user, orgName }: { user: SessionUser; orgName: string }
             </Link>
           ))}
         </nav>
-        <div className="relative ml-auto">
+        <div className="ml-auto mr-5">
+          <LocationChip location={location} fallbackSido={fallbackSido} />
+        </div>
+        <div className="relative">
           <button
             onClick={() => setOpen((v) => !v)}
             className="flex items-center gap-1 text-[17px] font-semibold"

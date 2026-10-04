@@ -15,6 +15,13 @@
       "when": 1791129783430,
       "tag": "0001_response_step",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791131734762,
+      "tag": "0002_sido_weather_images",
+      "breakpoints": true
     }
   ]
 }

@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import { STEP_LABEL, type Mission, type Sop, type WeatherSnapshot } from "@/lib/types";
 import type { SituationContext, SopActionsResponse, WeatherAlert, AlertLevelCode, ResponseStepCode } from "@/lib/t3q/types";
 import { stepOf, type SeedAction } from "@/lib/seed";
+import { ORG_SIDO, sidoNode, splitArea } from "@/lib/regions";
 
 export const STEP_CODE: Record<string, ResponseStepCode> = {
   징후감지: "SIGN_DETECTION",
@@ -31,10 +32,21 @@ export const HAZARD_CODE: Record<string, { code: string; group: string }> = {
   학교시설: { code: "SCHOOL_FACILITY", group: "사회재난" },
 };
 
-const REGION: Record<string, { code: string; name: string }> = {
-  busan: { code: "2600000000", name: "부산광역시" },
-  gyeongbuk: { code: "4700000000", name: "경상북도" },
-};
+/** 시도·발생지역 → 행정구역 (법정동 코드 10자리: 시도 2 + 시군구 3 + 읍면동 5) */
+function regionsOf(sidoName: string, areas: string[]) {
+  const node = sidoNode(sidoName) ?? sidoNode("부산광역시")!;
+  const responsible = { code: node.c.padEnd(10, "0"), name: node.n, level: "SIDO" as const };
+  const affected = areas.map((a) => {
+    const [sgg, umd] = splitArea(a);
+    const sn = node.s.find((x) => x.n === sgg);
+    return {
+      code: sn ? sn.c.padEnd(10, "0") : "",
+      name: `${node.n} ${a}`,
+      level: umd ? ("EUPMYEONDONG" as const) : ("SIGUNGU" as const),
+    };
+  });
+  return { responsible, affected };
+}
 
 export function buildContext(s: {
   id: string;
@@ -43,18 +55,19 @@ export function buildContext(s: {
   hazard: string;
   alertLevel: string;
   responseStep: string;
+  sido: string;
   areas: string[];
   title: string;
   currentStatus: string;
   periodStart: Date | string;
   periodEnd: Date | string | null;
 }): SituationContext {
-  const r = REGION[s.orgId] ?? REGION.busan;
+  const { responsible, affected } = regionsOf(s.sido || ORG_SIDO[s.orgId] || "부산광역시", s.areas);
   return {
     situationId: s.id,
     workType: s.kind === "drill" ? "DRILL" : "REAL",
-    responsibleRegion: { ...r, level: "SIDO" },
-    affectedRegions: s.areas.map((a) => ({ code: "", name: a, level: "SIGUNGU" as const })),
+    responsibleRegion: responsible,
+    affectedRegions: affected,
     disasterType: { code: HAZARD_CODE[s.hazard]?.code ?? "ETC", name: s.hazard, group: HAZARD_CODE[s.hazard]?.group },
     alertLevel: LEVEL_CODE[s.alertLevel] ?? "CAUTION",
     responseStep: STEP_CODE[s.responseStep] ?? "INITIAL_RESPONSE",

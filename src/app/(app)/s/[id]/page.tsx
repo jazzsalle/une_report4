@@ -3,6 +3,7 @@ import { requireUser, canEdit } from "@/lib/auth/session";
 import { getSituation } from "@/lib/data";
 import { toLocalInput } from "@/lib/format";
 import { OverviewView } from "./OverviewView";
+import { ORG_SIDO } from "@/lib/regions";
 
 export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
   const { id } = await params;
@@ -12,7 +13,6 @@ export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
   return (
     <OverviewView
       id={s.id}
-      orgId={s.orgId}
       editable={canEdit(u, s)}
       hasSop={!!s.sop}
       input={{
@@ -21,6 +21,7 @@ export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
         hazard: s.hazard,
         alertLevel: s.alertLevel,
         step: s.responseStep,
+        sido: s.sido || ORG_SIDO[s.orgId] || "부산광역시",
         areas: s.areas,
         periodStart: toLocalInput(s.periodStart),
         periodEnd: s.periodEnd ? toLocalInput(s.periodEnd) : null,
@@ -28,6 +29,8 @@ export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
       }}
       weather={s.weather}
       summary={s.weatherSummary}
+      images={s.weatherImages}
+      me={{ name: u.name, dept: u.dept }}
     />
   );
 }

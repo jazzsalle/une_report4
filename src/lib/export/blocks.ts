@@ -10,7 +10,11 @@ export type Block =
   | { type: "item"; level: 1 | 2 | 3 | 4; prefix: string; inlines: Inline[] }
   | { type: "caption"; text: string }
   | { type: "table"; head: string[]; rows: string[][] }
+  | { type: "images"; items: { src: string; caption: string; width: number; height: number }[] }
   | { type: "blank" };
+
+/** 본문에서 그림 표가 들어갈 자리 */
+export const IMAGE_MARK = "[그림]";
 
 const PREFIX: [string, 1 | 2 | 3 | 4][] = [
   ["□", 1],
@@ -51,9 +55,19 @@ export function contentToBlocks(c: ReportContent): Block[] {
   c.sections.forEach((s, i) => {
     if (i > 0) out.push({ type: "blank" });
     out.push({ type: "chapter", text: `${i + 1}. ${s.title}` });
+    // 본문의 "[그림]" 줄 자리에 그림 표를 넣는다 (없으면 본문 끝)
+    let placed = false;
     for (const line of s.body.split(/\r?\n/)) {
+      if (line.trim() === IMAGE_MARK) {
+        if (s.images?.length && !placed) out.push({ type: "images", items: s.images });
+        placed = true;
+        continue;
+      }
       const b = parseLine(line);
       if (b) out.push(b);
+    }
+    if (s.images && s.images.length && !placed) {
+      out.push({ type: "images", items: s.images });
     }
     if (s.table && s.table.rows.length) {
       out.push({ type: "table", head: s.table.head, rows: s.table.rows });
@@ -84,4 +98,14 @@ export function subtitleOf(c: ReportContent) {
 
 export function safeFilename(s: string) {
   return s.replace(/[\\/:*?"<>|]/g, "_").slice(0, 80);
+}
+
+/** data URL → 바이트·확장자 */
+export function dataUrlBytes(src: string): { bytes: Uint8Array; ext: "jpg" | "png" } | null {
+  const m = src.match(/^data:image\/(jpeg|jpg|png);base64,(.+)$/);
+  if (!m) return null;
+  const bin = typeof atob === "function" ? atob(m[2]) : Buffer.from(m[2], "base64").toString("binary");
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return { bytes, ext: m[1] === "png" ? "png" : "jpg" };
 }

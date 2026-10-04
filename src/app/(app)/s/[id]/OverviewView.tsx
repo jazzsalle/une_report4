@@ -1,36 +1,44 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Pencil, RefreshCw, Sparkles, Trash2 } from "lucide-react";
+import { ArrowRight, Download, Pencil, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { Button, Card, CardHead, Modal } from "@/components/ui";
 import { SituationFields, useSubmit } from "@/components/SituationForm";
 import {
   generateSop,
   refreshWeather,
+  saveWeatherImage,
   summarizeWeather,
   trashSituation,
   updateSituation,
   type SituationInput,
 } from "@/app/actions/situation";
-import { STEP_LABEL, type ResponseStep, type WeatherSnapshot, type WeatherSummary } from "@/lib/types";
+import { STEP_LABEL, type ResponseStep, type WeatherImages, type WeatherSnapshot, type WeatherSummary } from "@/lib/types";
+import { weatherReportContent, weatherSection } from "@/lib/report/weather";
+import { DocBlocks } from "@/components/DocView";
+import { ImageDrop } from "@/components/ImageDrop";
+import { exportHwpx } from "@/lib/export/client";
+import { safeFilename } from "@/lib/export/blocks";
 import { fmtDateTime, fmtPeriod, fromLocalInput } from "@/lib/format";
 
 export function OverviewView({
   id,
-  orgId,
   editable,
   hasSop,
   input,
   weather,
   summary,
+  images,
+  me,
 }: {
   id: string;
-  orgId: string;
   editable: boolean;
   hasSop: boolean;
   input: SituationInput;
   weather: WeatherSnapshot | null;
   summary: WeatherSummary | null;
+  images: WeatherImages | null;
+  me: { name: string; dept: string };
 }) {
   const router = useRouter();
   const [edit, setEdit] = useState(false);
@@ -53,12 +61,16 @@ export function OverviewView({
     });
   };
 
+  const section = weatherSection({ weather, weatherSummary: summary, weatherImages: images });
+  const report = weatherReportContent({ weather, weatherSummary: summary, weatherImages: images }, me.name, me.dept);
+  const stamp = fmtDateTime(weather?.announcedAt ?? weather?.retrievedAt ?? new Date().toISOString());
+
   const rows: [string, string][] = [
     ["업무유형", input.kind === "drill" ? "안전한국훈련" : "실제재난"],
     ["재난유형", input.hazard],
     ["위기경보", input.alertLevel],
     ["대응단계", STEP_LABEL[input.step as ResponseStep] ?? input.step],
-    ["대상지역", input.areas.length ? input.areas.join(", ") : "전역"],
+    ["발생지역", `${input.sido} ${input.areas.length ? input.areas.join(", ") : "전역"}`],
     [
       "대응 기간",
       fmtPeriod(fromLocalInput(input.periodStart), input.periodEnd ? fromLocalInput(input.periodEnd) : null),
@@ -66,7 +78,7 @@ export function OverviewView({
   ];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(380px,2fr)_3fr]">
       <Card>
         <CardHead
           title="상황 정보"
@@ -101,75 +113,64 @@ export function OverviewView({
 
       <Card>
         <CardHead
-          title="기상특보"
+          title="기상특보 보고"
           right={
-            editable && (
-              <Button variant="ghost" size="sm" disabled={busy} onClick={() => run("wx", () => refreshWeather(id))}>
-                <RefreshCw size={17} className={busyKey === "wx" ? "animate-spin" : ""} /> 갱신
+            <>
+              {editable && (
+                <>
+                  <Button variant="ghost" size="sm" disabled={busy} onClick={() => run("wx", () => refreshWeather(id))}>
+                    <RefreshCw size={17} className={busyKey === "wx" ? "animate-spin" : ""} /> 특보 갱신
+                  </Button>
+                  <Button variant="ghost" size="sm" disabled={busy} onClick={() => run("sum", () => summarizeWeather(id))}>
+                    <Sparkles size={17} /> {busyKey === "sum" ? "요약 중" : "AI 요약"}
+                  </Button>
+                </>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => exportHwpx(report, safeFilename(report.title))}>
+                <Download size={17} /> 한글
               </Button>
-            )
+            </>
           }
         />
-        <div className="space-y-5 px-6 py-5">
-          {weather ? (
-            <>
-              <div className="text-[16px] text-sub">
-                기상청 {weather.stnName} · {fmtDateTime(weather.announcedAt ?? weather.retrievedAt)} 발표
+        <div className="px-8 py-6 font-[serif]">
+          {/* 머리 (붙임 8-1-① 형식) */}
+          <div className="mb-5 flex items-stretch border-2 border-ink">
+            <div className="flex-1 px-4 py-3 text-center">
+              <div className="text-[22px] font-bold" style={{ fontFamily: "'HY견고딕', 'Pretendard GOV Variable', sans-serif" }}>
+                {report.title}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {weather.active.length ? (
-                  weather.active.map((a) => (
-                    <div
-                      key={a.name}
-                      className={`rounded-md px-4 py-3 ${a.kind === "warning" ? "bg-danger-weak text-danger" : "bg-warning-weak text-warning"}`}
-                    >
-                      <div className="font-bold">{a.name}</div>
-                      <div className="text-[15px]">{a.areas}</div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-md bg-canvas px-4 py-3 font-medium">발효 중인 특보 없음</div>
-                )}
-              </div>
-              {weather.preliminary.length > 0 && (
-                <ul className="space-y-1 text-[16px] text-sub">
-                  {weather.preliminary.map((p) => (
-                    <li key={p}>예비특보 · {p}</li>
-                  ))}
-                </ul>
-              )}
-            </>
-          ) : (
-            <div className="text-sub">조회된 특보 없음</div>
-          )}
-
-          <div className="rounded-lg border border-primary-line bg-primary-weak/50 p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="flex items-center gap-1.5 font-bold text-primary-strong">
-                <Sparkles size={18} /> AI 기상 요약
-              </h3>
-              {editable && (
-                <Button size="sm" disabled={busy} onClick={() => run("sum", () => summarizeWeather(id))}>
-                  {busyKey === "sum" ? "요약 중" : summary ? "다시 요약" : "요약하기"}
-                </Button>
-              )}
+              <div className="mt-1 text-[16px]">- {stamp} 기준 -</div>
             </div>
-            {summary ? (
-              <div className="space-y-2">
-                <p className="text-[18px] font-bold">{summary.headline}</p>
-                <ul className="space-y-1.5">
-                  {summary.keyPoints.map((k) => (
-                    <li key={k} className="flex gap-2 leading-relaxed">
-                      <span className="text-primary">○</span>
-                      <span>{k}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="text-sub">기상특보와 기상정보를 요약합니다.</p>
-            )}
+            <div className="flex w-[180px] shrink-0 flex-col items-center justify-center border-l-2 border-ink px-3 text-center text-[15px] font-bold leading-snug">
+              <span>{input.sido}</span>
+              <span>재난안전대책본부</span>
+            </div>
           </div>
+          <DocBlocks
+            s={section}
+            imageSlot={() => (
+              <div className="grid grid-cols-2 gap-0 font-sans">
+                <ImageDrop
+                  value={images?.alert}
+                  caption={section.images?.[0]?.caption ?? "특보발표현황"}
+                  editable={editable}
+                  onChange={async (img) => {
+                    await saveWeatherImage(id, "alert", img);
+                    router.refresh();
+                  }}
+                />
+                <ImageDrop
+                  value={images?.radar}
+                  caption={section.images?.[1]?.caption ?? "레이더 영상"}
+                  editable={editable}
+                  onChange={async (img) => {
+                    await saveWeatherImage(id, "radar", img);
+                    router.refresh();
+                  }}
+                />
+              </div>
+            )}
+          />
         </div>
       </Card>
 
@@ -225,7 +226,7 @@ export function OverviewView({
           </>
         }
       >
-        <SituationFields value={draft} onChange={setDraft} orgId={orgId} />
+        <SituationFields value={draft} onChange={setDraft} />
       </Modal>
     </div>
   );

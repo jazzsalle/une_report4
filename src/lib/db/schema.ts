@@ -10,6 +10,7 @@ import {
 import type {
   WeatherSnapshot,
   WeatherSummary,
+  WeatherImages,
   Sop,
   ReportContent,
 } from "@/lib/types";
@@ -52,12 +53,17 @@ export const situations = pgTable(
     alertLevel: text("alert_level").notNull(),
     /** 대응단계: 징후감지 / 초기대응 / 비상대응 / 수습복구 */
     responseStep: text("response_step").notNull().default("초기대응"),
+    /** 발생 시도 (전국) */
+    sido: text("sido").notNull().default(""),
+    /** 발생지역: "해운대구" 또는 "해운대구 우동" */
     areas: jsonb("areas").$type<string[]>().notNull().default([]),
     periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
     periodEnd: timestamp("period_end", { withTimezone: true }),
     currentStatus: text("current_status").notNull().default(""),
     weather: jsonb("weather").$type<WeatherSnapshot | null>(),
     weatherSummary: jsonb("weather_summary").$type<WeatherSummary | null>(),
+    /** 기상특보 보고: 특보발표현황·레이더 영상 이미지 */
+    weatherImages: jsonb("weather_images").$type<WeatherImages | null>(),
     sop: jsonb("sop").$type<Sop | null>(),
     /** setup → sop → running → done */
     status: text("status").notNull().default("setup"),

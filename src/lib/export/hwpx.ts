@@ -11,7 +11,7 @@
 // ※ mimetype 은 첫 항목·무압축.
 import JSZip from "jszip";
 import type { ReportContent } from "@/lib/types";
-import { contentToBlocks, subtitleOf, type Block, type Inline } from "./blocks";
+import { contentToBlocks, dataUrlBytes, subtitleOf, type Block, type Inline } from "./blocks";
 
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -73,7 +73,47 @@ function table(head: string[], rows: string[][]) {
 
 const BLANK = para(PP_LEFT, run(CP_BODY, ""));
 
-function blocksToParas(blocks: Block[]): string[] {
+/** 문서에 들어갈 그림 (BinData) */
+type Bin = { id: string; href: string; bytes: Uint8Array; mime: string };
+
+let picSeq = 2000;
+/** 그림 개체 (글자처럼 취급) — OWPML hp:pic */
+function pic(binId: string, w: number, h: number) {
+  const id = ++picSeq;
+  return `<hp:pic id="${id}" zOrder="${id}" numberingType="PICTURE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="0" instid="${id}" reverse="0"><hp:offset x="0" y="0"/><hp:orgSz width="${w}" height="${h}"/><hp:curSz width="${w}" height="${h}"/><hp:flip horizontal="0" vertical="0"/><hp:rotationInfo angle="0" centerX="${Math.round(w / 2)}" centerY="${Math.round(h / 2)}" rotateimage="1"/><hp:renderingInfo><hc:transMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/><hc:scaMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/><hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/></hp:renderingInfo><hc:img binaryItemIDRef="${binId}" bright="0" contrast="0" effect="REAL_PIC" alpha="0"/><hp:imgRect><hc:pt0 x="0" y="0"/><hc:pt1 x="${w}" y="0"/><hc:pt2 x="${w}" y="${h}"/><hc:pt3 x="0" y="${h}"/></hp:imgRect><hp:imgClip left="0" right="${w}" top="0" bottom="${h}"/><hp:inMargin left="0" right="0" top="0" bottom="0"/><hp:imgDim dimwidth="${w}" dimheight="${h}"/><hp:effects/><hp:sz width="${w}" widthRelTo="ABSOLUTE" height="${h}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/></hp:pic>`;
+}
+
+/** 그림 표: 1행 그림 · 2행 캡션 (기상특보 보고의 특보발표현황·레이더 영상) — 그림이 없으면 빈 칸으로 둔다 */
+function imageTable(items: { src: string; caption: string; width: number; height: number }[], bins: Bin[]) {
+  const cols = items.length;
+  const colW = Math.floor(47624 / cols);
+  const maxW = colW - 1020;
+  const imgH = 15000;
+  const tc = (inner: string, c: number, r: number, h: number, bf: number) =>
+    `<hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="0" borderFillIDRef="${bf}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">${inner}</hp:subList><hp:cellAddr colAddr="${c}" rowAddr="${r}"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="${colW}" height="${h}"/><hp:cellMargin left="510" right="510" top="141" bottom="141"/></hp:tc>`;
+  let rowH = imgH;
+  const imgCells = items.map((it, c) => {
+    const data = it.src ? dataUrlBytes(it.src) : null;
+    if (!data) return tc(para(PP_CENTER, `<hp:run charPrIDRef="${CP_TABLE_BODY}"/>`), c, 0, imgH, 3);
+    const n = bins.length + 1;
+    const id = `image${n}`;
+    bins.push({ id, href: `BinData/${id}.${data.ext}`, bytes: data.bytes, mime: data.ext === "png" ? "image/png" : "image/jpg" });
+    const ratio = it.width && it.height ? it.height / it.width : 0.75;
+    let w = maxW;
+    let h = Math.round(w * ratio);
+    if (h > 20000) {
+      h = 20000;
+      w = Math.round(h / ratio);
+    }
+    rowH = Math.max(rowH, h + 400);
+    return tc(para(PP_CENTER, `<hp:run charPrIDRef="${CP_TABLE_BODY}">${pic(id, w, h)}<hp:t/></hp:run>`), c, 0, h + 400, 3);
+  });
+  const capCells = items.map((it, c) => tc(para(PP_CENTER, run(CP_TABLE_HEAD, it.caption)), c, 1, 1948, 3));
+  const tbl = `<hp:tbl id="${++tblSeq}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="0" rowCnt="2" colCnt="${cols}" cellSpacing="0" borderFillIDRef="3" noAdjust="0"><hp:sz width="${colW * cols}" widthRelTo="ABSOLUTE" height="${rowH + 1948}" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="283" right="283" top="283" bottom="283"/><hp:inMargin left="510" right="510" top="141" bottom="141"/><hp:tr>${imgCells.join("")}</hp:tr><hp:tr>${capCells.join("")}</hp:tr></hp:tbl>`;
+  return para(PP_CENTER, `<hp:run charPrIDRef="${CP_SUBTITLE}">${tbl}<hp:t/></hp:run>`);
+}
+
+function blocksToParas(blocks: Block[], bins: Bin[]): string[] {
   return blocks.map((b) => {
     switch (b.type) {
       case "chapter":
@@ -84,6 +124,8 @@ function blocksToParas(blocks: Block[]): string[] {
         return para(PP_CENTER, run(CP_CAPTION, b.text));
       case "table":
         return table(b.head, b.rows);
+      case "images":
+        return imageTable(b.items, bins);
       case "blank":
         return BLANK;
     }
@@ -134,7 +176,8 @@ export async function buildHwpx(template: ArrayBuffer | Uint8Array, c: ReportCon
   );
   paras.push(para(PP_CENTER, run(CP_SUBTITLE, subtitleOf(c))));
   paras.push(BLANK);
-  paras.push(...blocksToParas(contentToBlocks(c)));
+  const bins: Bin[] = [];
+  paras.push(...blocksToParas(contentToBlocks(c), bins));
   paras.push(BLANK);
 
   const newSection = `${rootOpen}${paras.join("")}</hs:sec>`;
@@ -148,12 +191,15 @@ export async function buildHwpx(template: ArrayBuffer | Uint8Array, c: ReportCon
     else if (name === "Contents/header.xml") out.file(name, patchHeader(header), { compression: "DEFLATE" });
     else if (name === "Preview/PrvText.txt") out.file(name, prv, { compression: "DEFLATE" });
     else if (name === "Contents/content.hpf") {
-      const hpf = (await entry.async("string")).replace(
-        /<opf:title>.*?<\/opf:title>/,
-        `<opf:title>${esc(c.title)}</opf:title>`,
-      );
+      const items = bins
+        .map((b) => `<opf:item id="${b.id}" href="${b.href}" media-type="${b.mime}" isEmbeded="1"/>`)
+        .join("");
+      const hpf = (await entry.async("string"))
+        .replace(/<opf:title>.*?<\/opf:title>/, `<opf:title>${esc(c.title)}</opf:title>`)
+        .replace("</opf:manifest>", `${items}</opf:manifest>`);
       out.file(name, hpf, { compression: "DEFLATE" });
     } else out.file(name, await entry.async("uint8array"), { compression: "DEFLATE" });
   }
+  for (const b of bins) out.file(b.href, b.bytes, { compression: "STORE" });
   return out.generateAsync({ type: "uint8array", mimeType: "application/hwp+zip" });
 }

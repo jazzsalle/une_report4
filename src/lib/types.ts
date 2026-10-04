@@ -52,6 +52,8 @@ export interface WeatherAlertItem {
   name: string;
   /** 발효 지역 */
   areas: string;
+  /** 시도 안의 세부 특보구역 (예: 포항, 경주) */
+  subs?: string[];
   kind: "warning" | "watch" | "preliminary";
 }
 
@@ -77,6 +79,21 @@ export interface WeatherSummary {
   keyPoints: string[];
   source: "t3q" | "mock";
   generatedAt: string;
+}
+
+/** 기상특보 보고 이미지 (data URL, 브라우저에서 축소 후 저장) */
+export interface WeatherImage {
+  src: string;
+  /** 기준 시각 (캡션 "○○시 현재") */
+  at: string;
+  width: number;
+  height: number;
+}
+export interface WeatherImages {
+  /** 특보발표현황 */
+  alert?: WeatherImage;
+  /** 레이더 영상 */
+  radar?: WeatherImage;
 }
 
 /* ---------- SOP ---------- */
@@ -149,6 +166,8 @@ export interface ReportSection {
   body: string;
   /** 표 (선택) */
   table?: { head: string[]; rows: string[][] };
+  /** 그림 (선택, 나란히 배치) — 기상특보 보고의 특보발표현황·레이더 영상 */
+  images?: { src: string; caption: string; width: number; height: number }[];
 }
 
 export interface ReportContent {

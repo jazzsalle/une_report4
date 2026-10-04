@@ -2,6 +2,7 @@ import {
   AlignmentType,
   BorderStyle,
   Document,
+  ImageRun,
   Packer,
   Paragraph,
   Table,
@@ -11,7 +12,7 @@ import {
   WidthType,
 } from "docx";
 import type { ReportContent } from "@/lib/types";
-import { contentToBlocks, subtitleOf, type Inline } from "./blocks";
+import { contentToBlocks, dataUrlBytes, subtitleOf, type Inline } from "./blocks";
 
 const BODY_FONT = "휴먼명조";
 const HEAD_FONT = "HY견고딕";
@@ -76,6 +77,35 @@ export async function buildDocx(c: ReportContent): Promise<Blob> {
           }),
         );
         break;
+      case "images": {
+        // 그림 표: 1행 그림 · 2행 캡션 (그림 없으면 빈 칸)
+        const imgCell = (it: (typeof b.items)[number]) => {
+          const d = it.src ? dataUrlBytes(it.src) : null;
+          if (!d) return new TableCell({ children: [new Paragraph({ spacing: { before: 1600, after: 1600 }, children: [] })] });
+          const w = 300;
+          const h = Math.round(w * (it.width && it.height ? it.height / it.width : 0.75));
+          return new TableCell({
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new ImageRun({ type: d.ext, data: d.bytes, transformation: { width: w, height: Math.min(h, 400) } })],
+              }),
+            ],
+          });
+        };
+        children.push(
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            borders,
+            rows: [
+              new TableRow({ children: b.items.map(imgCell) }),
+              new TableRow({ children: b.items.map((it) => new TableCell({ children: [cellPara(it.caption, true)] })) }),
+            ],
+          }),
+        );
+        children.push(new Paragraph({ children: [] }));
+        break;
+      }
       case "table": {
         const cols = Math.max(b.head.length, ...b.rows.map((r) => r.length), 1);
         const row = (cells: string[], head: boolean) =>
