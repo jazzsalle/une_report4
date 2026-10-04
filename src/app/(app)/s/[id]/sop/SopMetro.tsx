@@ -8,7 +8,7 @@ import { KIND_LABEL, missionKind } from "@/lib/sop/kind";
 import { fmtTime } from "@/lib/format";
 
 /**
- * SOP 노선도 — 임무를 역으로, 대응단계를 구간으로 보여준다.
+ * SOP 흐름도 — 임무를 역으로, 대응단계를 구간으로 보여준다.
  *  완료 구간: 밝은 파랑 / 현재 임무로 들어가는 구간: 분홍(흐름) / 남은 구간: 흐림
  */
 
@@ -138,7 +138,7 @@ export function SopMetro({
     >
       {/* 범례 */}
       <div className="sticky left-0 top-0 z-20 flex flex-wrap items-center gap-x-5 gap-y-1 bg-gradient-to-b from-[#141a52] to-transparent px-6 pb-3 pt-4 text-[15px]">
-        <b className="text-[17px]">SOP 노선도</b>
+        <b className="text-[17px]">SOP 흐름도</b>
         <span className="text-white/70">
           완료 {done} / {missions.length}
         </span>

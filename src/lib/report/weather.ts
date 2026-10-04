@@ -1,4 +1,4 @@
-import type { ReportContent, ReportSection, WeatherImages, WeatherSnapshot, WeatherSummary } from "@/lib/types";
+import type { ReportContent, ReportSection, WeatherImages, WeatherSnapshot } from "@/lib/types";
 import { IMAGE_MARK } from "@/lib/export/blocks";
 
 /**
@@ -47,7 +47,6 @@ function infoSentences(info: string) {
 
 export interface WeatherReportInput {
   weather: WeatherSnapshot | null;
-  weatherSummary: WeatherSummary | null;
   weatherImages: WeatherImages | null;
 }
 
@@ -77,16 +76,6 @@ export function weatherSection(s: WeatherReportInput, id = "weather"): ReportSec
   if (info.length) {
     lines.push(`□ **강수 현황과 전망**${w?.infoAt ? ` (${shortStamp(w.infoAt)} 기상청 발표)` : ""}`);
     info.forEach((l) => lines.push(`○ ${l}`));
-  }
-  // T3Q 기상요약(실제 연계 결과)만 반영
-  if (s.weatherSummary && s.weatherSummary.source === "t3q") {
-    const extra = s.weatherSummary.keyPoints.filter(
-      (k) => !k.startsWith("예비특보") && !/^\((현황|전망)\)/.test(k) && !(w?.active ?? []).some((a) => k.startsWith(a.name)),
-    );
-    if (extra.length) {
-      lines.push("□ **기상 요약**");
-      extra.forEach((k) => lines.push(`○ ${k}`));
-    }
   }
   if (w?.preliminary.length) {
     lines.push("□ **예비특보**");

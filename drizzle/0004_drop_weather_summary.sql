@@ -1,0 +1,1 @@
+ALTER TABLE "situations" DROP COLUMN "weather_summary";

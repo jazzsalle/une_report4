@@ -12,7 +12,7 @@ import {
   updateSituation,
   type SituationInput,
 } from "@/app/actions/situation";
-import { STEP_LABEL, type ResponseStep, type WeatherImages, type WeatherSnapshot, type WeatherSummary } from "@/lib/types";
+import { STEP_LABEL, type ResponseStep, type WeatherImages, type WeatherSnapshot } from "@/lib/types";
 import { weatherReportContent, weatherSection } from "@/lib/report/weather";
 import { DocBlocks } from "@/components/DocView";
 import { ImageDrop } from "@/components/ImageDrop";
@@ -26,7 +26,6 @@ export function OverviewView({
   hasSop,
   input,
   weather,
-  summary,
   images,
   me,
 }: {
@@ -35,7 +34,6 @@ export function OverviewView({
   hasSop: boolean;
   input: SituationInput;
   weather: WeatherSnapshot | null;
-  summary: WeatherSummary | null;
   images: WeatherImages | null;
   me: { name: string; dept: string };
 }) {
@@ -60,8 +58,8 @@ export function OverviewView({
     });
   };
 
-  const section = weatherSection({ weather, weatherSummary: summary, weatherImages: images });
-  const report = weatherReportContent({ weather, weatherSummary: summary, weatherImages: images }, me.name, me.dept);
+  const section = weatherSection({ weather, weatherImages: images });
+  const report = weatherReportContent({ weather, weatherImages: images }, me.name, me.dept);
   const stamp = fmtDateTime(weather?.announcedAt ?? weather?.retrievedAt ?? new Date().toISOString());
 
   const rows: [string, string][] = [

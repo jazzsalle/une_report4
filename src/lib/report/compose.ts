@@ -1,4 +1,4 @@
-import { STEP_LABEL, type ResponseStep, type Mission, type ReportContent, type ReportSection, type Sop, type WeatherSnapshot, type WeatherSummary, type WeatherImages } from "@/lib/types";
+import { STEP_LABEL, type ResponseStep, type Mission, type ReportContent, type ReportSection, type Sop, type WeatherSnapshot, type WeatherImages } from "@/lib/types";
 import { weatherSection } from "./weather";
 import { fmtTime, fmtPeriod } from "@/lib/format";
 
@@ -15,7 +15,6 @@ export interface ComposeInput {
     periodEnd: Date | string | null;
     currentStatus: string;
     weather: WeatherSnapshot | null;
-    weatherSummary: WeatherSummary | null;
     weatherImages: WeatherImages | null;
     sop: Sop | null;
   };
@@ -106,7 +105,7 @@ export function composeReport(input: ComposeInput): ReportContent {
   sec("상황 개요", overview);
 
   // 2. 기상특보 — 기상특보 보고(특보 요약 + 특보발표현황·레이더 영상)
-  const ws = weatherSection({ weather: s.weather, weatherSummary: s.weatherSummary, weatherImages: s.weatherImages }, `s${sections.length + 1}`);
+  const ws = weatherSection({ weather: s.weather, weatherImages: s.weatherImages }, `s${sections.length + 1}`);
   sections.push(ws);
 
   // 3. 피해 현황 (사용자 입력)

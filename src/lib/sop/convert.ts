@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
-import { STEP_LABEL, type Mission, type Sop, type WeatherSnapshot } from "@/lib/types";
-import type { SituationContext, SopActionsResponse, WeatherAlert, AlertLevelCode, ResponseStepCode } from "@/lib/t3q/types";
+import { STEP_LABEL, type Mission, type Sop } from "@/lib/types";
+import type { SituationContext, SopActionsResponse, AlertLevelCode, ResponseStepCode } from "@/lib/t3q/types";
 import { stepOf, type SeedAction } from "@/lib/seed";
 import { ORG_SIDO, sidoNode, splitArea } from "@/lib/regions";
 
@@ -79,36 +79,6 @@ export function buildContext(s: {
       end: s.periodEnd ? new Date(s.periodEnd).toISOString() : undefined,
     },
   };
-}
-
-export function snapshotToAlerts(w: WeatherSnapshot | null): WeatherAlert[] {
-  if (!w) return [];
-  const t = w.announcedAt ?? w.retrievedAt;
-  return [
-    ...w.active.map((a, i) => ({
-      alertId: `WA-${i + 1}`,
-      source: "KMA" as const,
-      kind: a.name,
-      level: a.kind === "warning" ? ("WARNING" as const) : ("WATCH" as const),
-      command: "ISSUE" as const,
-      areas: [{ code: "", name: a.areas }],
-      announcedAt: t,
-      effectiveAt: t,
-      retrievedAt: w.retrievedAt,
-    })),
-    ...w.preliminary.map((p, i) => ({
-      alertId: `WP-${i + 1}`,
-      source: "KMA" as const,
-      kind: "예비특보",
-      level: "PRELIMINARY" as const,
-      command: "PRELIMINARY" as const,
-      areas: [],
-      announcedAt: t,
-      effectiveAt: t,
-      retrievedAt: w.retrievedAt,
-      text: p,
-    })),
-  ];
 }
 
 export function emptyMission(phase: "대응" | "복구" = "대응"): Mission {

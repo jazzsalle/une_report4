@@ -4,7 +4,7 @@ import { getContactsBundle, getSituation } from "@/lib/data";
 import { orgForSituation } from "@/lib/regions";
 import { BoardView } from "./BoardView";
 
-/** 분리된 SOP 창 (머리말 없이 노선도만) */
+/** 분리된 SOP 창 (머리말 없이 흐름도만) */
 export default async function BoardPage({ params }: PageProps<"/board/[id]">) {
   const { id } = await params;
   const u = await requireUser();
@@ -18,6 +18,7 @@ export default async function BoardPage({ params }: PageProps<"/board/[id]">) {
       sop={s.sop}
       groups={contacts.groups.map((g) => ({ id: g.id, name: g.name, memberIds: g.memberIds }))}
       contacts={contacts.contacts.map((c) => ({ id: c.id, name: c.name, title: c.title }))}
+      units={contacts.units.map((u) => ({ id: u.id, name: u.name }))}
     />
   );
 }

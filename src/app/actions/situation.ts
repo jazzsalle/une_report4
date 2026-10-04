@@ -8,11 +8,12 @@ import { canEdit, requireUser } from "@/lib/auth/session";
 import { addEvent, getContactsBundle, getSituation, listDispatches, listEvents } from "@/lib/data";
 import { getWeatherSnapshot } from "@/lib/weather/kma";
 import { ORG_SIDO, orgForSituation } from "@/lib/regions";
-import { sopActions, t3qMode, weatherSummary } from "@/lib/t3q/client";
-import { buildContext, responseToSop, snapshotToAlerts } from "@/lib/sop/convert";
+import { sopActions } from "@/lib/t3q/client";
+import { buildContext, responseToSop } from "@/lib/sop/convert";
+import { recipientIds } from "@/lib/sop/recipients";
 import { composeReport } from "@/lib/report/compose";
 import { fromLocalInput } from "@/lib/format";
-import type { Mission, Sop, WeatherImage, WeatherSummary } from "@/lib/types";
+import type { Mission, Sop, WeatherImage } from "@/lib/types";
 
 async function editable(id: string) {
   const u = await requireUser();
@@ -87,7 +88,6 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
     body: weather.active.length ? weather.active.map((a) => a.name).join(", ") : "발효 중인 특보 없음",
     userName: u.name,
   });
-  await autoWeatherSummary(id);
   if (generate) await runSopGeneration(id, u.name);
   redirect(`/s/${id}`);
 }
@@ -112,7 +112,7 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
     periodStart: new Date(fromLocalInput(v.periodStart)),
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
     currentStatus: v.currentStatus,
-    ...(weather ? { weather, weatherSummary: null } : {}),
+    ...(weather ? { weather } : {}),
   });
   if (weather) {
     await addEvent(id, {
@@ -121,7 +121,6 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
       body: weather.active.length ? weather.active.map((a) => a.name).join(", ") : "발효 중인 특보 없음",
       userName: u.name,
     });
-    await autoWeatherSummary(id);
   }
   if (levelChanged) {
     await addEvent(id, { type: "change", title: "위기경보 변경", body: `${s.alertLevel} → ${v.alertLevel}`, userName: u.name });
@@ -143,34 +142,7 @@ export async function refreshWeather(id: string) {
     body: weather.active.length ? weather.active.map((a) => a.name).join(", ") : "발효 중인 특보 없음",
     userName: u.name,
   });
-  await autoWeatherSummary(id);
   revalidatePath(`/s/${id}`);
-}
-
-/**
- * T3Q 기상요약(API-01) — T3Q 연계(live) 상태에서만 상황 등록·특보 갱신 때 자동 실행.
- * 연계 전에는 기상특보 보고가 기상청 원문으로 구성되므로 호출하지 않는다.
- */
-async function autoWeatherSummary(id: string) {
-  if (t3qMode() !== "live") return;
-  const db = await getDb();
-  const [s] = await db.select().from(schema.situations).where(eq(schema.situations.id, id)).limit(1);
-  if (!s) return;
-  const { data, fallback } = await weatherSummary({
-    context: buildContext(s),
-    alerts: snapshotToAlerts(s.weather),
-    weatherInfoText: s.weather?.infoText,
-    options: { style: "REPORT", maxChars: 400 },
-  });
-  if (fallback || data.meta.mock) return;
-  const ws: WeatherSummary = {
-    headline: data.summary.headline,
-    body: data.summary.body,
-    keyPoints: data.summary.keyPoints,
-    source: "t3q",
-    generatedAt: new Date().toISOString(),
-  };
-  await touch(id, { weatherSummary: ws });
 }
 
 async function runSopGeneration(id: string, userName: string) {
@@ -304,8 +276,7 @@ export async function propagate(id: string, missionId: string, message: string) 
   const mission = s.sop.missions.find((m) => m.id === missionId);
   if (!mission) throw new Error("임무를 찾을 수 없습니다.");
   const bundle = await getContactsBundle(orgForSituation(s.orgId, s.sido));
-  const ids = new Set(mission.propagation.contactIds);
-  bundle.groups.filter((g) => mission.propagation.groupIds.includes(g.id)).forEach((g) => g.memberIds.forEach((x) => ids.add(x)));
+  const ids = recipientIds(bundle, mission.propagation);
   const unitName = new Map(bundle.units.map((x) => [x.id, x.name]));
   const people = bundle.contacts.filter((c) => ids.has(c.id));
   if (!people.length) throw new Error("전파 대상을 선택하세요.");

@@ -75,14 +75,6 @@ export interface WeatherSnapshot {
   nationwideText: string;
 }
 
-export interface WeatherSummary {
-  headline: string;
-  body: string;
-  keyPoints: string[];
-  source: "t3q" | "mock";
-  generatedAt: string;
-}
-
 /** 기상특보 보고 이미지 (data URL, 브라우저에서 축소 후 저장) */
 export interface WeatherImage {
   src: string;
@@ -119,6 +111,8 @@ export interface Propagation {
   /** 담당자/그룹 지정 — 연락망 연계 */
   contactIds: string[];
   groupIds: string[];
+  /** 조직·부서 단위 지정 (하위 조직 포함, 발송 시점의 소속 인원) */
+  unitIds?: string[];
   channel: "SMS" | "EMAIL";
   sentAt?: string;
   sentTo?: string[];

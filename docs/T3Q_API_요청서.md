@@ -3,13 +3,14 @@
 > **최종 규격(정본)은 Swagger 문서입니다:** https://unereport4.vercel.app/api-docs (① T3Q 연계 API 요청서)
 > 원본 파일 `public/api-docs/t3q.yaml` · 코드 계약 `src/lib/t3q/types.ts` — 이 문서는 배경 설명용입니다.
 >
+> v1.6 반영 사항: **API-01 기상요약 폐지** (기상청 기상정보 원문 사용). SOP 응답에 `condition`·`notes`·`SopMission.responseStep`·`PropagationTarget.method` 추가, [매뉴얼 ↔ JSON 대응 설명서](https://unereport4.vercel.app/api-docs/mapping.html) 추가.
 > v1.3 반영 사항: `SituationContext.responseStep`(대응단계: 징후감지·초기대응·비상대응·수습복구) 추가 — API-02는 이 단계의 조치만 반환, `SopAction.responseStep` 추가.
 > v1.0 반영 사항: `SituationContext.period`(대응 기간) 추가, API-01 요청에 `weatherInfoText`(기상청 기상정보 본문) 추가, `WeatherAlert.level`에 `PRELIMINARY`(예비특보) 추가.
 
 | 항목 | 내용 |
 |---|---|
 | 문서명 | 대화형 AI 재난관리 — T3Q 연계 API 요청서 |
-| 대상 API | ① 기상특보 기반 AI 기상요약 ② 상황 기반 SOP(조치) 콘텐츠 생성 ③ 사용자 인증(링크 로그인) |
+| 대상 API | ② 상황 기반 SOP(조치) 콘텐츠 생성 ③ 사용자 인증(링크 로그인) — ① 기상요약은 v1.6에서 폐지 |
 | 요청 측 | 대화형 AI 재난관리 신규 앱(Next.js) 개발팀 |
 | 버전 | v0.1 (초안) · 2026-10-04 |
 | 근거 | 요구사항정의서(CADM_PM_1110_01 V0.2) — AI 기상요약 조회, T3Q 조치추천 API 연계, 기본 SOP 자동 구성, 연계 상태 확인, 모의/실제 응답 전환 |
@@ -20,15 +21,14 @@
 ## 1. 개요
 
 ### 1.1 목적
-신규 앱은 상황(지자체·재난유형·위기경보 수준 등)을 Context로 T3Q에 다음 두 가지를 요청한다.
+신규 앱은 상황(지자체·재난유형·위기경보 수준 등)을 Context로 T3Q에 다음을 요청한다. (기상특보는 기상청 공식 API 원문을 그대로 쓰며 T3Q에 요약을 요청하지 않는다.)
 
-1. **API-01 기상요약**: 시스템이 기상청 공식 API로 조회한 기상특보를 T3Q에 전달하면, T3Q가 담당자가 읽기 쉬운 **자연어 기상요약**을 반환한다.
-2. **API-02 SOP 콘텐츠**: 지역·상황·재난유형(및 선택 문서)을 전달하면, T3Q가 매뉴얼 기반의 **임무 → 조치(절차) → 세부행동**, 대응·피해 조치 구분, 담당·지원·협업기관, 전파대상, 필요자원을 **조치 목록 + 상세를 1회 응답**으로 반환한다. 신규 앱은 이를 기존 UNE SOP 컴포넌트(`__compn__`)로 변환하여 플로우를 구성한다.
+1. **API-02 SOP 콘텐츠**: 지역·상황·재난유형(및 선택 문서)을 전달하면, T3Q가 매뉴얼 기반의 **임무 → 조치(절차) → 세부행동**, 대응·피해 조치 구분, 담당·지원·협업기관, 전파대상, 필요자원을 **조치 목록 + 상세를 1회 응답**으로 반환한다. 신규 앱은 이를 기존 UNE SOP 컴포넌트(`__compn__`)로 변환하여 플로우를 구성한다.
 
 ### 1.2 범위 원칙 (요구사항 반영)
 | 구분 | T3Q 제공 | T3Q 미제공(신규 앱 담당) |
 |---|---|---|
-| 기상 | 공식 특보의 요약·해설 | 기상 예측, 위험도 판정 |
+| 기상 | - (기상청 원문 사용) | 특보 조회·표시, 기상특보 보고 작성 |
 | SOP | 조치코드·조치명·대응단계·기관·세부행동·전파대상·필요자원·출처 | 필수/선택 여부, 선행/후행 관계, **분기조건**, 조치 포함 여부 판단, 캔버스 좌표 |
 | 실행 | - | 상황전파 실제 수신자 확정, 발송 |
 
@@ -92,7 +92,7 @@ export interface Region {
   level: 'SIDO' | 'SIGUNGU' | 'EUPMYEONDONG';
 }
 
-/** 상황 Context — API-01/02 공통 */
+/** 상황 Context — API-02 */
 export interface SituationContext {
   situationId: string;               // 신규 앱 상황 ID
   workType: WorkType;
@@ -129,121 +129,9 @@ export interface T3QError {
 
 ---
 
-## 3. API-01 기상특보 → 자연어 기상요약
+## 3. (폐지) API-01 기상요약
 
-### 3.1 엔드포인트
-`POST /t3q/v1/weather/summary`
-
-### 3.2 요청
-```ts
-/** 기상특보 1건 (시스템이 기상청 공식 API로 조회한 원문 그대로 전달) */
-export interface WeatherAlert {
-  alertId: string;                     // 시스템 내부 ID
-  source: 'KMA';                       // 출처: 기상청
-  kind: string;                        // 특보 종류: '호우' | '태풍' | '대설' | '강풍' | '풍랑' | '건조' …
-  level: 'WATCH' | 'WARNING';          // 주의보 | 경보
-  command: 'ISSUE' | 'CHANGE' | 'EXTEND' | 'RELEASE' | 'PRELIMINARY'; // 발표|변경|연장|해제|예비특보
-  areas: { code: string; name: string }[]; // 특보구역
-  announcedAt: string;                 // 발표시각
-  effectiveAt: string;                 // 발효시각
-  releasedAt?: string;                 // 해제시각
-  retrievedAt: string;                 // 시스템 조회시각
-  text?: string;                       // 특보 원문/특보 내용(전문)
-}
-
-export interface WeatherSummaryRequest {
-  context: SituationContext;
-  alerts: WeatherAlert[];              // 0건 허용(특보 없음 요약)
-  options?: {
-    maxChars?: number;                 // 본문 최대 글자수 (기본 400)
-    style?: 'BRIEF' | 'REPORT';        // 상황판 짧은 요약 | 보고서 문체(~함/~임)
-    sections?: Array<'HEADLINE' | 'BODY' | 'KEY_POINTS' | 'TIMELINE' | 'CAUTIONS'>;
-  };
-}
-```
-
-### 3.3 응답
-```ts
-export interface WeatherSummaryResponse {
-  meta: T3QMeta;
-  summary: {
-    headline: string;                  // 한 줄 요약
-    body: string;                      // 자연어 요약 본문
-    keyPoints: string[];               // 핵심 사항(보고서 □/○ 항목으로 바로 사용)
-    timeline?: { time: string; text: string }[]; // 발표·발효·해제 흐름
-    affectedRegions: Region[];         // 요약에 언급된 지역
-    cautions?: string[];               // 공식 특보 문구 범위 내의 유의사항
-  };
-  basis: {                             // 근거: 어떤 특보로 요약했는지
-    alertIds: string[];
-    sourceLabel: string;               // 예: '기상청 기상특보(2026-07-16 14:00 발표)'
-  };
-  disclaimer: string;                  // 'AI 요약이며 공식 특보가 우선합니다' 등 고정 문구
-}
-```
-- **요청 사항**: 공식 특보에 없는 수치·예측(강수량 전망, 위험도 등급 등)을 생성하지 않을 것. 신규 앱은 공식 특보와 AI 요약을 출처·조회시각으로 구분 저장한다.
-- SSE 사용 시: `__status__` → `{"__summary_delta__":"…"}`(본문 토큰, 선택) → `{"__summary__":WeatherSummaryResponse}` → `{"__status__":"end"}` → `[DONE]`.
-
-### 3.4 예시
-요청:
-```json
-{
-  "context": {
-    "situationId": "SIT-20260716-0001",
-    "workType": "REAL",
-    "responsibleRegion": { "code": "2600000000", "name": "부산광역시", "level": "SIDO" },
-    "affectedRegions": [
-      { "code": "2635000000", "name": "해운대구", "level": "SIGUNGU" },
-      { "code": "2644000000", "name": "강서구", "level": "SIGUNGU" }
-    ],
-    "disasterType": { "code": "TYPHOON_HEAVY_RAIN", "name": "태풍/호우", "group": "자연재난" },
-    "alertLevel": "ALERT",
-    "baseTime": "2026-07-16T14:30:00+09:00",
-    "title": "7.16. 부산 집중호우 대응"
-  },
-  "alerts": [
-    {
-      "alertId": "WA-001",
-      "source": "KMA",
-      "kind": "호우",
-      "level": "WARNING",
-      "command": "ISSUE",
-      "areas": [{ "code": "L1100200", "name": "부산" }],
-      "announcedAt": "2026-07-16T14:00:00+09:00",
-      "effectiveAt": "2026-07-16T14:00:00+09:00",
-      "retrievedAt": "2026-07-16T14:05:12+09:00",
-      "text": "부산 호우경보 발표. 3시간 강우량 90mm 이상 예상 시 발표 기준."
-    }
-  ],
-  "options": { "maxChars": 300, "style": "REPORT", "sections": ["HEADLINE", "BODY", "KEY_POINTS", "TIMELINE"] }
-}
-```
-응답:
-```json
-{
-  "meta": {
-    "requestId": "7c1e0f3a-5b7d-4a8e-9a51-0d3c2f1a9b10",
-    "traceId": "t3q-wx-20260716-000123",
-    "generatedAt": "2026-07-16T14:05:20+09:00",
-    "model": "t3q-weather-v1",
-    "mock": false,
-    "elapsedMs": 2310
-  },
-  "summary": {
-    "headline": "부산 전역 호우경보 발효(7.16. 14:00)",
-    "body": "기상청은 7월 16일 14시 부산 지역에 호우경보를 발표·발효함. 해운대구·강서구 등 저지대 침수 취약지역의 선제적 통제와 주민 대피 준비가 필요함.",
-    "keyPoints": [
-      "7.16.(목) 14:00 부산 호우경보 발표·발효",
-      "저지대·지하차도·하천변 침수 취약지역 집중 관리 필요"
-    ],
-    "timeline": [{ "time": "2026-07-16T14:00:00+09:00", "text": "호우경보 발표·발효(부산)" }],
-    "affectedRegions": [{ "code": "2600000000", "name": "부산광역시", "level": "SIDO" }],
-    "cautions": ["공식 특보 해제 전까지 경보 상태 유지"]
-  },
-  "basis": { "alertIds": ["WA-001"], "sourceLabel": "기상청 기상특보(2026-07-16 14:00 발표)" },
-  "disclaimer": "본 요약은 AI가 공식 기상특보를 정리한 것으로, 공식 특보 원문이 우선합니다."
-}
-```
+v1.6에서 폐지했습니다. 기상청 「기상정보」가 이미 (현황)·(전망) 문장으로 제공되어, 기상특보 보고와 상황일지에 원문을 그대로 씁니다. AI가 공식 원문을 다시 쓰면 공문서 출처가 흐려지는 문제도 있습니다. 번호는 혼선을 막기 위해 유지합니다.
 
 ---
 
@@ -263,7 +151,6 @@ export type ResponsePhase =
 
 export interface SopActionsRequest {
   context: SituationContext;
-  weatherSummaryTraceId?: string;      // API-01 결과를 Context로 재사용할 때
   documents?: {                        // 사용자가 선택한 매뉴얼(문서 조회 API 결과)
     docId: string;
     pages?: number[];
@@ -662,7 +549,7 @@ data: [DONE]
 ## 8. 비기능 요청
 | 항목 | 요청 값 |
 |---|---|
-| 응답시간(동기) | API-01 ≤ 10초, API-02 ≤ 30초 (첫 SSE 이벤트 ≤ 5초) |
+| 응답시간(동기) | API-02 ≤ 30초 (첫 SSE 이벤트 ≤ 5초) |
 | 출력 제한 | 출처 `excerpt` 200자 이내. 외부 노출 화면에는 출처 문서 본문 미표시 |
 | 재현성 | 동일 요청·동일 문서 버전 → 동일 `actionCode` 집합(코드 안정성) |
 | 버전 관리 | 경로 버전(`/v1`), 필드 추가는 하위호환, 삭제·의미 변경은 사전 통보 |

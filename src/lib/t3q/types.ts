@@ -45,47 +45,6 @@ export interface T3QMeta {
   elapsedMs?: number;
 }
 
-/* ---------- API-01 기상요약 ---------- */
-
-export interface WeatherAlert {
-  alertId: string;
-  source: "KMA";
-  kind: string;
-  level: "WATCH" | "WARNING" | "PRELIMINARY";
-  command: "ISSUE" | "CHANGE" | "EXTEND" | "RELEASE" | "PRELIMINARY";
-  areas: { code: string; name: string }[];
-  announcedAt: string;
-  effectiveAt: string;
-  releasedAt?: string;
-  retrievedAt: string;
-  text?: string;
-}
-
-export interface WeatherSummaryRequest {
-  context: SituationContext;
-  alerts: WeatherAlert[];
-  /** 기상청 기상정보 본문 (getWthrInfo t1) */
-  weatherInfoText?: string;
-  options?: {
-    maxChars?: number;
-    style?: "BRIEF" | "REPORT";
-  };
-}
-
-export interface WeatherSummaryResponse {
-  meta: T3QMeta;
-  summary: {
-    headline: string;
-    body: string;
-    keyPoints: string[];
-    timeline?: { time: string; text: string }[];
-    affectedRegions: Region[];
-    cautions?: string[];
-  };
-  basis: { alertIds: string[]; sourceLabel: string };
-  disclaimer: string;
-}
-
 /* ---------- API-02 SOP 콘텐츠 ---------- */
 
 export type ResponsePhase = "PREVENTION" | "PREPAREDNESS" | "RESPONSE" | "RECOVERY";

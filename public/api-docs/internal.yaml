@@ -71,7 +71,7 @@ paths:
     post:
       tags: [상황·기상]
       summary: createSituation — 새 상황 등록 (+선택 시 SOP 생성)
-      description: 기상청 특보를 함께 저장하고 이벤트 「상황 등록」「기상특보 확인」을 남깁니다. T3Q 연계(live) 시 기상요약(API-01)을 자동 호출하고, `generate=true`면 SOP(API-02)까지 수행. 성공 시 `/s/{id}` 로 이동.
+      description: 기상청 특보를 함께 저장하고 이벤트 「상황 등록」「기상특보 확인」을 남깁니다. `generate=true`면 SOP(API-02)까지 수행. 성공 시 `/s/{id}` 로 이동.
       requestBody:
         content:
           application/json:
@@ -96,7 +96,7 @@ paths:
   /action/situation/refreshWeather:
     post:
       tags: [상황·기상]
-      summary: refreshWeather — 기상특보 다시 조회 (T3Q 연계 시 기상요약 API-01 자동 호출)
+      summary: refreshWeather — 기상특보 다시 조회
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
       responses: { "200": { description: 완료 } }
   /action/situation/saveWeatherImage:
@@ -185,7 +185,7 @@ paths:
     post:
       tags: [SOP 생성·실행]
       summary: addMissions — 임무 여러 개 한 번에 추가 (단계 전환 시)
-      description: 이미 있는 조치코드는 건너뜁니다. 실행 중이면 「임무 추가: 4단계 수습·복구 n건」 이벤트를 남깁니다.
+      description: "이미 있는 조치코드는 건너뜁니다. 실행 중이면 「임무 추가: 4단계 수습·복구 n건」 이벤트를 남깁니다."
       requestBody:
         content:
           application/json:
@@ -429,7 +429,7 @@ paths:
   /board/{id}:
     get:
       tags: [HTTP]
-      summary: 분리된 SOP 노선도 창 (로그인 필요, BroadcastChannel 로 본 화면과 동기화)
+      summary: 분리된 SOP 흐름도 창 (로그인 필요, BroadcastChannel 로 본 화면과 동기화)
       parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
       responses: { "200": { description: 화면 } }
   /api/image-proxy:
@@ -488,14 +488,6 @@ components:
         periodStart: { type: string, example: "2026-10-04T22:00", description: datetime-local (KST) }
         periodEnd: { type: [string, "null"], description: null 이면 종료 미정 }
         currentStatus: { type: string }
-    WeatherSummary:
-      type: object
-      properties:
-        headline: { type: string }
-        body: { type: string }
-        keyPoints: { type: array, items: { type: string } }
-        source: { type: string, enum: [t3q, mock] }
-        generatedAt: { type: string, format: date-time }
     MissionDetail:
       type: object
       properties:
@@ -510,6 +502,7 @@ components:
         targetHint: { type: array, items: { type: string }, description: 매뉴얼(T3Q) 전파대상 — 참고 }
         contactIds: { type: array, items: { type: string }, description: 연락망 담당자 }
         groupIds: { type: array, items: { type: string }, description: 전파그룹 }
+        unitIds: { type: array, items: { type: string }, description: "조직·부서 (하위 조직 포함, 발송 시점 소속 인원)" }
         channel: { type: string, enum: [SMS, EMAIL] }
         sentAt: { type: string, format: date-time }
         sentTo: { type: array, items: { type: string } }

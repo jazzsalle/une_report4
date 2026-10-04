@@ -3,10 +3,8 @@ import type {
   AuthVerifyResponse,
   SopActionsRequest,
   SopActionsResponse,
-  WeatherSummaryRequest,
-  WeatherSummaryResponse,
 } from "./types";
-import { mockSopActions, mockWeatherSummary } from "./mock";
+import { mockSopActions } from "./mock";
 
 /**
  * T3Q 연계 진입점 — 화면·서버 코드는 이 두 함수만 호출한다.
@@ -32,20 +30,6 @@ async function post<T>(path: string, body: unknown, timeoutMs: number): Promise<
   });
   if (!res.ok) throw new Error(`T3Q ${path} ${res.status}`);
   return (await res.json()) as T;
-}
-
-export async function weatherSummary(
-  req: WeatherSummaryRequest,
-): Promise<{ data: WeatherSummaryResponse; fallback: boolean }> {
-  if (t3qMode() === "live") {
-    try {
-      return { data: await post<WeatherSummaryResponse>("/weather/summary", req, 15000), fallback: false };
-    } catch (e) {
-      console.error("[t3q] weather summary failed, using seed", e);
-      return { data: await mockWeatherSummary(req), fallback: true };
-    }
-  }
-  return { data: await mockWeatherSummary(req), fallback: false };
 }
 
 export async function sopActions(

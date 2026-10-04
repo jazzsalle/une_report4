@@ -28,7 +28,6 @@ export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
         currentStatus: s.currentStatus,
       }}
       weather={s.weather}
-      summary={s.weatherSummary}
       images={s.weatherImages}
       me={{ name: u.name, dept: u.dept }}
     />

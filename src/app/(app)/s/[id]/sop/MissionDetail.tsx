@@ -12,7 +12,7 @@ import type { DispatchRow } from "./SopWorkspace";
 import QRCode from "qrcode";
 import { fmtTime } from "@/lib/format";
 import { MISSION_STATUS } from "./SopWorkspace";
-import { RecipientPicker, resolveRecipients } from "./RecipientPicker";
+import { RecipientPicker, resolveRecipients, SelectionChips } from "./RecipientPicker";
 import { KindIcon } from "./KindIcon";
 import { KIND_LABEL, missionKind } from "@/lib/sop/kind";
 
@@ -72,8 +72,8 @@ export function MissionDetail({
   const set = (patch: Partial<Mission>, immediate = false) => onChange({ ...m, ...patch }, immediate);
   const st = MISSION_STATUS[m.status];
   const recipients = useMemo(
-    () => resolveRecipients(contacts, m.propagation.contactIds, m.propagation.groupIds),
-    [contacts, m.propagation.contactIds, m.propagation.groupIds],
+    () => resolveRecipients(contacts, m.propagation),
+    [contacts, m.propagation],
   );
   const rec = useMemo(() => recommended(contacts.groups, m.propagation.targetHint), [contacts.groups, m.propagation.targetHint]);
   const now = () => new Date().toISOString();
@@ -101,18 +101,8 @@ export function MissionDetail({
     set(patch, true);
   };
 
-  const toggleGroup = (gid: string) => {
-    const has = m.propagation.groupIds.includes(gid);
-    set(
-      {
-        propagation: {
-          ...m.propagation,
-          groupIds: has ? m.propagation.groupIds.filter((x) => x !== gid) : [...m.propagation.groupIds, gid],
-        },
-      },
-      true,
-    );
-  };
+  const removeTarget = (kind: "contactIds" | "groupIds" | "unitIds", id: string) =>
+    set({ propagation: { ...m.propagation, [kind]: (m.propagation[kind] ?? []).filter((x) => x !== id) } }, true);
 
   const addDetail = () => {
     if (!newDetail.trim()) return;
@@ -296,40 +286,17 @@ export function MissionDetail({
                 </a>
               </div>
             )}
-            <div className="flex flex-wrap gap-2">
-              {contacts.groups.map((g) => {
-                const on = m.propagation.groupIds.includes(g.id);
-                return (
-                  <button
-                    key={g.id}
-                    disabled={!editable}
-                    onClick={() => toggleGroup(g.id)}
-                    className={clsx(
-                      "flex h-11 items-center gap-1.5 rounded-md border px-4 font-medium transition disabled:opacity-60",
-                      on ? "border-primary bg-primary text-white" : "border-line bg-white hover:border-primary",
-                    )}
-                  >
-                    {on && <Check size={16} />}
-                    {g.name} {g.memberIds.length}
-                    {!on && rec.has(g.id) && <span className="rounded bg-warning-weak px-1.5 text-[13px] text-warning">추천</span>}
-                  </button>
-                );
-              })}
+            <div className="flex flex-wrap items-center gap-2">
+              <SelectionChips b={contacts} sel={m.propagation} onRemove={editable ? removeTarget : undefined} />
               {editable && (
                 <Button onClick={() => setPicking(true)}>
-                  <UserPlus size={17} /> 개별 선택
+                  <UserPlus size={17} /> {recipients.length ? "대상 변경" : "전파 대상 선택"}
                 </Button>
               )}
             </div>
-            {m.propagation.contactIds.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {contacts.contacts
-                  .filter((c) => m.propagation.contactIds.includes(c.id))
-                  .map((c) => (
-                    <Badge key={c.id} tone="gray">
-                      {c.name} {c.title}
-                    </Badge>
-                  ))}
+            {!recipients.length && rec.size > 0 && (
+              <div className="mt-2 text-[16px] text-sub">
+                추천 전파그룹 · {contacts.groups.filter((g) => rec.has(g.id)).map((g) => g.name).join(", ")}
               </div>
             )}
           </div>
@@ -480,10 +447,10 @@ export function MissionDetail({
         open={picking}
         onClose={() => setPicking(false)}
         contacts={contacts}
-        contactIds={m.propagation.contactIds}
-        groupIds={m.propagation.groupIds}
-        onSave={(contactIds, groupIds) => {
-          set({ propagation: { ...m.propagation, contactIds, groupIds } }, true);
+        value={m.propagation}
+        recommended={rec}
+        onSave={(v) => {
+          set({ propagation: { ...m.propagation, ...v } }, true);
           setPicking(false);
         }}
       />

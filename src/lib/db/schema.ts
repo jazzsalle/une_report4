@@ -9,7 +9,6 @@ import {
 } from "drizzle-orm/pg-core";
 import type {
   WeatherSnapshot,
-  WeatherSummary,
   WeatherImages,
   Sop,
   ReportContent,
@@ -61,7 +60,6 @@ export const situations = pgTable(
     periodEnd: timestamp("period_end", { withTimezone: true }),
     currentStatus: text("current_status").notNull().default(""),
     weather: jsonb("weather").$type<WeatherSnapshot | null>(),
-    weatherSummary: jsonb("weather_summary").$type<WeatherSummary | null>(),
     /** 기상특보 보고: 특보발표현황·레이더 영상 이미지 */
     weatherImages: jsonb("weather_images").$type<WeatherImages | null>(),
     sop: jsonb("sop").$type<Sop | null>(),

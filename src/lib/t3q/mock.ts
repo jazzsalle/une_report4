@@ -7,8 +7,6 @@ import type {
   SopActionsResponse,
   SopAction,
   SopMission,
-  WeatherSummaryRequest,
-  WeatherSummaryResponse,
   T3QMeta,
 } from "./types";
 
@@ -26,45 +24,6 @@ function meta(): T3QMeta {
     generatedAt: new Date().toISOString(),
     model: "seed",
     mock: true,
-  };
-}
-
-/** API-01 모의: 공식 특보 원문을 규칙 기반으로 요약 (예측·판단 문구를 만들지 않는다) */
-export async function mockWeatherSummary(req: WeatherSummaryRequest): Promise<WeatherSummaryResponse> {
-  const region = req.context.responsibleRegion.name;
-  const active = req.alerts.filter((a) => a.command !== "PRELIMINARY");
-  const pre = req.alerts.filter((a) => a.command === "PRELIMINARY");
-
-  const headline = active.length
-    ? `${region} ${active.map((a) => a.kind).join("·")} 발효 중`
-    : pre.length
-      ? `${region} 예비특보 발표 — 발효 중인 특보 없음`
-      : `${region} 발효 중인 기상특보 없음`;
-
-  const keyPoints: string[] = [];
-  active.forEach((a) => keyPoints.push(`${a.kind}: ${a.areas.map((x) => x.name).join(", ")}`));
-  pre.slice(0, 2).forEach((a) => keyPoints.push(`예비특보 ${a.text ?? a.kind}`));
-
-  // 기상정보 본문에서 (현황)/(전망) 문장 추출
-  const info = req.weatherInfoText ?? "";
-  const sentences = info
-    .split(/\n/)
-    .map((l) => l.replace(/^[○o]\s*/, "").trim())
-    .filter((l) => /^\((현황|전망)\)/.test(l))
-    .map((l) => l.replace(/\s+/g, " "));
-  sentences.slice(0, 2).forEach((s) => keyPoints.push(s.length > 120 ? s.slice(0, 118) + "…" : s));
-
-  const body = sentences.length
-    ? sentences.join(" ")
-    : active.length
-      ? `기상청 공식 특보 기준 ${headline}.`
-      : "기상청 발표 기준 현재 해당 지역에 발효 중인 특보가 없음.";
-
-  return {
-    meta: meta(),
-    summary: { headline, body, keyPoints, affectedRegions: [req.context.responsibleRegion] },
-    basis: { alertIds: req.alerts.map((a) => a.alertId), sourceLabel: "기상청 기상특보" },
-    disclaimer: "공식 기상특보 원문이 우선합니다.",
   };
 }
 

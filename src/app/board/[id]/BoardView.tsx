@@ -13,12 +13,14 @@ export function BoardView({
   sop,
   groups,
   contacts,
+  units,
 }: {
   id: string;
   title: string;
   sop: Sop;
   groups: { id: string; name: string; memberIds: string[] }[];
   contacts: { id: string; name: string; title: string }[];
+  units: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const [sel, setSel] = useState<string | null>(null);
@@ -67,7 +69,7 @@ export function BoardView({
           selected={sel}
           started={!!sop.startedAt}
           ended={!!sop.endedAt}
-          people={{ targets: propagationTargets(sop.missions, { groups, contacts }) }}
+          people={{ targets: propagationTargets(sop.missions, { groups, contacts, units }) }}
           onSelect={(mid) => {
             setSel(mid);
             bc.current?.postMessage({ type: "select", id: mid } satisfies SopMessage);
