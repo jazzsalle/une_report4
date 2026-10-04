@@ -116,6 +116,8 @@ export interface PropagationTarget {
   target: string;
   targetType: "ORG" | "ROLE" | "PUBLIC";
   channelHint?: "SMS" | "EMAIL" | "BROADCAST" | "PHONE";
+  /** 매뉴얼 전파 표의 구분·전파방법 원문 */
+  method?: string;
   messageTemplate?: string;
 }
 
@@ -140,6 +142,10 @@ export interface SopAction {
   phaseLabel?: string;
   /** 이 조치가 속한 대응단계 */
   responseStep?: ResponseStepCode;
+  /** 수행 조건 — "필요시", "태풍 한반도 북상 우려시" 등 (매뉴얼 원문 그대로) */
+  condition?: string;
+  /** 비고 — 매뉴얼의 ※ 줄 */
+  notes?: string[];
   category: "RESPONSE" | "DAMAGE";
   missionCode: string;
   orderHint: number;
@@ -151,10 +157,13 @@ export interface SopAction {
   sources: SourceRef[];
 }
 
+/** 임무 = 매뉴얼 재난대응 프로세스의 상위 항목 [n] */
 export interface SopMission {
   missionCode: string;
   missionName: string;
+  responseStep?: ResponseStepCode;
   leadOrg?: string;
+  /** 이 임무에 속한 조치 [n-m] — 매뉴얼 기재 순서 */
   actionCodes: string[];
 }
 

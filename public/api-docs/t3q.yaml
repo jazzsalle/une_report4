@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: T3Q 연계 API 요청서
-  version: "1.4.0"
+  version: "1.5.0"
   description: |
     **재난상황일지 생성도구 → T3Q** 로 요청하는 API 2종의 규격입니다.
     T3Q 측은 아래 경로·요청·응답 형식대로 구현해 주시기 바랍니다.
@@ -19,6 +19,8 @@ info:
     - 모델명은 응답 `meta.model`로만 알려 주세요 (요청 측에서 모델명을 고정하지 않습니다).
     - 공식 특보에 없는 수치·예측·위험도 판단은 만들지 않습니다.
     - 출처(문서·쪽)는 보관용이며 화면 노드에는 표시하지 않습니다.
+
+    **매뉴얼 ↔ JSON 대응 설명서**: [/api-docs/mapping.html](/api-docs/mapping.html) — 매뉴얼 어느 칸이 어느 필드가 되는지 캡처로 표시하고, 추출 규칙(R1~R9)을 정리했습니다. 부산 풍수해는 예시이며 다른 재난유형·지자체 매뉴얼에도 같은 규칙을 적용합니다.
 
     상세 설명 문서: `docs/T3Q_API_요청서.md`
 servers:
@@ -541,6 +543,7 @@ components:
       required: [target, targetType]
       properties:
         target: { type: string, description: 전파대상 (참고정보 — 실제 수신자는 사용자가 연락망에서 지정) }
+        method: { type: string, description: "매뉴얼 전파 표의 구분·전파방법 원문 (예: UMS — 휴대전화 문자메시지(SMS) 발송)" }
         targetType: { type: string, enum: [ORG, ROLE, PUBLIC] }
         channelHint: { type: string, enum: [SMS, EMAIL, BROADCAST, PHONE] }
         messageTemplate: { type: string, description: 전파 문안 초안 }
@@ -562,16 +565,18 @@ components:
         excerpt: { type: string, maxLength: 200 }
     SopAction:
       type: object
-      description: 조치 1건 = 우리 화면의 SOP 임무 1개
+      description: "조치 [n-m] 1건 = 화면의 SOP 항목 1개 (매뉴얼 대응: /api-docs/mapping.html)"
       required: [actionCode, actionName, phase, category, missionCode, orderHint, organizations, detailTasks, propagation, resources, sources]
       properties:
-        actionCode: { type: string, description: 조치코드 (같은 요청·문서 버전이면 같은 코드) }
-        actionName: { type: string, description: 조치명 → 임무명 }
+        actionCode: { type: string, description: "매뉴얼 조치 코드번호 그대로 (예: 3-1). 같은 문서 버전이면 같은 코드" }
+        actionName: { type: string, description: "조치명 — 재난대응 프로세스의 [n-m] 줄 (예: 기상특보 상황 파악)" }
         phase: { $ref: "#/components/schemas/ResponsePhase" }
         phaseLabel: { type: string, description: "매뉴얼 원문 단계명 (예: 3단계 비상대응)" }
         responseStep: { $ref: "#/components/schemas/ResponseStepCode" }
         category: { type: string, enum: [RESPONSE, DAMAGE], description: 대응조치 / 피해(복구)조치 }
-        missionCode: { type: string }
+        missionCode: { type: string, description: "상위 임무 [n]의 번호 (예: 3)" }
+        condition: { type: string, description: "수행 조건 — (필요시), ＊태풍 북상 우려시 등 원문 그대로. 없으면 생략" }
+        notes: { type: array, items: { type: string }, description: "비고 — 매뉴얼의 ※ 줄 (※ 기호 제외)" }
         orderHint: { type: integer, description: 매뉴얼 기재 순서 (선후행 관계 아님) }
         summary: { type: string, description: 조치 요약 → 임무내용 }
         organizations: { type: array, items: { $ref: "#/components/schemas/OrgRef" } }
@@ -583,8 +588,9 @@ components:
       type: object
       required: [missionCode, missionName, actionCodes]
       properties:
-        missionCode: { type: string }
-        missionName: { type: string, example: 상황관리 }
+        missionCode: { type: string, description: "임무 번호 [n] (예: 3)" }
+        missionName: { type: string, example: 기상특보 전파 }
+        responseStep: { $ref: "#/components/schemas/ResponseStepCode" }
         leadOrg: { type: string }
         actionCodes: { type: array, items: { type: string } }
     SopActionsResponse:

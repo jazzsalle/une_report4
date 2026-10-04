@@ -281,6 +281,25 @@ export interface SopActionsRequest {
 ```
 
 ### 4.3 응답
+
+> **매뉴얼 ↔ JSON 대응 설명서**: [/api-docs/mapping.html](https://unereport4.vercel.app/api-docs/mapping.html)
+> 매뉴얼 캡처에 번호 상자로 어느 칸이 어느 필드인지 표시하고, 추출 규칙(R1~R9)을 정리했습니다.
+> 부산 풍수해 매뉴얼은 예시이며, 다른 재난유형·지자체 매뉴얼에도 같은 규칙을 적용해 주세요.
+
+**추출 규칙 요약**
+
+| 규칙 | 매뉴얼 표기 | JSON |
+|---|---|---|
+| R1 | `[n] 제목` | `missions[]` 임무 (missionCode = n) |
+| R2 | `[n-m] 제목` | `actions[]` 조치 1건 (actionCode = n-m, missionCode = n) |
+| R3 | `- 내용` | 바로 위 조치의 `detailTasks[]` |
+| R4 | `※ 내용` | 바로 위 조치의 `notes[]` |
+| R5 | 기호 없이 이어지는 줄 | 앞 줄에 이어 붙임 (줄바꿈 복원) |
+| R6 | `[3-3][3-4] 제목` 한 줄 | 조치 1건, actionCode = `3-3,3-4` |
+| R7 | 상위 `[n]` 없이 `[n-m]`만 있음 | 임무를 만들고 이름은 행동카드 조치목록 |
+| R8 | `(필요시)`, `＊○○시` | `condition` (제목에서 떼어 냄) |
+| R9 | `-` 줄이 없는 조치 | 행동카드 표준행동을 `detailTasks`로 |
+
 ```ts
 export interface OrgRef {
   name: string;                        // 기관·부서명 (예: '시민안전실 자연재난과')
@@ -298,6 +317,7 @@ export interface DetailTask {          // 세부행동 = 하위 임무
 export interface PropagationTarget {   // 전파대상(참고정보 — 실제 수신자는 사용자가 확정)
   target: string;                      // 예: '구·군 재난안전과', '읍면동 주민'
   targetType: 'ORG' | 'ROLE' | 'PUBLIC';
+  method?: string;                     // 구분·전파방법 원문 (예: 'UMS — 휴대전화 문자메시지(SMS) 발송')
   channelHint?: 'SMS' | 'EMAIL' | 'BROADCAST' | 'PHONE';
   messageTemplate?: string;            // 전파 문안 초안
 }
@@ -322,7 +342,9 @@ export interface SopAction {
   phase: ResponsePhase;
   phaseLabel?: string;                 // 매뉴얼 원문 단계명 (예: '비상 2단계')
   category: 'RESPONSE' | 'DAMAGE';     // 대응조치 | 피해(복구)조치
-  missionCode: string;                 // 소속 임무
+  missionCode: string;                 // 소속 임무 [n]
+  condition?: string;                  // 수행 조건 (필요시 …) — 원문 그대로
+  notes?: string[];                    // 비고 (※ 줄)
   orderHint: number;                   // 매뉴얼상 기재 순서(선후행 관계 아님)
   summary?: string;                    // 조치 요약 1~2문장
   organizations: OrgRef[];             // 담당·지원·협업기관
@@ -334,7 +356,8 @@ export interface SopAction {
 
 export interface SopMission {          // 임무(조치 묶음)
   missionCode: string;
-  missionName: string;                 // 예: '상황관리', '인명보호', '시설피해 응급복구'
+  missionName: string;                 // 예: '기상특보 전파', '주민대피'
+  responseStep?: ResponseStepCode;     // 임무가 속한 대응단계
   leadOrg?: string;
   actionCodes: string[];
 }

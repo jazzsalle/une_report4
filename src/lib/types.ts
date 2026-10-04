@@ -129,6 +129,12 @@ export interface Mission {
   code: string;
   /** 임무 종류 (비어 있으면 임무명으로 추정) */
   kind?: MissionKind;
+  /** 상위 임무 [n] — 매뉴얼 재난대응 프로세스 */
+  group?: { code: string; name: string };
+  /** 수행 조건 (필요시 …) */
+  condition?: string;
+  /** 비고 (※ …) */
+  notes?: string[];
   /** 대응 / 복구 */
   phase: "대응" | "복구";
   stage: string;

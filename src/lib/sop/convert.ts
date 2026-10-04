@@ -134,6 +134,7 @@ export function emptyMission(phase: "대응" | "복구" = "대응"): Mission {
 
 /** T3Q 응답(조치 목록+상세) → SOP 임무 목록 */
 export function responseToSop(res: SopActionsResponse, fallback: boolean): Sop {
+  const groupOf = new Map(res.missions.map((g) => [g.missionCode, { code: g.missionCode, name: g.missionName }]));
   const missions: Mission[] = res.actions
     .slice()
     .sort((a, b) => a.orderHint - b.orderHint)
@@ -143,6 +144,9 @@ export function responseToSop(res: SopActionsResponse, fallback: boolean): Sop {
         ...emptyMission(a.phase === "RECOVERY" || a.category === "DAMAGE" ? "복구" : "대응"),
         code: a.actionCode,
         stage: a.phaseLabel ?? "",
+        group: groupOf.get(a.missionCode),
+        condition: a.condition || undefined,
+        notes: a.notes?.length ? a.notes : undefined,
         title: a.actionName,
         content: a.summary ?? "",
         lead: a.organizations.find((o) => o.role === "LEAD")?.name ?? "",
@@ -172,6 +176,9 @@ export function seedToMission(a: SeedAction): Mission {
     ...emptyMission(a.phase === "복구" ? "복구" : "대응"),
     code: a.code,
     stage: STEP_LABEL[stepOf(a)],
+    group: a.mission,
+    condition: a.condition,
+    notes: a.notes,
     title: a.title,
     content: a.content,
     lead: a.lead,

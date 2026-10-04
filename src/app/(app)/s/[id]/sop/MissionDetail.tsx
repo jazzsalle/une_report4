@@ -123,6 +123,12 @@ export function MissionDetail({
   return (
     <div className="flex h-full flex-col">
       {/* 머리 */}
+      {m.group && (
+        <div className="border-b border-line-weak bg-canvas px-6 py-2.5 text-[15px] font-semibold text-sub">
+          [{m.group.code}] {m.group.name}
+          {/^[0-9]/.test(m.code) && <span className="ml-2 text-ink">› {m.code}</span>}
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3 border-b border-line-weak px-6 py-5">
         <KindIcon kind={missionKind(m)} size={34} />
         {edit ? (
@@ -135,6 +141,7 @@ export function MissionDetail({
         ) : (
           <h2 className="min-w-0 flex-1 text-[21px] font-bold">{m.title}</h2>
         )}
+        {m.condition && <Badge tone="orange">{m.condition}</Badge>}
         {m.stage && <Badge tone="gray">{m.stage}</Badge>}
         {started && <Badge tone={st.tone}>{st.label}</Badge>}
         {m.startedAt && <span className="text-[16px] text-sub">시작 {fmtTime(m.startedAt)}</span>}
@@ -429,6 +436,15 @@ export function MissionDetail({
               />
             </Field>
           </>
+        )}
+        {m.notes && m.notes.length > 0 && (
+          <Field label="비고">
+            <ul className="space-y-1 text-[16px] leading-snug text-sub">
+              {m.notes.map((n, i) => (
+                <li key={i}>※ {n}</li>
+              ))}
+            </ul>
+          </Field>
         )}
         {m.resources.length > 0 && (
           <Field label="필요자원">

@@ -53,7 +53,7 @@ npm run dev                    # http://localhost:3000
 
 ## T3Q 연계 교체
 
-- 계약(정본): **API 문서 https://unereport4.vercel.app/api-docs** — ① T3Q 요청서 ② 내부 API ③ 기상청 (원본 `public/api-docs/*.yaml`, 설명 `docs/T3Q_API_요청서.md`)
+- 계약(정본): **API 문서 https://unereport4.vercel.app/api-docs** · 매뉴얼↔JSON 대응 설명서 https://unereport4.vercel.app/api-docs/mapping.html — ① T3Q 요청서 ② 내부 API ③ 기상청 (원본 `public/api-docs/*.yaml`, 설명 `docs/T3Q_API_요청서.md`)
 - 코드: `src/lib/t3q/types.ts`(계약 타입) · `client.ts`(실제 호출) · `mock.ts`(매뉴얼 시드 응답)
 - 전환: 환경변수 `T3Q_MODE=live`, `T3Q_BASE_URL`, `T3Q_TOKEN` 설정. 실패 시 자동으로 시드 응답 사용.
 

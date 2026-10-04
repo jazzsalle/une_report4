@@ -1,4 +1,5 @@
 import busan from "@/data/busan-flood.json";
+import busanProcess from "@/data/busan-process.json";
 import { GB_WILDFIRE, GB_WILDFIRE_SOURCE } from "@/data/gb-wildfire";
 import { COMMON_SOURCE, commonActions } from "@/data/common-sop";
 import { STEP_LABEL, type ResponseStep } from "@/lib/types";
@@ -22,6 +23,12 @@ export interface SeedAction {
   manualCode?: string;
   manualStage?: string;
   nd?: boolean;
+  /** 상위 임무 [n] (매뉴얼 재난대응 프로세스) */
+  mission?: { code: string; name: string };
+  /** 수행 조건 (필요시, 태풍 북상 우려시 …) */
+  condition?: string;
+  /** 비고 (※ …) */
+  notes?: string[];
 }
 
 const VERBS =
@@ -50,15 +57,66 @@ export const BUSAN_FLOOD: SeedAction[] = (busan as { actions: SeedAction[] }).ac
   content: prettifyTitle(a.content),
 }));
 
+type ProcessAction = {
+  code: string;
+  name: string;
+  details: string[];
+  notes: string[];
+  condition: string;
+  card?: {
+    content: string;
+    lead: string;
+    support: string[];
+    collab: string[];
+    propagateTo: string[];
+    propagateMsg: string;
+    resources: string[];
+    damageMeasures: string[];
+    page: number;
+  };
+};
+type ProcessStage = {
+  step: string;
+  label: string;
+  alert: string[];
+  missions: { code: string; name: string; actions: ProcessAction[] }[];
+};
+
+/**
+ * 부산 풍수해: 재난대응 프로세스(p.34) 계층 그대로 — 단계 → 임무[n] → 조치[n-m] → 세부행동
+ * (행동카드의 기관·전파·자원을 합쳐 둔 busan-process.json)
+ */
+export const BUSAN_PROCESS: SeedAction[] = (busanProcess as { stages: ProcessStage[] }).stages.flatMap((st) =>
+  st.missions.flatMap((m) =>
+    m.actions.map((a) => ({
+      code: `BSN-${a.code}`,
+      manualCode: a.code,
+      manualStage: st.label,
+      stage: st.alert[0],
+      phase: st.step === "수습복구" ? "복구" : "대응",
+      hazard: ["호우", "태풍", "대설"],
+      title: a.name,
+      content: a.card?.content ? prettifyTitle(a.card.content) : "",
+      details: a.details,
+      lead: a.card?.lead ?? "자연재난과",
+      support: a.card?.support ?? [],
+      collab: a.card?.collab ?? [],
+      propagateTo: a.card?.propagateTo ?? [],
+      propagateMsg: a.card?.propagateMsg ?? "",
+      resources: a.card?.resources ?? [],
+      damageMeasures: a.card?.damageMeasures ?? [],
+      page: a.card?.page ?? 34,
+      mission: { code: m.code, name: m.name },
+      condition: a.condition || undefined,
+      notes: a.notes.length ? a.notes : undefined,
+    })),
+  ),
+);
+
 /** 재난유형별 매뉴얼 시드: 태풍/호우 = 부산 풍수해 매뉴얼, 산불 = 경북 산불 샘플, 그 외 = 공통 기본 SOP */
 export function seedLibrary(hazard: string): { source: string; actions: SeedAction[] } {
   if (hazard === "산불") return { source: GB_WILDFIRE_SOURCE, actions: GB_WILDFIRE };
-  if (hazard === "태풍/호우") {
-    return {
-      source: BUSAN_SOURCE,
-      actions: BUSAN_FLOOD.filter((a) => a.hazard.includes("호우") || a.hazard.includes("태풍") || a.hazard.length === 0),
-    };
-  }
+  if (hazard === "태풍/호우") return { source: BUSAN_SOURCE, actions: BUSAN_PROCESS };
   return { source: COMMON_SOURCE, actions: commonActions(hazard) };
 }
 

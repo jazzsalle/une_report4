@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>매뉴얼 ↔ JSON 대응 설명서</title>
+  <link rel="stylesheet" href="/fonts/pretendard-gov/pretendardvariable-gov-dynamic-subset.css" />
+  <style>
+    :root {
+      --ink: #1e2124; --sub: #464c53; --line: #cdd1d5; --weak: #e6e8ea; --canvas: #f4f5f6; --card: #fff;
+      --navy: #052b57; --primary: #256ef4; --primary-weak: #ecf2fe; --red: #de2134; --red-weak: #fdefef;
+      --orange-weak: #fff3e5; --orange: #c25400; --code: #f1f3f5;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font-family: "Pretendard GOV Variable", "Malgun Gothic", sans-serif; font-size: 17px; line-height: 1.6; word-break: keep-all; }
+    header { background: var(--navy); color: #fff; }
+    header .in { max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    header h1 { margin: 0; font-size: 22px; }
+    header a { margin-left: auto; color: #fff; text-decoration: none; border: 1px solid rgba(255,255,255,.5); border-radius: 6px; padding: 6px 14px; font-size: 16px; }
+    main { max-width: 1280px; margin: 0 auto; padding: 28px 24px 80px; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 28px; margin-bottom: 28px; }
+    h2 { margin: 0 0 6px; font-size: 24px; }
+    h2 .no { display: inline-block; min-width: 34px; height: 34px; line-height: 34px; text-align: center; border-radius: 8px; background: var(--navy); color: #fff; font-size: 18px; margin-right: 10px; }
+    .lead { margin: 0 0 20px; color: var(--sub); }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+    @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } main { padding: 20px 16px 60px; } section { padding: 20px 16px; } }
+    figure { margin: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+    figure img { display: block; width: 100%; height: auto; }
+    figcaption { padding: 8px 12px; border-top: 1px solid var(--weak); color: var(--sub); font-size: 15px; }
+    table { width: 100%; border-collapse: collapse; font-size: 16px; }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; text-align: left; }
+    th { background: var(--canvas); font-weight: 700; white-space: nowrap; }
+    td.n { text-align: center; width: 44px; }
+    .dot { display: inline-block; width: 24px; height: 24px; line-height: 24px; border-radius: 50%; background: var(--red); color: #fff; font-weight: 700; font-size: 14px; text-align: center; }
+    code { font-family: Consolas, "D2Coding", monospace; background: var(--code); border-radius: 4px; padding: 1px 5px; font-size: .92em; }
+    pre { margin: 0; background: #1b2430; color: #e6edf3; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 14.5px; line-height: 1.55; }
+    pre .c { color: #8b9bb0; }
+    .tree { display: flex; gap: 0; flex-wrap: wrap; margin: 4px 0 8px; }
+    .tree .lv { flex: 1 1 200px; border: 2px solid var(--navy); border-radius: 10px; padding: 14px 16px; margin: 0 10px 10px 0; position: relative; background: #fff; }
+    .tree .lv b { display: block; font-size: 19px; }
+    .tree .lv .m { color: var(--sub); font-size: 15px; }
+    .tree .lv .j { margin-top: 6px; }
+    .tree .lv:nth-child(1) { background: var(--primary-weak); }
+    .note { background: var(--orange-weak); border-left: 4px solid var(--orange); padding: 12px 16px; border-radius: 6px; margin-top: 16px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 960px) { .two { grid-template-columns: 1fr; } }
+    ul.plain { margin: 8px 0 0; padding-left: 20px; }
+    ul.plain li { margin: 4px 0; }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .toc a { text-decoration: none; color: var(--navy); border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; background: #fff; font-size: 15px; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="in">
+    <h1>매뉴얼 ↔ JSON 대응 설명서 · API-02 SOP 콘텐츠</h1>
+    <a href="/api-docs">API 요청서로</a>
+  </div>
+</header>
+<main>
+
+<section>
+  <h2>이 문서는</h2>
+  <p class="lead">API-02 응답 JSON의 각 필드가 재난대응 매뉴얼의 <b>어느 칸</b>에서 나오는지 캡처에 번호 상자로 표시했습니다.
+    캡처는 부산광역시 풍수해 재난대응 매뉴얼 예시이며, 다른 재난유형·지자체 매뉴얼도 <b>같은 계층과 규칙</b>으로 추출합니다.</p>
+  <div class="tree">
+    <div class="lv"><b>대응단계</b><span class="m">1단계 징후감지 · 2단계 초기대응 · 3단계 비상대응 · 4단계 수습복구</span>
+      <div class="j"><code>responseStep</code></div></div>
+    <div class="lv"><b>임무 [n]</b><span class="m">재난대응 프로세스의 큰 항목</span>
+      <div class="j"><code>missions[]</code></div></div>
+    <div class="lv"><b>조치 [n-m]</b><span class="m">화면의 SOP 항목 1개 = 행동카드 1장</span>
+      <div class="j"><code>actions[]</code></div></div>
+    <div class="lv"><b>세부행동 -</b><span class="m">조치 아래의 할 일</span>
+      <div class="j"><code>actions[].detailTasks[]</code></div></div>
+  </div>
+  <p style="margin:6px 0 0">매뉴얼은 <b>재난대응 프로세스 표</b>(목차 역할 — 단계·임무·조치·세부행동)와 <b>행동카드</b>(조치 1건의 기관·표준행동·전파·자원)로 되어 있습니다.
+    두 곳은 <b>코드번호</b>(예: <code>1-1</code>)로 연결되며, JSON에서는 <code>actionCode</code>가 그 연결 고리입니다.</p>
+  <div class="toc">
+    <a href="#s1">① 재난대응 프로세스</a><a href="#s2">② 행동카드</a><a href="#s3">③ 전파 표</a><a href="#s4">④ 수습·복구</a>
+    <a href="#rules">추출 규칙 R1~R9</a><a href="#edge">애매한 경우</a><a href="#other">다른 매뉴얼 적용</a><a href="#json">JSON 예시</a>
+  </div>
+</section>
+
+<section id="s1">
+  <h2><span class="no">①</span>재난대응 프로세스 표 → 단계 · 임무 · 조치 · 세부행동</h2>
+  <p class="lead">SOP의 <b>뼈대</b>입니다. 단계 칸을 위에서 아래로 읽어 임무와 조치를 기재 순서대로 만듭니다. (매뉴얼 34쪽)</p>
+  <div class="grid">
+    <figure><img src="/api-docs/img/map-process.png" alt="재난대응 프로세스 표 캡처" /><figcaption>부산 풍수해 매뉴얼 p.34 · 1단계 징후감지 칸</figcaption></figure>
+    <table>
+      <tr><th>번호</th><th>매뉴얼</th><th>JSON 필드</th></tr>
+      <tr><td class="n"><span class="dot">1</span></td><td>단계 머리 「1단계 징후 감지」</td><td><code>actions[].responseStep</code> = <code>SIGN_DETECTION</code><br><code>phaseLabel</code> = 원문 단계명</td></tr>
+      <tr><td class="n"><span class="dot">2</span></td><td>위기경보 수준과 ★ 표시</td><td>요청 <code>context.alertLevel</code> → 대응단계 추천 근거 (★가 붙은 단계)</td></tr>
+      <tr><td class="n"><span class="dot">3</span></td><td><code>[3]</code> 큰 항목</td><td><code>missions[]</code> 1건<br><code>missionCode</code> = <code>"3"</code>, <code>missionName</code> = 제목</td></tr>
+      <tr><td class="n"><span class="dot">4</span></td><td><code>[3-1]</code> 하위 항목</td><td><code>actions[]</code> 1건<br><code>actionCode</code> = <code>"3-1"</code>, <code>actionName</code> = 제목, <code>missionCode</code> = <code>"3"</code></td></tr>
+      <tr><td class="n"><span class="dot">5</span></td><td><code>-</code> 로 시작하는 줄</td><td>바로 위 조치의 <code>detailTasks[]</code> (기재 순서대로 <code>seq</code>)</td></tr>
+      <tr><td class="n"><span class="dot">6</span></td><td><code>[3-3][3-4]</code> 처럼 코드 두 개가 한 줄</td><td>조치 1건, <code>actionCode</code> = <code>"3-3,3-4"</code> (규칙 R6)</td></tr>
+      <tr><td class="n"><span class="dot">7</span></td><td><code>＊태풍 한반도 북상 우려시</code>, <code>(필요시)</code></td><td><code>condition</code> — 제목에서 떼어 원문 그대로 (규칙 R8)</td></tr>
+      <tr><td class="n"><span class="dot">8</span></td><td>왼쪽 부서 칸</td><td><code>organizations[]</code> 참고 — 행동카드의 주관·지원·협업이 있으면 카드가 우선</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="s2">
+  <h2><span class="no">②</span>행동카드 → 조치 상세</h2>
+  <p class="lead">프로세스 표의 조치 1건마다 행동카드 1장이 있습니다. 카드 <b>코드번호</b>로 프로세스의 <code>[n-m]</code>과 짝을 맞춥니다. (매뉴얼 41쪽, 1-1)</p>
+  <div class="grid">
+    <figure><img src="/api-docs/img/map-card.png" alt="행동카드 1-1 캡처" /><figcaption>행동카드 1-1 기상정보 모니터링</figcaption></figure>
+    <table>
+      <tr><th>번호</th><th>매뉴얼</th><th>JSON 필드</th></tr>
+      <tr><td class="n"><span class="dot">1</span></td><td>카드 단계 표시 「징후 감지」</td><td><code>responseStep</code> 확인용 (프로세스 표와 같아야 함)</td></tr>
+      <tr><td class="n"><span class="dot">2</span></td><td>코드번호 <code>1-1</code></td><td><code>actionCode</code> — 프로세스 <code>[1-1]</code>과 연결</td></tr>
+      <tr><td class="n"><span class="dot">3</span></td><td>조치목록</td><td><code>actionName</code> (프로세스 표 제목이 있으면 그것을 우선)</td></tr>
+      <tr><td class="n"><span class="dot">4</span></td><td>조치내용</td><td><code>summary</code></td></tr>
+      <tr><td class="n"><span class="dot">5</span></td><td>주관부서</td><td><code>organizations[]</code> <code>role: LEAD</code></td></tr>
+      <tr><td class="n"><span class="dot">6</span></td><td>지원부서</td><td><code>organizations[]</code> <code>role: SUPPORT</code> (쉼표마다 1건)</td></tr>
+      <tr><td class="n"><span class="dot">7</span></td><td>협업기관</td><td><code>organizations[]</code> <code>role: COOPERATE</code></td></tr>
+      <tr><td class="n"><span class="dot">8</span></td><td>표준행동 열</td><td><code>detailTasks[].title</code> — 프로세스 표에 <code>-</code> 줄이 없을 때만 사용 (규칙 R9)</td></tr>
+      <tr><td class="n"><span class="dot">9</span></td><td>세부내용 열</td><td><code>detailTasks[].content</code> (같은 표준행동의 여러 줄은 줄바꿈으로 합침)</td></tr>
+      <tr><td class="n"><span class="dot">10</span></td><td>비고 열</td><td><code>detailTasks[].note</code></td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="s3">
+  <h2><span class="no">③</span>전파 표 → 전파대상</h2>
+  <p class="lead">전파가 있는 카드에는 구분·전파방법·전파대상 표가 붙습니다. 실제 수신자는 화면에서 사용자가 연락망으로 고르고, 이 값은 <b>추천 참고</b>로 씁니다. (매뉴얼 44쪽, 2-2)</p>
+  <div class="grid">
+    <figure><img src="/api-docs/img/map-propagation.png" alt="행동카드 2-2 전파 표 캡처" /><figcaption>행동카드 2-2 기상특보 전파</figcaption></figure>
+    <table>
+      <tr><th>번호</th><th>매뉴얼</th><th>JSON 필드</th></tr>
+      <tr><td class="n"><span class="dot">1</span></td><td>조치목록</td><td><code>actionName</code> — 전파 조치임을 알 수 있는 제목</td></tr>
+      <tr><td class="n"><span class="dot">2</span></td><td>전파방법</td><td><code>propagation[].method</code> (구분과 함께 원문)</td></tr>
+      <tr><td class="n"><span class="dot">3</span></td><td>전파대상</td><td><code>propagation[].target</code>, 성격에 따라 <code>targetType</code> (기관 ORG · 직위 ROLE · 시민 PUBLIC)</td></tr>
+      <tr><td class="n"><span class="dot">4</span></td><td>구분 (UMS, One-Click …)</td><td><code>propagation[].channelHint</code> 가까운 값 — UMS·문자 → <code>SMS</code>, 방송·전광판 → <code>BROADCAST</code>, 유선 → <code>PHONE</code></td></tr>
+    </table>
+  </div>
+  <p class="note">전파 표의 한 행 = <code>propagation[]</code> 1건입니다. 표 아래 <code>*</code> 설명줄(예: 긴급재난문자는 행정안전부 발송)은 조치의 <code>notes[]</code>로 넣습니다.</p>
+</section>
+
+<section id="s4">
+  <h2><span class="no">④</span>수습·복구 카드</h2>
+  <p class="lead">4단계 카드는 표 머리가 「지시내용」으로 바뀌지만 구조는 같습니다. (매뉴얼 196쪽, 9-2)</p>
+  <div class="grid">
+    <figure><img src="/api-docs/img/map-recovery.png" alt="행동카드 9-2 캡처" /><figcaption>행동카드 9-2 재해취약지 사후점검</figcaption></figure>
+    <table>
+      <tr><th>번호</th><th>매뉴얼</th><th>JSON 필드</th></tr>
+      <tr><td class="n"><span class="dot">1</span></td><td>「수습·복구」</td><td><code>responseStep</code> = <code>RECOVERY</code>, <code>category</code> = <code>DAMAGE</code></td></tr>
+      <tr><td class="n"><span class="dot">2</span></td><td>코드번호 <code>9-2</code></td><td><code>actionCode</code></td></tr>
+      <tr><td class="n"><span class="dot">3</span></td><td>조치목록</td><td><code>actionName</code></td></tr>
+      <tr><td class="n"><span class="dot">4</span></td><td>표준행동 · 지시내용</td><td><code>detailTasks[].title</code> · <code>detailTasks[].content</code>, 비고 열(붙임 번호)은 <code>note</code></td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="rules">
+  <h2>추출 규칙 R1~R9</h2>
+  <p class="lead">같은 매뉴얼이면 누가 뽑아도 같은 JSON이 나오도록 정한 규칙입니다.</p>
+  <table>
+    <tr><th>규칙</th><th>매뉴얼 표기</th><th>JSON 처리</th><th>예</th></tr>
+    <tr><td>R1</td><td><code>[n] 제목</code></td><td><code>missions[]</code> 1건 (<code>missionCode</code> = n)</td><td><code>[3]</code> 기상특보 대응</td></tr>
+    <tr><td>R2</td><td><code>[n-m] 제목</code></td><td><code>actions[]</code> 1건, 소속 임무 = n</td><td><code>[3-1]</code> (초기)상황판단회의 개최</td></tr>
+    <tr><td>R3</td><td><code>- 내용</code></td><td>바로 위 조치의 <code>detailTasks[]</code></td><td>- 비상근무 실시</td></tr>
+    <tr><td>R4</td><td><code>※ 내용</code></td><td>바로 위 조치의 <code>notes[]</code> (※ 기호 빼고)</td><td>※ 재대본 구성 전 재난안전상황실에서 보고</td></tr>
+    <tr><td>R5</td><td>기호 없이 이어지는 줄</td><td>칸이 좁아 줄바꿈된 것 — 앞 줄에 이어 붙임</td><td>「…영상회의」 + 「(자연재난과장)」</td></tr>
+    <tr><td>R6</td><td>코드 여러 개가 한 줄 <code>[3-3][3-4]</code></td><td>조치 1건, <code>actionCode</code> = <code>"3-3,3-4"</code>, 카드 두 장의 내용을 합침</td><td>비상연락체계 확인</td></tr>
+    <tr><td>R7</td><td>상위 <code>[n]</code> 없이 <code>[n-m]</code>만 있음</td><td>임무 n을 만들고 이름은 그 행동카드의 조치목록</td><td><code>[41-1]</code>만 있는 경우</td></tr>
+    <tr><td>R8</td><td><code>(필요시)</code>, <code>＊○○시</code></td><td>제목에서 떼어 <code>condition</code>에 원문 그대로</td><td>피해조사단 교육 · condition「태풍 한반도 북상 우려시」</td></tr>
+    <tr><td>R9</td><td><code>-</code> 줄이 하나도 없는 조치</td><td>행동카드 표준행동을 <code>detailTasks</code>로 채움</td><td>[4-1] 기상특보 접수</td></tr>
+  </table>
+</section>
+
+<section id="edge">
+  <h2>애매한 경우</h2>
+  <div class="two">
+    <div>
+      <h3 style="margin:0 0 6px">제목만 있고 내용이 없을 때</h3>
+      <p style="margin:0">프로세스 표에도 행동카드에도 세부 내용이 없으면 <code>detailTasks: []</code>로 둡니다. <b>매뉴얼에 없는 내용은 만들지 않습니다.</b> 화면에서 담당자가 직접 채웁니다.</p>
+      <h3 style="margin:18px 0 6px">프로세스와 카드 내용이 다를 때</h3>
+      <p style="margin:0">제목·순서·세부행동은 <b>프로세스 표</b>, 기관·전파·자원은 <b>행동카드</b>를 따릅니다. 카드 코드가 프로세스에 없으면 해당 단계 끝에 붙이고 <code>sources</code>에 쪽을 남깁니다.</p>
+    </div>
+    <div>
+      <h3 style="margin:0 0 6px">한 조치가 여러 단계에 나올 때</h3>
+      <p style="margin:0">단계마다 따로 1건씩 만듭니다. <code>actionCode</code>는 매뉴얼 코드 그대로이고, 응답은 요청한 <code>responseStep</code>의 것만 보냅니다.</p>
+      <h3 style="margin:18px 0 6px">조건이 세부행동에 붙어 있을 때</h3>
+      <p style="margin:0"><code>- (필요시) 비상근무 실시</code>처럼 세부행동 앞의 조건은 떼지 않고 <code>detailTasks[].title</code>에 그대로 둡니다. <code>condition</code>은 조치 제목에 붙은 조건만 씁니다.</p>
+    </div>
+  </div>
+</section>
+
+<section id="other">
+  <h2>다른 재난유형 · 지자체 매뉴얼 적용</h2>
+  <p class="lead">번호 모양은 매뉴얼마다 달라도 <b>몇 번째 깊이인지</b>로 맞춥니다.</p>
+  <table>
+    <tr><th>매뉴얼 모양</th><th>임무</th><th>조치</th><th>세부행동</th></tr>
+    <tr><td>부산 풍수해형 <code>[n] / [n-m] / -</code></td><td><code>[n]</code></td><td><code>[n-m]</code></td><td><code>-</code></td></tr>
+    <tr><td>공문서형 <code>1. / 가. / 1)</code></td><td><code>1.</code></td><td><code>가.</code></td><td><code>1)</code>, <code>○</code>, <code>-</code></td></tr>
+    <tr><td>표 형식 (단계별 행)</td><td>표 안 소제목, 없으면 단계 = 임무 1건</td><td>표의 한 행</td><td>행 안의 글머리표 줄</td></tr>
+    <tr><td>번호가 없는 매뉴얼</td><td>굵은 소제목</td><td>소제목 아래 문장</td><td>글머리표 줄</td></tr>
+  </table>
+  <ul class="plain">
+    <li>매뉴얼에 코드번호가 없으면 T3Q가 <code>{단계번호}-{순번}</code>으로 매기고, 같은 문서 버전이면 늘 같은 코드가 나와야 합니다.</li>
+    <li>단계를 위기경보(관심·주의·경계·심각)로만 나눈 매뉴얼은 ★ 표시 기준으로 4개 대응단계에 맞춥니다. 관심 → 징후감지, 주의 → 초기대응, 경계·심각 → 비상대응, 복구 → 수습복구.</li>
+    <li>「확산대응」처럼 단계 이름이 다르면 <code>phaseLabel</code>에 원문을 두고 <code>responseStep</code>은 가장 가까운 단계로 둡니다.</li>
+    <li>모든 조치에 <code>sources[].page</code>(인쇄 쪽번호)를 남겨 검수할 수 있게 합니다.</li>
+  </ul>
+</section>
+
+<section id="json">
+  <h2>JSON 예시 — 1단계 [3] 일부</h2>
+  <pre>{
+  <span class="c">// ③ [3] → 임무</span>
+  "missions": [
+    { "missionCode": "3", "missionName": "기상특보(태풍정보·호우예비특보·강풍주의보·적설예보) 대응",
+      "responseStep": "SIGN_DETECTION", "actionCodes": ["3-1", "3-2", "3-3,3-4", "3-9", "3-10"] }
+  ],
+  "actions": [
+    { <span class="c">// ④ [3-1] → 조치, ⑤ "-" 줄 → detailTasks</span>
+      "actionCode": "3-1", "actionName": "(초기)상황판단회의 개최", "missionCode": "3",
+      "responseStep": "SIGN_DETECTION", "phaseLabel": "1단계 징후감지",
+      "detailTasks": [
+        { "seq": 1, "title": "(호우예비특보) 호우 지원부서(12) 팀장(자연재난과장)", "content": "" }
+      ]
+    },
+    { <span class="c">// ⑥ 코드 두 개가 한 줄 → 조치 1건 (R6)</span>
+      "actionCode": "3-3,3-4", "actionName": "비상연락체계 확인", "missionCode": "3",
+      "detailTasks": [ { "seq": 1, "title": "유관기관, 방재시설물 담당자, 재대본 비상근무자 확인", "content": "" } ]
+    },
+    { <span class="c">// ⑦ ＊…시 → condition (R8)</span>
+      "actionCode": "3-9", "actionName": "피해조사단 교육", "missionCode": "3",
+      "condition": "태풍 한반도 북상 우려시",
+      "detailTasks": [ { "seq": 1, "title": "신속한 재난피해조사 위한 조사단(60명) 사전 교육", "content": "" } ]
+    },
+    { <span class="c">// ※ 줄 → notes (R4)</span>
+      "actionCode": "3-10", "actionName": "기상특보 대응상황 행정안전부 보고", "missionCode": "3",
+      "notes": ["재대본 구성 전 재난안전상황실에서 보고"],
+      "detailTasks": [ { "seq": 1, "title": "구·군→재난안전상황실, 재대본→행정안전부", "content": "" } ],
+      <span class="c">// 행동카드에서 (②)</span>
+      "organizations": [ { "name": "재난안전상황실", "role": "LEAD" }, { "name": "자연재난과", "role": "SUPPORT" } ],
+      "sources": [ { "docId": "busan-flood-2024", "docTitle": "부산광역시 풍수해 재난대응 매뉴얼", "page": 34 } ]
+    }
+  ]
+}</pre>
+  <p style="margin:14px 0 0;color:var(--sub)">필수 필드(<code>phase</code>, <code>category</code>, <code>orderHint</code> 등)는 예시에서 줄였습니다. 전체 규격은 <a href="/api-docs">API 요청서</a>를 따릅니다.</p>
+</section>
+
+</main>
+</body>
+</html>

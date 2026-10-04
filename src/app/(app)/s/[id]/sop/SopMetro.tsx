@@ -353,7 +353,15 @@ function HoverCard({
           </span>
         )}
       </div>
-      <div className="mb-2 text-[17px] font-bold leading-snug">{m.title}</div>
+      {m.group && (
+        <div className="mb-0.5 text-[14px] text-sub">
+          [{m.group.code}] {m.group.name}
+        </div>
+      )}
+      <div className="mb-2 text-[17px] font-bold leading-snug">
+        {m.title}
+        {m.condition && <span className="ml-1.5 rounded bg-warning-weak px-1.5 text-[13px] text-warning">{m.condition}</span>}
+      </div>
       {m.details.length > 0 && (
         <div className="mb-3">
           <div className="mb-1 text-[14px] font-semibold text-sub">

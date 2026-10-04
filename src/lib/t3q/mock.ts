@@ -74,16 +74,19 @@ export async function mockSopActions(req: SopActionsRequest): Promise<SopActions
   const { source, actions } = selectSeed(req.context.disasterType.name, step);
   const missions = new Map<string, SopMission>();
   const out: SopAction[] = actions.map((a, i) => {
-    const missionName = stepLabelOf(a);
-    const mc = `M-${STEP_CODE[stepOf(a)]}`;
-    if (!missions.has(mc)) missions.set(mc, { missionCode: mc, missionName, leadOrg: a.lead, actionCodes: [] });
+    const mc = a.mission?.code ?? `M-${STEP_CODE[stepOf(a)]}`;
+    const missionName = a.mission?.name ?? stepLabelOf(a);
+    if (!missions.has(mc))
+      missions.set(mc, { missionCode: mc, missionName, responseStep: STEP_CODE[stepOf(a)], leadOrg: a.lead, actionCodes: [] });
     missions.get(mc)!.actionCodes.push(a.code);
     return {
-      actionCode: a.code,
+      actionCode: a.manualCode ?? a.code,
       actionName: a.title,
       phase: a.phase === "복구" ? "RECOVERY" : "RESPONSE",
       phaseLabel: stepLabelOf(a),
       responseStep: STEP_CODE[stepOf(a)],
+      condition: a.condition,
+      notes: a.notes,
       category: a.phase === "복구" ? "DAMAGE" : "RESPONSE",
       missionCode: mc,
       orderHint: i + 1,
