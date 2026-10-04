@@ -101,8 +101,7 @@ const BASE: Base[] = [
 ];
 
 export function commonActions(hazard: string): SeedAction[] {
-  const name = hazard.replace("다중밀집건축물붕괴대형사고", "다중밀집건축물 붕괴 대형사고");
-  const fill = (s: string) => s.replaceAll("○○", name);
+  const fill = (s: string) => s.replaceAll("○○", hazard);
   return BASE.map((b, i) => ({
     ...b,
     code: `CMN-${String(i + 1).padStart(3, "0")}`,
