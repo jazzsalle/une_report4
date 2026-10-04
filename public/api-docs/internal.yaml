@@ -158,6 +158,24 @@ paths:
       requestBody:
         content: { application/json: { schema: { type: object, properties: { id: { type: string }, ids: { type: array, items: { type: string } } } } } }
       responses: { "200": { description: 완료 } }
+  /action/situation/addMissions:
+    post:
+      tags: [SOP 생성·실행]
+      summary: addMissions — 임무 여러 개 한 번에 추가 (단계 전환 시)
+      description: 이미 있는 조치코드는 건너뜁니다. 실행 중이면 「임무 추가: 4단계 수습·복구 n건」 이벤트를 남깁니다.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { id: { type: string }, add: { type: array, items: { $ref: "#/components/schemas/Mission" } }, label: { type: string } } }
+      responses: { "200": { description: 완료 } }
+  /action/library/missionsFromLibrary:
+    post:
+      tags: [SOP 생성·실행]
+      summary: missionsFromLibrary — 매뉴얼 행동카드 여러 개를 임무로 변환
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { hazard: { type: string }, codes: { type: array, items: { type: string } } } } } }
+      responses:
+        "200": { description: 임무 목록, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Mission" } } } } }
   /action/library/missionFromLibrary:
     post:
       tags: [SOP 생성·실행]
@@ -394,12 +412,13 @@ components:
   schemas:
     SituationInput:
       type: object
-      required: [title, kind, hazard, alertLevel, areas, periodStart, currentStatus]
+      required: [title, kind, hazard, alertLevel, step, areas, periodStart, currentStatus]
       properties:
         title: { type: string, example: 26.10.04. 부산 태풍/호우 대응 }
         kind: { type: string, enum: [real, drill], description: 실제재난 / 안전한국훈련 }
         hazard: { type: string, enum: [폭염, 태풍/호우, 지진, 황사, 산불, 감염병, 가축질병, 다중밀집건축물붕괴대형사고, 정부주요시설, 학교시설] }
         alertLevel: { type: string, enum: [관심, 주의, 경계, 심각] }
+        step: { type: string, enum: [징후감지, 초기대응, 비상대응, 수습복구], description: "대응단계 — SOP 구성 기준 (위기경보 선택 시 자동 추천)" }
         areas: { type: array, items: { type: string }, example: [해운대구] }
         periodStart: { type: string, example: "2026-10-04T22:00", description: datetime-local (KST) }
         periodEnd: { type: [string, "null"], description: null 이면 종료 미정 }
@@ -436,7 +455,7 @@ components:
         id: { type: string }
         code: { type: string, description: T3Q actionCode }
         phase: { type: string, enum: [대응, 복구] }
-        stage: { type: string, description: 매뉴얼 단계명 }
+        stage: { type: string, description: "대응단계명 (예: 3단계 비상대응)" }
         title: { type: string, description: 임무명 }
         content: { type: string, description: 임무내용 }
         lead: { type: string }

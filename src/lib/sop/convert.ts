@@ -1,7 +1,14 @@
 import { nanoid } from "nanoid";
-import type { Mission, Sop, WeatherSnapshot } from "@/lib/types";
-import type { SituationContext, SopActionsResponse, WeatherAlert, AlertLevelCode } from "@/lib/t3q/types";
-import type { SeedAction } from "@/lib/seed";
+import { STEP_LABEL, type Mission, type Sop, type WeatherSnapshot } from "@/lib/types";
+import type { SituationContext, SopActionsResponse, WeatherAlert, AlertLevelCode, ResponseStepCode } from "@/lib/t3q/types";
+import { stepOf, type SeedAction } from "@/lib/seed";
+
+export const STEP_CODE: Record<string, ResponseStepCode> = {
+  징후감지: "SIGN_DETECTION",
+  초기대응: "INITIAL_RESPONSE",
+  비상대응: "EMERGENCY_RESPONSE",
+  수습복구: "RECOVERY",
+};
 
 export const LEVEL_CODE: Record<string, AlertLevelCode> = {
   관심: "INTEREST",
@@ -35,6 +42,7 @@ export function buildContext(s: {
   kind: string;
   hazard: string;
   alertLevel: string;
+  responseStep: string;
   areas: string[];
   title: string;
   currentStatus: string;
@@ -49,6 +57,7 @@ export function buildContext(s: {
     affectedRegions: s.areas.map((a) => ({ code: "", name: a, level: "SIGUNGU" as const })),
     disasterType: { code: HAZARD_CODE[s.hazard]?.code ?? "ETC", name: s.hazard, group: HAZARD_CODE[s.hazard]?.group },
     alertLevel: LEVEL_CODE[s.alertLevel] ?? "CAUTION",
+    responseStep: STEP_CODE[s.responseStep] ?? "INITIAL_RESPONSE",
     baseTime: new Date().toISOString(),
     title: s.title,
     currentSituation: s.currentStatus || undefined,
@@ -149,7 +158,7 @@ export function seedToMission(a: SeedAction): Mission {
   return {
     ...emptyMission(a.phase === "복구" ? "복구" : "대응"),
     code: a.code,
-    stage: a.manualStage ?? a.stage,
+    stage: STEP_LABEL[stepOf(a)],
     title: a.title,
     content: a.content,
     lead: a.lead,

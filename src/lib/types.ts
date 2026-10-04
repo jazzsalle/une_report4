@@ -26,6 +26,25 @@ export type Hazard = (typeof HAZARDS)[number];
 export const ALERT_LEVELS = ["관심", "주의", "경계", "심각"] as const;
 export type AlertLevel = (typeof ALERT_LEVELS)[number];
 
+/** 재난대응 프로세스 4단계 — SOP 구성 기준 (부산 매뉴얼 Ⅲ장) */
+export const RESPONSE_STEPS = ["징후감지", "초기대응", "비상대응", "수습복구"] as const;
+export type ResponseStep = (typeof RESPONSE_STEPS)[number];
+
+export const STEP_LABEL: Record<ResponseStep, string> = {
+  징후감지: "1단계 징후감지",
+  초기대응: "2단계 초기대응",
+  비상대응: "3단계 비상대응",
+  수습복구: "4단계 수습·복구",
+};
+
+/** 위기경보 → 추천 대응단계 (매뉴얼 ★ 기준) */
+export const STEP_BY_LEVEL: Record<AlertLevel, ResponseStep> = {
+  관심: "징후감지",
+  주의: "초기대응",
+  경계: "비상대응",
+  심각: "비상대응",
+};
+
 /* ---------- 기상 ---------- */
 
 export interface WeatherAlertItem {

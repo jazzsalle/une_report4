@@ -3,6 +3,7 @@
 > **최종 규격(정본)은 Swagger 문서입니다:** https://unereport4.vercel.app/api-docs (① T3Q 연계 API 요청서)
 > 원본 파일 `public/api-docs/t3q.yaml` · 코드 계약 `src/lib/t3q/types.ts` — 이 문서는 배경 설명용입니다.
 >
+> v1.3 반영 사항: `SituationContext.responseStep`(대응단계: 징후감지·초기대응·비상대응·수습복구) 추가 — API-02는 이 단계의 조치만 반환, `SopAction.responseStep` 추가.
 > v1.0 반영 사항: `SituationContext.period`(대응 기간) 추가, API-01 요청에 `weatherInfoText`(기상청 기상정보 본문) 추가, `WeatherAlert.level`에 `PRELIMINARY`(예비특보) 추가.
 
 | 항목 | 내용 |
@@ -65,8 +66,14 @@
 /** 업무유형 */
 export type WorkType = 'REAL' | 'DRILL';            // 실제재난 | 안전한국훈련
 
-/** 위기경보 수준 */
+/** 위기경보 수준 (보고용 사실 정보) */
 export type AlertLevel = 'INTEREST' | 'CAUTION' | 'ALERT' | 'SERIOUS'; // 관심|주의|경계|심각
+
+/** 대응단계 — SOP 구성 기준 (매뉴얼 재난대응 프로세스 4단계)
+ *  SIGN_DETECTION 1단계 징후감지(★관심·주의) · INITIAL_RESPONSE 2단계 초기대응(★주의)
+ *  EMERGENCY_RESPONSE 3단계 비상대응(★경계·심각) · RECOVERY 4단계 수습·복구(★경계·심각)
+ *  API-02 는 요청한 대응단계의 조치만 돌려준다. */
+export type ResponseStep = 'SIGN_DETECTION' | 'INITIAL_RESPONSE' | 'EMERGENCY_RESPONSE' | 'RECOVERY';
 
 /** 재난유형 (10종)
  *  HEAT_WAVE 폭염 · TYPHOON_HEAVY_RAIN 태풍/호우 · EARTHQUAKE 지진 · YELLOW_DUST 황사 (자연재난)
@@ -93,6 +100,7 @@ export interface SituationContext {
   affectedRegions?: Region[];        // 발생·영향지역(복수)
   disasterType: DisasterType;
   alertLevel: AlertLevel;
+  responseStep: ResponseStep;        // 대응단계 (사용자 선택)
   baseTime: string;                  // 기준시각
   title?: string;                    // 업무 제목
   currentSituation?: string;         // 현재상황(참고용 자유 텍스트)

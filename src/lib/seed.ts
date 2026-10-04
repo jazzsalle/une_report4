@@ -1,7 +1,7 @@
 import busan from "@/data/busan-flood.json";
 import { GB_WILDFIRE, GB_WILDFIRE_SOURCE } from "@/data/gb-wildfire";
 import { COMMON_SOURCE, commonActions } from "@/data/common-sop";
-import type { AlertLevel } from "@/lib/types";
+import { STEP_LABEL, type ResponseStep } from "@/lib/types";
 
 export interface SeedAction {
   code: string;
@@ -62,20 +62,30 @@ export function seedLibrary(hazard: string): { source: string; actions: SeedActi
   return { source: COMMON_SOURCE, actions: commonActions(hazard) };
 }
 
-/** 위기경보 수준별 기본 SOP 구성 (부산 매뉴얼: 징후감지=관심, 초기대응=주의, 비상대응=경계, 수습·복구=심각) */
-export function selectSeed(hazard: string, level: AlertLevel): { source: string; actions: SeedAction[] } {
+/**
+ * 행동카드의 대응단계.
+ * 부산 매뉴얼은 원문 단계(1단계 징후감지 …)를 그대로 쓰고,
+ * 그 외 시드는 위기경보 표기를 매뉴얼 ★ 기준으로 바꾼다 (관심→징후감지, 주의→초기대응, 경계·심각→비상대응, 복구→수습복구).
+ */
+export function stepOf(a: SeedAction): ResponseStep {
+  const m = a.manualStage ?? "";
+  if (m.includes("징후")) return "징후감지";
+  if (m.includes("초기")) return "초기대응";
+  if (m.includes("비상")) return "비상대응";
+  if (m.includes("수습") || m.includes("복구")) return "수습복구";
+  if (a.phase === "복구") return "수습복구";
+  if (a.stage === "관심") return "징후감지";
+  if (a.stage === "주의") return "초기대응";
+  return "비상대응";
+}
+
+export function stepLabelOf(a: SeedAction) {
+  return STEP_LABEL[stepOf(a)];
+}
+
+/** 대응단계별 기본 SOP 구성 — 선택한 단계의 행동카드만 */
+export function selectSeed(hazard: string, step: ResponseStep): { source: string; actions: SeedAction[] } {
   const lib = seedLibrary(hazard);
   const mine = (a: SeedAction) => a.nd !== false;
-  const stagesFor: Record<AlertLevel, string[]> = {
-    관심: ["관심"],
-    주의: ["주의"],
-    경계: ["경계"],
-    심각: ["경계", "심각"],
-  };
-  const resp = lib.actions.filter((a) => mine(a) && a.phase !== "복구" && stagesFor[level].includes(a.stage));
-  const recovery =
-    level === "경계" || level === "심각"
-      ? lib.actions.filter((a) => mine(a) && a.phase === "복구").slice(0, hazard === "태풍/호우" ? 8 : 10)
-      : [];
-  return { source: lib.source, actions: [...resp, ...recovery] };
+  return { source: lib.source, actions: lib.actions.filter((a) => mine(a) && stepOf(a) === step) };
 }

@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import clsx from "clsx";
 import { FieldRow } from "./ui";
-import { HAZARDS, ALERT_LEVELS } from "@/lib/types";
+import { HAZARDS, ALERT_LEVELS, RESPONSE_STEPS, STEP_LABEL, STEP_BY_LEVEL, type AlertLevel } from "@/lib/types";
 import { REGIONS } from "@/lib/regions";
 import { toLocalInput } from "@/lib/format";
 import type { SituationInput } from "@/app/actions/situation";
@@ -15,6 +15,7 @@ export function defaultInput(orgId: string, hazard: string): SituationInput {
     kind: "real",
     hazard,
     alertLevel: "주의",
+    step: "초기대응",
     areas: [],
     periodStart: now,
     periodEnd: null,
@@ -74,8 +75,21 @@ export function SituationFields({
       <FieldRow label="위기경보" required>
         <div className="flex flex-wrap gap-2">
           {ALERT_LEVELS.map((l) => (
-            <Chip key={l} on={value.alertLevel === l} onClick={() => set("alertLevel", l)}>
+            <Chip
+              key={l}
+              on={value.alertLevel === l}
+              onClick={() => onChange({ ...value, alertLevel: l, step: STEP_BY_LEVEL[l as AlertLevel] })}
+            >
               {l}
+            </Chip>
+          ))}
+        </div>
+      </FieldRow>
+      <FieldRow label="대응단계" required>
+        <div className="flex flex-wrap gap-2">
+          {RESPONSE_STEPS.map((st) => (
+            <Chip key={st} on={value.step === st} onClick={() => set("step", st)}>
+              {STEP_LABEL[st]}
             </Chip>
           ))}
         </div>

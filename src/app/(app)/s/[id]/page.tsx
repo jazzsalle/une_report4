@@ -20,6 +20,7 @@ export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
         kind: s.kind as "real" | "drill",
         hazard: s.hazard,
         alertLevel: s.alertLevel,
+        step: s.responseStep,
         areas: s.areas,
         periodStart: toLocalInput(s.periodStart),
         periodEnd: s.periodEnd ? toLocalInput(s.periodEnd) : null,

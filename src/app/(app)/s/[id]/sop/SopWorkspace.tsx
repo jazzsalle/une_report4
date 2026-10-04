@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { FileText, Play, Plus, RotateCcw, Sparkles, Square } from "lucide-react";
 import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
-import type { Mission, Sop } from "@/lib/types";
+import { RESPONSE_STEPS, STEP_LABEL, type Mission, type ResponseStep, type Sop } from "@/lib/types";
 import type { ContactsBundle } from "@/lib/data";
 import {
   deleteMission,
@@ -14,14 +14,15 @@ import {
   saveMission,
   startSop,
   createReport,
+  addMissions,
 } from "@/app/actions/situation";
-import { missionFromLibrary } from "@/app/actions/library";
+import { missionFromLibrary, missionsFromLibrary } from "@/app/actions/library";
 import { emptyMission } from "@/lib/sop/convert";
 import { fmtDateTime, fmtTime } from "@/lib/format";
 import { MissionDetail } from "./MissionDetail";
 import { Timeline, type EventItem } from "./Timeline";
 
-export type LibraryItem = { code: string; stage: string; phase: string; title: string; lead: string };
+export type LibraryItem = { code: string; stage: string; step: string; phase: string; title: string; lead: string };
 
 export const MISSION_STATUS: Record<Mission["status"], { label: string; tone: "gray" | "blue" | "green" | "orange" }> = {
   todo: { label: "대기", tone: "gray" },
@@ -39,6 +40,7 @@ export function SopWorkspace({
   contacts,
   library,
   hazard,
+  step,
 }: {
   id: string;
   sop: Sop | null;
@@ -48,6 +50,7 @@ export function SopWorkspace({
   contacts: ContactsBundle;
   library: LibraryItem[];
   hazard: string;
+  step: string;
 }) {
   const router = useRouter();
   const [missions, setMissions] = useState<Mission[]>(sop?.missions ?? []);
@@ -127,10 +130,11 @@ export function SopWorkspace({
     );
   }
 
-  const groups: { label: string; items: Mission[] }[] = [
-    { label: "대응", items: missions.filter((m) => m.phase === "대응") },
-    { label: "복구", items: missions.filter((m) => m.phase === "복구") },
-  ].filter((g) => g.items.length);
+  // 대응단계별 묶음 (1단계 → 4단계 → 직접 추가)
+  const groupOf = (m: Mission) => (/^d단계/.test(m.stage) ? m.stage : m.phase === "복구" ? STEP_LABEL.수습복구 : "직접 추가");
+  const groups = Array.from(new Set(missions.map(groupOf)))
+    .sort((a, b) => (a === "직접 추가" ? 1 : b === "직접 추가" ? -1 : a.localeCompare(b)))
+    .map((label) => ({ label, items: missions.filter((m) => groupOf(m) === label) }));
 
   return (
     <div className="space-y-5">
@@ -287,11 +291,21 @@ export function SopWorkspace({
         onClose={() => setAdding(false)}
         library={library}
         hazard={hazard}
+        step={step}
         existing={missions.map((m) => m.code)}
         onAdd={(m) => {
           update(m, true);
           setSel(m.id);
           setAdding(false);
+        }}
+        onAddMany={(ms, label) => {
+          setMissions((l) => [...l, ...ms.filter((m) => !l.some((x) => x.code && x.code === m.code))]);
+          if (ms[0]) setSel(ms[0].id);
+          setAdding(false);
+          start(async () => {
+            await addMissions(id, ms, label);
+            router.refresh();
+          });
         }}
       />
     </div>
@@ -303,23 +317,31 @@ function AddMission({
   onClose,
   library,
   hazard,
+  step,
   existing,
   onAdd,
+  onAddMany,
 }: {
   open: boolean;
   onClose: () => void;
   library: LibraryItem[];
   hazard: string;
+  step: string;
   existing: string[];
   onAdd: (m: Mission) => void;
+  onAddMany: (ms: Mission[], label: string) => void;
 }) {
   const [q, setQ] = useState("");
   const [title, setTitle] = useState("");
   const [phase, setPhase] = useState<"대응" | "복구">("대응");
+  const [filter, setFilter] = useState<string>(step);
   const [pending, start] = useTransition();
-  const list = library.filter((l) => !q || l.title.includes(q) || l.lead.includes(q));
+  const list = library.filter(
+    (l) => (filter === "전체" || l.step === filter) && (!q || l.title.includes(q) || l.lead.includes(q)),
+  );
+  const addable = list.filter((l) => !existing.includes(l.code));
   return (
-    <Modal open={open} onClose={onClose} title="임무 추가" width={760}>
+    <Modal open={open} onClose={onClose} title="임무 추가" width={800}>
       <div className="mb-6 flex gap-2">
         <input
           className="input"
@@ -343,8 +365,40 @@ function AddMission({
         </Button>
       </div>
       <h4 className="mb-2 font-bold">매뉴얼에서 선택</h4>
-      <input className="input mb-3" placeholder="검색" value={q} onChange={(e) => setQ(e.target.value)} />
-      <div className="scroll-thin max-h-[420px] overflow-y-auto rounded-md border border-line-weak">
+      <div className="mb-3 flex flex-wrap gap-2">
+        {["전체", ...RESPONSE_STEPS].map((st) => (
+          <button
+            key={st}
+            onClick={() => setFilter(st)}
+            className={clsx(
+              "h-10 rounded-md border px-3.5 text-[15px] font-medium",
+              filter === st ? "border-primary bg-primary-weak text-primary-strong" : "border-line hover:border-primary",
+            )}
+          >
+            {st === "전체" ? "전체" : STEP_LABEL[st as ResponseStep]}
+          </button>
+        ))}
+      </div>
+      <div className="mb-3 flex gap-2">
+        <input className="input" placeholder="검색" value={q} onChange={(e) => setQ(e.target.value)} />
+        {filter !== "전체" && (
+          <Button
+            disabled={!addable.length || pending}
+            onClick={() =>
+              start(async () => {
+                const ms = await missionsFromLibrary(
+                  hazard,
+                  addable.map((l) => l.code),
+                );
+                onAddMany(ms, STEP_LABEL[filter as ResponseStep]);
+              })
+            }
+          >
+            <Plus size={18} /> 이 단계 {addable.length}건 모두 추가
+          </Button>
+        )}
+      </div>
+      <div className="scroll-thin max-h-[400px] overflow-y-auto rounded-md border border-line-weak">
         {list.map((l) => {
           const has = existing.includes(l.code);
           return (
@@ -359,7 +413,7 @@ function AddMission({
               }
               className="flex w-full items-center gap-3 border-b border-line-weak px-4 py-3 text-left last:border-0 hover:bg-canvas disabled:opacity-40"
             >
-              <Badge tone={l.phase === "복구" ? "orange" : "blue"}>{l.stage}</Badge>
+              <Badge tone={l.step === "수습복구" ? "orange" : "blue"}>{l.stage}</Badge>
               <span className="flex-1">{l.title}</span>
               <span className="text-[15px] text-sub">{l.lead}</span>
             </button>

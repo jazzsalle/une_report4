@@ -1,0 +1,1 @@
+ALTER TABLE "situations" ADD COLUMN "response_step" text DEFAULT '초기대응' NOT NULL;

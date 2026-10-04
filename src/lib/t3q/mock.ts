@@ -1,5 +1,7 @@
 import "server-only";
-import { selectSeed } from "@/lib/seed";
+import { selectSeed, stepOf, stepLabelOf } from "@/lib/seed";
+import { STEP_CODE } from "@/lib/sop/convert";
+import type { ResponseStep } from "@/lib/types";
 import type {
   SopActionsRequest,
   SopActionsResponse,
@@ -10,11 +12,11 @@ import type {
   T3QMeta,
 } from "./types";
 
-const LEVEL: Record<string, "관심" | "주의" | "경계" | "심각"> = {
-  INTEREST: "관심",
-  CAUTION: "주의",
-  ALERT: "경계",
-  SERIOUS: "심각",
+const STEP_BY_CODE: Record<string, ResponseStep> = {
+  SIGN_DETECTION: "징후감지",
+  INITIAL_RESPONSE: "초기대응",
+  EMERGENCY_RESPONSE: "비상대응",
+  RECOVERY: "수습복구",
 };
 
 function meta(): T3QMeta {
@@ -68,19 +70,20 @@ export async function mockWeatherSummary(req: WeatherSummaryRequest): Promise<We
 
 /** API-02 모의: 매뉴얼 시드에서 위기경보 수준에 맞는 조치를 추출 */
 export async function mockSopActions(req: SopActionsRequest): Promise<SopActionsResponse> {
-  const level = LEVEL[req.context.alertLevel] ?? "주의";
-  const { source, actions } = selectSeed(req.context.disasterType.name, level);
+  const step = STEP_BY_CODE[req.context.responseStep] ?? "초기대응";
+  const { source, actions } = selectSeed(req.context.disasterType.name, step);
   const missions = new Map<string, SopMission>();
   const out: SopAction[] = actions.map((a, i) => {
-    const missionName = a.phase === "복구" ? "수습·복구" : `${a.stage} 단계 대응`;
-    const mc = a.phase === "복구" ? "M-REC" : `M-${a.stage}`;
+    const missionName = stepLabelOf(a);
+    const mc = `M-${STEP_CODE[stepOf(a)]}`;
     if (!missions.has(mc)) missions.set(mc, { missionCode: mc, missionName, leadOrg: a.lead, actionCodes: [] });
     missions.get(mc)!.actionCodes.push(a.code);
     return {
       actionCode: a.code,
       actionName: a.title,
       phase: a.phase === "복구" ? "RECOVERY" : "RESPONSE",
-      phaseLabel: a.manualStage ?? a.stage,
+      phaseLabel: stepLabelOf(a),
+      responseStep: STEP_CODE[stepOf(a)],
       category: a.phase === "복구" ? "DAMAGE" : "RESPONSE",
       missionCode: mc,
       orderHint: i + 1,

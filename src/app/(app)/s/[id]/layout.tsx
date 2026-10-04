@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { getSituation } from "@/lib/data";
 import { fmtPeriod } from "@/lib/format";
+import { STEP_LABEL, type ResponseStep } from "@/lib/types";
 import { Badge } from "@/components/ui";
 import { LevelBadge } from "@/components/badges";
 import { SituationTabs } from "./SituationTabs";
@@ -20,6 +21,7 @@ export default async function SituationLayout({ children, params }: LayoutProps<
             <Badge tone="blue">{s.kind === "drill" ? "안전한국훈련" : "실제재난"}</Badge>
             <Badge tone="gray">{s.hazard}</Badge>
             <LevelBadge level={s.alertLevel} />
+            <Badge tone="blue">{STEP_LABEL[s.responseStep as ResponseStep] ?? s.responseStep}</Badge>
             <span className="ml-2 text-[16px] text-sub">{fmtPeriod(s.periodStart, s.periodEnd)}</span>
           </div>
           <SituationTabs id={id} status={s.status} />

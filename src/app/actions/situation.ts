@@ -34,6 +34,8 @@ export interface SituationInput {
   kind: "real" | "drill";
   hazard: string;
   alertLevel: string;
+  /** 대응단계 (징후감지/초기대응/비상대응/수습복구) */
+  step: string;
   areas: string[];
   periodStart: string; // datetime-local
   periodEnd: string | null;
@@ -44,6 +46,7 @@ function validate(v: SituationInput) {
   if (!v.title.trim()) return "상황 제목을 입력하세요.";
   if (!v.hazard) return "재난유형을 선택하세요.";
   if (!v.alertLevel) return "위기경보 수준을 선택하세요.";
+  if (!v.step) return "대응단계를 선택하세요.";
   if (!v.periodStart) return "시작 일시를 입력하세요.";
   return null;
 }
@@ -65,6 +68,7 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
     kind: v.kind,
     hazard: v.hazard,
     alertLevel: v.alertLevel,
+    responseStep: v.step,
     areas: v.areas,
     periodStart: new Date(fromLocalInput(v.periodStart)),
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
@@ -72,7 +76,7 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
     weather,
     status: "setup",
   });
-  await addEvent(id, { type: "start", title: "상황 등록", body: `${v.hazard} · 위기경보 ${v.alertLevel}`, userName: u.name });
+  await addEvent(id, { type: "start", title: "상황 등록", body: `${v.hazard} · 위기경보 ${v.alertLevel} · ${v.step}`, userName: u.name });
   await addEvent(id, {
     type: "weather",
     title: "기상특보 확인",
@@ -88,11 +92,13 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
   const err = validate(v);
   if (err) return { error: err };
   const levelChanged = s.alertLevel !== v.alertLevel;
+  const stepChanged = s.responseStep !== v.step;
   await touch(id, {
     title: v.title.trim(),
     kind: v.kind,
     hazard: v.hazard,
     alertLevel: v.alertLevel,
+    responseStep: v.step,
     areas: v.areas,
     periodStart: new Date(fromLocalInput(v.periodStart)),
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
@@ -100,6 +106,9 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
   });
   if (levelChanged) {
     await addEvent(id, { type: "change", title: "위기경보 변경", body: `${s.alertLevel} → ${v.alertLevel}`, userName: u.name });
+  }
+  if (stepChanged) {
+    await addEvent(id, { type: "change", title: "대응단계 변경", body: `${s.responseStep} → ${v.step}`, userName: u.name });
   }
   revalidatePath(`/s/${id}`);
   return {};
@@ -223,6 +232,19 @@ export async function saveMission(id: string, mission: Mission) {
     await addEvent(id, { type: "mission", title: `임무 추가: ${mission.title}`, missionId: mission.id, userName: u.name });
   }
   return { ok: true };
+}
+
+/** 임무 여러 개를 한 번에 추가 (단계 전환 시 매뉴얼 임무 일괄 추가) */
+export async function addMissions(id: string, add: Mission[], label: string) {
+  const { u, s } = await editable(id);
+  if (!s.sop || !add.length) return;
+  const have = new Set(s.sop.missions.map((m) => m.code).filter(Boolean));
+  const fresh = add.filter((m) => !m.code || !have.has(m.code));
+  await touch(id, { sop: { ...s.sop, missions: [...s.sop.missions, ...fresh] } });
+  if (s.sop.startedAt) {
+    await addEvent(id, { type: "mission", title: `임무 추가: ${label}`, body: `${fresh.length}건`, userName: u.name });
+  }
+  revalidatePath(`/s/${id}/sop`);
 }
 
 export async function deleteMission(id: string, missionId: string) {

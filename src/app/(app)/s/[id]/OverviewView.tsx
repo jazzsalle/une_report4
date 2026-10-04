@@ -12,7 +12,7 @@ import {
   updateSituation,
   type SituationInput,
 } from "@/app/actions/situation";
-import type { WeatherSnapshot, WeatherSummary } from "@/lib/types";
+import { STEP_LABEL, type ResponseStep, type WeatherSnapshot, type WeatherSummary } from "@/lib/types";
 import { fmtDateTime, fmtPeriod, fromLocalInput } from "@/lib/format";
 
 export function OverviewView({
@@ -57,6 +57,7 @@ export function OverviewView({
     ["업무유형", input.kind === "drill" ? "안전한국훈련" : "실제재난"],
     ["재난유형", input.hazard],
     ["위기경보", input.alertLevel],
+    ["대응단계", STEP_LABEL[input.step as ResponseStep] ?? input.step],
     ["대상지역", input.areas.length ? input.areas.join(", ") : "전역"],
     [
       "대응 기간",

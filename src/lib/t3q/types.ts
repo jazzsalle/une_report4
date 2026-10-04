@@ -6,6 +6,9 @@
 export type WorkType = "REAL" | "DRILL";
 export type AlertLevelCode = "INTEREST" | "CAUTION" | "ALERT" | "SERIOUS";
 
+/** 대응단계 — 징후감지 / 초기대응 / 비상대응 / 수습·복구 (SOP 구성 기준) */
+export type ResponseStepCode = "SIGN_DETECTION" | "INITIAL_RESPONSE" | "EMERGENCY_RESPONSE" | "RECOVERY";
+
 export interface DisasterType {
   code: string;
   name: string;
@@ -25,6 +28,8 @@ export interface SituationContext {
   affectedRegions?: Region[];
   disasterType: DisasterType;
   alertLevel: AlertLevelCode;
+  /** 대응단계 — API-02 는 이 단계의 조치를 돌려준다 */
+  responseStep: ResponseStepCode;
   baseTime: string;
   title?: string;
   currentSituation?: string;
@@ -133,6 +138,8 @@ export interface SopAction {
   actionName: string;
   phase: ResponsePhase;
   phaseLabel?: string;
+  /** 이 조치가 속한 대응단계 */
+  responseStep?: ResponseStepCode;
   category: "RESPONSE" | "DAMAGE";
   missionCode: string;
   orderHint: number;

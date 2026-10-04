@@ -50,6 +50,8 @@ export const situations = pgTable(
     kind: text("kind").notNull().default("real"),
     hazard: text("hazard").notNull(),
     alertLevel: text("alert_level").notNull(),
+    /** 대응단계: 징후감지 / 초기대응 / 비상대응 / 수습복구 */
+    responseStep: text("response_step").notNull().default("초기대응"),
     areas: jsonb("areas").$type<string[]>().notNull().default([]),
     periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
     periodEnd: timestamp("period_end", { withTimezone: true }),

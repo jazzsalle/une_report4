@@ -1,4 +1,4 @@
-import type { Mission, ReportContent, ReportSection, Sop, WeatherSnapshot, WeatherSummary } from "@/lib/types";
+import { STEP_LABEL, type ResponseStep, type Mission, type ReportContent, type ReportSection, type Sop, type WeatherSnapshot, type WeatherSummary } from "@/lib/types";
 import { fmtDateTime, fmtTime, fmtPeriod } from "@/lib/format";
 
 export interface ComposeInput {
@@ -7,6 +7,7 @@ export interface ComposeInput {
     kind: string;
     hazard: string;
     alertLevel: string;
+    responseStep: string;
     areas: string[];
     periodStart: Date | string;
     periodEnd: Date | string | null;
@@ -71,7 +72,7 @@ export function composeReport(input: ComposeInput): ReportContent {
   // 1. 상황 개요
   const overview = [
     `□ 재난유형: ${s.hazard}${s.kind === "drill" ? " (안전한국훈련)" : ""}`,
-    `□ 위기경보: ${s.alertLevel}`,
+    `□ 위기경보: ${s.alertLevel} (대응단계: ${STEP_LABEL[s.responseStep as ResponseStep] ?? s.responseStep})`,
     `□ 대응기간: ${fmtPeriod(s.periodStart, s.periodEnd)}`,
   ];
   if (s.areas.length) overview.push(`□ 대상지역: ${s.areas.join(", ")}`);
