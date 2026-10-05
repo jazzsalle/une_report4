@@ -14,6 +14,7 @@ import { recipientIds } from "@/lib/sop/recipients";
 import { appendMissions, orderMissions, patchMission, patchSopHead, putMission, removeMission } from "@/lib/sop/store";
 import { composeReport } from "@/lib/report/compose";
 import { progress } from "@/lib/sop/kind";
+import { ensureExampleContacts } from "@/lib/contacts-seed";
 import { WEATHER_SLOTS, type WeatherSlot } from "@/lib/report/weather";
 import { fromLocalInput } from "@/lib/format";
 import type { Mission, WeatherImage } from "@/lib/types";
@@ -163,6 +164,10 @@ async function runSopGeneration(id: string, userName: string) {
   const { data, fallback } = await sopActions({ context: buildContext(s), filter: { maxActions: 40 } });
   const sop = responseToSop(data, fallback);
   await touch(id, { sop, status: "sop" });
+  // 기본 세팅: 기관 연락망이 비어 있으면 예시 조직(자연재난과)을 넣어 상황전파 대상을 바로 고를 수 있게 한다
+  if (await ensureExampleContacts(s.orgId)) {
+    await addEvent(id, { type: "sop", title: "연락망 기본 세팅", body: "예시 조직(자연재난과·유관기관 등 11명)을 넣었습니다. 연락망에서 실제 담당자로 고쳐 쓰세요.", userName });
+  }
   await addEvent(id, {
     type: "sop",
     title: "SOP 생성",

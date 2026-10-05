@@ -374,6 +374,19 @@ paths:
       summary: deleteGroup — 전파그룹 삭제
       requestBody: { content: { application/json: { schema: { type: object, properties: { orgId: { type: string }, id: { type: string } } } } } }
       responses: { "200": { description: 완료 } }
+  /action/contacts/seedExampleContacts:
+    post:
+      tags: [연락망]
+      summary: seedExampleContacts — 예시 조직 넣기 (빈 연락망 시작용)
+      description: |
+        연락망이 빈 기관에 간단한 자연재난과 조직을 만듭니다. 기관관리 이상만, 조직이 이미 있으면 오류.
+        SOP 생성(createSituation·generateSop) 때도 기관 연락망이 비어 있으면 같은 내용이 자동으로 들어가고 「연락망 기본 세팅」 이력이 남습니다.
+        「{기관명} 재난안전대책본부」 › 자연재난과 · 재난안전상황실 · OOO과, 「유관기관」 5곳(OO소방본부·OO경찰청·OO지방기상청·육군 제OO사단·한국전력공사 OO본부), 담당자 11명(홍OO 등, 번호 010-0000-0000), 전파그룹 「상황관리반」「유관기관」.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { orgId: { type: string } } }
+      responses: { "200": { description: 완료 } }
   /action/contacts/importContacts:
     post:
       tags: [연락망]

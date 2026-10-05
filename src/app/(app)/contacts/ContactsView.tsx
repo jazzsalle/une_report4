@@ -2,7 +2,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { ChevronRight, Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, Pencil, Plus, Sparkles, Trash2, UsersRound } from "lucide-react";
 import { Button, Card, Empty, Modal, Tabs } from "@/components/ui";
 import type { ContactsBundle } from "@/lib/data";
 import {
@@ -12,6 +12,7 @@ import {
   saveContact,
   saveGroup,
   saveUnit,
+  seedExampleContacts,
   type ContactInput,
 } from "@/app/actions/contacts";
 import { EmergencyTree } from "./EmergencyTree";
@@ -73,11 +74,70 @@ export function ContactsView({
         ]}
       />
       <div className="mt-6">
-        {tab === "tree" && <EmergencyTree bundle={bundle} show={show} />}
+        {tab === "tree" &&
+          (bundle.units.length === 0 ? (
+            <EmptyGuide orgId={orgId} orgName={orgName} bundle={bundle} canManage={canManage} onDirect={() => setTab("people")} />
+          ) : (
+            <EmergencyTree bundle={bundle} show={show} />
+          ))}
         {tab === "people" && <People orgId={orgId} bundle={bundle} canManage={canManage} show={show} />}
         {tab === "groups" && <Groups orgId={orgId} bundle={bundle} canManage={canManage} />}
       </div>
     </main>
+  );
+}
+
+/** 연락망이 비었을 때 — 시작 방법 3가지 안내 */
+function EmptyGuide({
+  orgId,
+  orgName,
+  bundle,
+  canManage,
+  onDirect,
+}: {
+  orgId: string;
+  orgName: string;
+  bundle: ContactsBundle;
+  canManage: boolean;
+  onDirect: () => void;
+}) {
+  const { pending, error, run } = useRun();
+  return (
+    <Card className="px-8 py-10">
+      <div className="flex items-center gap-3">
+        <UsersRound size={30} className="text-primary" />
+        <h2 className="text-[22px] font-bold">등록된 연락망이 없습니다</h2>
+      </div>
+      <p className="mt-2 text-[17px] text-sub">연락망을 넣으면 SOP 상황전파에서 전파 대상으로 고를 수 있습니다.</p>
+      {canManage ? (
+        <div className="mt-7 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-lg border-2 border-primary bg-primary-weak/50 p-6">
+            <div className="text-[19px] font-bold">1. 예시 조직으로 시작</div>
+            <p className="mt-2 text-[16px] text-sub">재난안전대책본부 › 자연재난과 · 재난안전상황실 · OOO과, 유관기관 5곳(소방·경찰·기상청·군·한전)과 담당자 11명(홍OO 등)을 넣습니다. 이름·번호를 실제 담당자로 고쳐 쓰세요.</p>
+            <Button variant="primary" className="mt-4" disabled={pending} onClick={() => run(() => seedExampleContacts(orgId))}>
+              <Sparkles size={18} /> {pending ? "넣는 중" : "예시 조직 넣기"}
+            </Button>
+            {error && <p className="mt-2 text-danger">{error}</p>}
+          </div>
+          <div className="rounded-lg border border-line p-6">
+            <div className="text-[19px] font-bold">2. 엑셀로 한 번에</div>
+            <p className="mt-2 text-[16px] text-sub">엑셀 양식을 내려받아 상위 조직·조직(부서)·이름·직위·휴대전화를 채운 뒤 올립니다.</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <ContactsExcel orgId={orgId} orgName={orgName} bundle={bundle} big />
+            </div>
+          </div>
+          <div className="rounded-lg border border-line p-6">
+            <div className="text-[19px] font-bold">3. 화면에서 직접</div>
+            <p className="mt-2 text-[16px] text-sub">조직·담당자 탭에서 조직을 만들고 담당자를 한 명씩 추가합니다.</p>
+            <Button className="mt-4" onClick={onDirect}>
+              <Plus size={18} /> 조직·담당자 추가
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-6 text-[17px]">기관 관리자가 연락망을 등록하면 여기에 보입니다.</p>
+      )}
+    </Card>
   );
 }
 
@@ -305,6 +365,7 @@ function Groups({ orgId, bundle, canManage }: { orgId: string; bundle: ContactsB
           </Button>
         </div>
       )}
+      {!groups.length && <Empty>등록된 전파그룹이 없습니다.</Empty>}
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {groups.map((g: Group) => (
           <Card key={g.id} className="p-6">

@@ -9,7 +9,18 @@ import { importContacts, type ImportStat } from "@/app/actions/contacts";
 import { downloadContactsXlsx, parseContactsXlsx, type ContactRow } from "@/lib/contacts-xlsx";
 
 /** 연락망 엑셀: 양식 내려받기 · 현재 연락망 내려받기 · 일괄 올리기 */
-export function ContactsExcel({ orgId, orgName, bundle }: { orgId: string; orgName: string; bundle: ContactsBundle }) {
+export function ContactsExcel({
+  orgId,
+  orgName,
+  bundle,
+  big,
+}: {
+  orgId: string;
+  orgName: string;
+  bundle: ContactsBundle;
+  /** 빈 연락망 안내용: 큰 버튼, 내려받기 없음 */
+  big?: boolean;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<string>("");
@@ -80,14 +91,16 @@ export function ContactsExcel({ orgId, orgName, bundle }: { orgId: string; orgNa
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => downloadContactsXlsx(null, "연락망_양식.xlsx")}>
+      <Button variant={big ? "secondary" : "ghost"} size={big ? "md" : "sm"} onClick={() => downloadContactsXlsx(null, "연락망_양식.xlsx")}>
         <FileSpreadsheet size={18} /> 엑셀 양식
       </Button>
-      <Button variant="ghost" size="sm" onClick={() => downloadContactsXlsx(bundle, `연락망_${orgName}.xlsx`)}>
-        <Download size={18} /> 엑셀 내려받기
-      </Button>
+      {!big && (
+        <Button variant="ghost" size="sm" onClick={() => downloadContactsXlsx(bundle, `연락망_${orgName}.xlsx`)}>
+          <Download size={18} /> 엑셀 내려받기
+        </Button>
+      )}
       <Button
-        size="sm"
+        size={big ? "md" : "sm"}
         onClick={() => {
           reset();
           setOpen(true);

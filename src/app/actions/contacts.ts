@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
+import { ensureExampleContacts } from "@/lib/contacts-seed";
 
 async function manager(orgId: string) {
   const u = await requireUser();
@@ -260,4 +261,11 @@ export async function importContacts(
   }
   revalidatePath("/contacts");
   return stat;
+}
+
+/** 예시 조직 넣기 — 빈 연락망 안내의 버튼. 내용은 ensureExampleContacts (SOP 생성 때 자동 세팅과 같음) */
+export async function seedExampleContacts(orgId: string) {
+  await manager(orgId);
+  if (!(await ensureExampleContacts(orgId))) throw new Error("이미 연락망이 있습니다.");
+  revalidatePath("/contacts");
 }

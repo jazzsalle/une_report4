@@ -127,8 +127,8 @@ export function SopWorkspace({
   const [mode, setMode] = useState<"edit" | "run">(
     sop?.startedAt ? "run" : "edit",
   );
-  // 보기: 목록 / 순서도
-  const [view, setView] = useState<"list" | "flow">("list");
+  // 보기: 순서도(기본) / 목록
+  const [view, setView] = useState<"list" | "flow">("flow");
   // SOP 창 분리
   const [detached, setDetached] = useState(false);
   const win = useRef<Window | null>(null);
@@ -335,8 +335,8 @@ export function SopWorkspace({
           value={view}
           onChange={setView}
           items={[
-            { value: "list", label: "목록", icon: <List size={18} /> },
             { value: "flow", label: "순서도", icon: <Workflow size={18} /> },
+            { value: "list", label: "목록", icon: <List size={18} /> },
           ]}
         />
         {detached ? (
