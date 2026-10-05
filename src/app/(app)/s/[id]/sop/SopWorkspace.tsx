@@ -118,6 +118,10 @@ export function SopWorkspace({
 }) {
   const router = useRouter();
   const [missions, setMissions] = useState<Mission[]>(sop?.missions ?? []);
+  const missionsRef = useRef(missions);
+  useEffect(() => {
+    missionsRef.current = missions;
+  }, [missions]);
   const [sel, setSel] = useState<string | null>(sop?.missions[0]?.id ?? null);
   const [busy, start] = useTransition();
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -135,6 +139,17 @@ export function SopWorkspace({
   const bc = useRef<BroadcastChannel | null>(null);
   const notify = () =>
     bc.current?.postMessage({ type: "changed" } satisfies SopMessage);
+
+  // 따라하기: 말풍선이 가리키는 임무를 고른다 (코드로)
+  useEffect(() => {
+    const on = (e: Event) => {
+      const code = (e as CustomEvent<string>).detail;
+      const m = missionsRef.current.find((x) => x.code === code || x.code === `BSN-${code}`);
+      if (m) setSel(m.id);
+    };
+    window.addEventListener("r4-tour-select", on);
+    return () => window.removeEventListener("r4-tour-select", on);
+  }, []);
 
   useEffect(() => {
     const ch = new BroadcastChannel(sopChannel(id));
@@ -391,6 +406,7 @@ export function SopWorkspace({
               <Button
                 variant="primary"
                 disabled={busy || !missions.length}
+                data-tour="sop-start"
                 onClick={() => {
                   setMode("run");
                   act(() => startSop(id));
@@ -405,6 +421,7 @@ export function SopWorkspace({
               variant="primary"
               disabled={busy}
               onClick={() => setConfirmEnd(true)}
+              data-tour="sop-end"
             >
               <Square size={16} /> 실행 종료
             </Button>
@@ -424,6 +441,7 @@ export function SopWorkspace({
                 variant="primary"
                 disabled={busy}
                 onClick={() => start(() => createReport(id))}
+                data-tour="report-create"
               >
                 <FileText size={18} /> 상황일지 작성
               </Button>

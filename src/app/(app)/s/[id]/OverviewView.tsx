@@ -108,7 +108,7 @@ export function OverviewView({
         </dl>
       </Card>
 
-      <Card>
+      <Card tour="weather">
         <CardHead
           title="기상특보 보고"
           right={

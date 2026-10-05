@@ -5,6 +5,7 @@ import { listSituations, userNames } from "@/lib/data";
 import { fmtDateTime, fmtTime } from "@/lib/format";
 import { Badge, Empty } from "@/components/ui";
 import { StatusBadge, LevelBadge } from "@/components/badges";
+import { TourStart } from "@/components/TourStart";
 
 export default async function Home() {
   const u = await requireUser();
@@ -33,7 +34,8 @@ export default async function Home() {
               </span>
               새 상황 시작
             </Link>
-            {recent.map((s) => {
+            <TourStart />
+            {recent.slice(0, 2).map((s) => {
               const ms = s.sop?.missions ?? [];
               const done = ms.filter((m) => m.status === "done").length;
               return (
@@ -43,6 +45,7 @@ export default async function Home() {
                   className="card flex h-[200px] flex-col border-2 border-transparent p-6 transition hover:border-primary"
                 >
                   <div className="flex gap-2">
+                    {s.tutorial && <Badge tone="orange">따라하기</Badge>}
                     <Badge tone="blue">{s.hazard}</Badge>
                     <LevelBadge level={s.alertLevel} />
                   </div>
@@ -95,6 +98,11 @@ export default async function Home() {
                             {s.title}
                             <ChevronRight size={18} />
                           </Link>
+                          {s.tutorial && (
+                            <span className="ml-2 align-middle">
+                              <Badge tone="orange">따라하기</Badge>
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-2">

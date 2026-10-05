@@ -140,6 +140,7 @@ export function SopMetro({
   return (
     <div
       ref={box}
+      data-tour="sop-flow"
       className={clsx(
         "relative w-full overflow-auto rounded-[var(--radius-card)] bg-[radial-gradient(ellipse_at_top_left,#22307a_0%,#141a52_45%,#0e1240_100%)] text-white scroll-thin",
         fill ? "h-full" : "max-h-[560px]",
@@ -242,7 +243,7 @@ export function SopMetro({
       </div>
 
       {onDemand.length > 0 && (
-        <div className="border-t border-white/15 px-6 pb-6 pt-4">
+        <div className="border-t border-white/15 px-6 pb-6 pt-4" data-tour="ondemand">
           <div className="mb-3 flex items-center gap-2 text-[17px] font-bold text-[#fdba74]">
             <Zap size={18} /> 필요시 임무
           </div>

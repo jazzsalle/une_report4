@@ -43,6 +43,13 @@
       "when": 1791187068382,
       "tag": "0005_situation_dept",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791199253002,
+      "tag": "0006_tutorial_seed",
+      "breakpoints": true
     }
   ]
 }

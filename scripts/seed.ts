@@ -14,6 +14,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import * as schema from "../src/lib/db/schema";
 import { ORGS, orgContactsSeed } from "../src/lib/db/seed-data";
+import tutorialSeed from "../src/data/tutorial-busan.json";
 
 config({ path: ".env.local" });
 
@@ -70,6 +71,12 @@ async function main() {
     await db.insert(schema.contactGroups).values(groups);
     console.log(`연락망 ${orgId}: 조직 ${units.length}, 담당자 ${people.length}, 그룹 ${groups.length}`);
   }
+
+  // 따라하기 시드 (잠금 표 — 넣기만, 이미 있으면 그대로)
+  await db
+    .insert(schema.tutorialSeeds)
+    .values({ id: tutorialSeed.id, name: tutorialSeed.name, data: tutorialSeed as unknown as Record<string, unknown> })
+    .onConflictDoNothing();
 
   const created: string[][] = [];
   for (const a of ACCOUNTS) {

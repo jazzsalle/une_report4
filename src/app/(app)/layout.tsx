@@ -6,6 +6,7 @@ import { readLocation } from "@/lib/location";
 import { ORG_SIDO } from "@/lib/regions";
 import { Header } from "@/components/Header";
 import { WeatherBar } from "@/components/WeatherBar";
+import { Tour } from "@/components/Tour";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await requireUser();
@@ -22,6 +23,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <WeatherBar weather={weather} sigungu={location?.sigungu ?? ""} />
       </div>
       <div className="flex-1">{children}</div>
+      <Tour />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import { appendMissions, orderMissions, patchMission, patchSopHead, putMission, 
 import { composeReport } from "@/lib/report/compose";
 import { progress } from "@/lib/sop/kind";
 import { ensureExampleContacts } from "@/lib/contacts-seed";
+import { getTutorialSeed, tutorialWeather } from "@/lib/tutorial";
 import { WEATHER_SLOTS, type WeatherSlot } from "@/lib/report/weather";
 import { fromLocalInput } from "@/lib/format";
 import type { Mission, WeatherImage } from "@/lib/types";
@@ -64,12 +65,17 @@ function validate(v: SituationInput) {
 }
 
 /** 새 상황 → 기상특보 저장 → (선택) SOP 생성까지 한 번에 */
-export async function createSituation(v: SituationInput, generate: boolean): Promise<{ error?: string }> {
+export async function createSituation(
+  v: SituationInput,
+  generate: boolean,
+  opts: { tutorial?: boolean } = {},
+): Promise<{ error?: string }> {
   const u = await requireUser();
   const err = validate(v);
   if (err) return { error: err };
   const db = await getDb();
-  const weather = await getWeatherSnapshot(v.sido);
+  // 따라하기: 시드 기상특보 (기상청 조회 없음)
+  const weather = opts.tutorial ? tutorialWeather(await getTutorialSeed()) : await getWeatherSnapshot(v.sido);
   const id = nanoid(10);
   await db.insert(schema.situations).values({
     id,
@@ -87,6 +93,7 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
     currentStatus: v.currentStatus,
     weather,
+    tutorial: !!opts.tutorial,
     status: "setup",
   });
   await addEvent(id, { type: "start", title: "상황 등록", body: `${v.hazard} · 위기경보 ${v.alertLevel} · ${v.step}`, userName: u.name });
@@ -109,7 +116,7 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
   const deptChanged = s.dept !== v.dept.trim();
   // 발생 시도가 바뀌면 그 시도의 기상특보를 다시 가져온다
   const sidoChanged = (s.sido || "") !== v.sido;
-  const weather = sidoChanged ? await getWeatherSnapshot(v.sido) : undefined;
+  const weather = !sidoChanged ? undefined : s.tutorial ? tutorialWeather(await getTutorialSeed()) : await getWeatherSnapshot(v.sido);
   await touch(id, {
     title: v.title.trim(),
     kind: v.kind,
@@ -147,7 +154,7 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
 
 export async function refreshWeather(id: string) {
   const { u, s } = await editable(id);
-  const weather = await getWeatherSnapshot(s.sido || ORG_SIDO[s.orgId] || "부산광역시");
+  const weather = s.tutorial ? tutorialWeather(await getTutorialSeed()) : await getWeatherSnapshot(s.sido || ORG_SIDO[s.orgId] || "부산광역시");
   await touch(id, { weather });
   await addEvent(id, {
     type: "weather",
@@ -161,7 +168,7 @@ export async function refreshWeather(id: string) {
 async function runSopGeneration(id: string, userName: string) {
   const db = await getDb();
   const [s] = await db.select().from(schema.situations).where(eq(schema.situations.id, id)).limit(1);
-  const { data, fallback } = await sopActions({ context: buildContext(s), filter: { maxActions: 40 } });
+  const { data, fallback } = await sopActions({ context: buildContext(s), filter: { maxActions: 40 } }, { seedOnly: s.tutorial });
   const sop = responseToSop(data, fallback);
   await touch(id, { sop, status: "sop" });
   // 기본 세팅: 기관 연락망이 비어 있으면 예시 조직(자연재난과)을 넣어 상황전파 대상을 바로 고를 수 있게 한다

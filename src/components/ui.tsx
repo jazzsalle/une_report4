@@ -32,8 +32,13 @@ export function Button({
   );
 }
 
-export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={clsx("card", className)}>{children}</div>;
+/** tour: 따라하기 말풍선이 가리킬 표시 (data-tour) */
+export function Card({ className, children, tour }: { className?: string; children: ReactNode; tour?: string }) {
+  return (
+    <div className={clsx("card", className)} data-tour={tour}>
+      {children}
+    </div>
+  );
 }
 
 export function CardHead({ title, right }: { title: ReactNode; right?: ReactNode }) {

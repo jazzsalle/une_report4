@@ -25,6 +25,7 @@ export default async function SituationLayout({ children, params }: LayoutProps<
             {/* 같은 상황의 탭끼리는 건너뛰고, 상황을 열기 전 화면으로 */}
             <BackButton fallback="/" skip={[`/s/${id}`]} />
             <h1 className="mr-1 text-[24px] font-bold">{s.title}</h1>
+            {s.tutorial && <Badge tone="orange">따라하기</Badge>}
             <Badge tone="blue">{s.kind === "drill" ? "안전한국훈련" : "실제재난"}</Badge>
             <Badge tone="gray">{s.hazard}</Badge>
             <LevelBadge level={s.alertLevel} />

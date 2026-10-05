@@ -80,6 +80,7 @@ paths:
               properties:
                 v: { $ref: "#/components/schemas/SituationInput" }
                 generate: { type: boolean }
+                opts: { type: object, properties: { tutorial: { type: boolean, description: "따라하기 — 시드 기상특보(기상청 조회 없음)·매뉴얼 시드 SOP(T3Q 호출 없음), 목록에 「따라하기」 꼬리표" } } }
       responses:
         "200": { $ref: "#/components/responses/ErrorOnly" }
   /action/situation/updateSituation:

@@ -115,7 +115,7 @@ export function MissionDetail({
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" data-tour="mission-detail">
       {/* 머리 */}
       {m.group && (
         <div className="border-b border-line-weak bg-canvas px-6 py-2.5 text-[15px] font-semibold text-sub">
@@ -247,6 +247,7 @@ export function MissionDetail({
             <div className="mt-2 flex gap-2">
               <input
                 className="input"
+                data-tour="detail-add"
                 placeholder="세부항목 추가"
                 value={newDetail}
                 onChange={(e) => setNewDetail(e.target.value)}
@@ -260,7 +261,7 @@ export function MissionDetail({
         </Field>
 
         {/* 상황전파 */}
-        <section className="rounded-lg border border-line-weak bg-canvas/60 p-5">
+        <section className="rounded-lg border border-line-weak bg-canvas/60 p-5" data-tour="propagation">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-[18px] font-bold">상황전파</h3>
             {m.propagation.sentAt && (
@@ -438,9 +439,13 @@ export function MissionDetail({
             </Button>
           )}
           {m.status !== "skipped" && m.status !== "done" && <Button onClick={() => setStatus("skipped")}>생략</Button>}
-          {m.status === "todo" && <Button onClick={() => setStatus("doing")}>착수</Button>}
+          {m.status === "todo" && (
+            <Button data-tour="mission-start" onClick={() => setStatus("doing")}>
+              착수
+            </Button>
+          )}
           {m.status !== "done" && (
-            <Button variant="primary" onClick={() => setStatus("done")}>
+            <Button variant="primary" data-tour="mission-done" onClick={() => setStatus("done")}>
               <Check size={18} /> 조치 완료
             </Button>
           )}

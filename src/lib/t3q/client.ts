@@ -36,7 +36,10 @@ async function post<T>(path: string, body: unknown, timeoutMs: number): Promise<
 
 export async function sopActions(
   req: SopActionsRequest,
+  opts: { seedOnly?: boolean } = {},
 ): Promise<{ data: SopActionsResponse; fallback: boolean }> {
+  // 따라하기는 늘 같은 화면이 나오도록 매뉴얼 시드만 쓴다
+  if (opts.seedOnly) return { data: await mockSopActions(req), fallback: false };
   if (t3qMode() === "live") {
     try {
       return { data: await post<SopActionsResponse>("/sop/actions", req, 40000), fallback: false };

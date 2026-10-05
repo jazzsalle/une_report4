@@ -58,6 +58,8 @@ export const situations = pgTable(
     areas: jsonb("areas").$type<string[]>().notNull().default([]),
     /** 담당부서 — T3Q가 매뉴얼에서 이 부서의 행만 뽑는다 (R19) */
     dept: text("dept").notNull().default("자연재난과"),
+    /** 따라하기로 만든 상황 (고정 시드 기상·SOP 사용, 목록에 「따라하기」 꼬리표) */
+    tutorial: boolean("tutorial").notNull().default(false),
     periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
     periodEnd: timestamp("period_end", { withTimezone: true }),
     currentStatus: text("current_status").notNull().default(""),
@@ -172,3 +174,15 @@ export const dispatches = pgTable(
   },
   (t) => [index("dispatches_situation_idx").on(t.situationId)],
 );
+
+/**
+ * 따라하기 시드 (부산 풍수해 현장조치 매뉴얼 시나리오). 따라하기에서만 쓴다.
+ * DB 잠금: 고치기·지우기·비우기(TRUNCATE)는 트리거가 막는다 — scripts/tutorial-seed.ts --delete --approve 로만 지운다 (drizzle/0006).
+ * 원본은 src/data/tutorial-busan.json — DB를 새로 만들어도 따라하기를 시작할 때 다시 채운다.
+ */
+export const tutorialSeeds = pgTable("tutorial_seeds", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  data: jsonb("data").$type<Record<string, unknown>>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

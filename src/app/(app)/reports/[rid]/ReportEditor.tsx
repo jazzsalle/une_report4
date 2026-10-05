@@ -148,12 +148,12 @@ export function ReportEditor({
                 <RefreshCw size={17} /> 다시 구성
               </Button>
             )}
-            <Button size="sm" variant="ghost" onClick={async () => (await flush(), setHwp(true))}>
+            <Button size="sm" variant="ghost" data-tour="report-hwp" onClick={async () => (await flush(), setHwp(true))}>
               <FilePenLine size={17} /> 한글 편집
               {hwpx.has && <span className="ml-1 whitespace-nowrap rounded bg-primary-weak px-1.5 text-[13px] text-primary">저장본</span>}
             </Button>
             <div className="relative">
-              <Button size="sm" variant="ghost" onClick={() => setExportOpen((v) => !v)}>
+              <Button size="sm" variant="ghost" data-tour="report-export" onClick={() => setExportOpen((v) => !v)}>
                 <Download size={17} /> 내보내기 <ChevronDown size={16} />
               </Button>
               {exportOpen && (
@@ -189,7 +189,7 @@ export function ReportEditor({
 
       <div className="mx-auto grid max-w-[1680px] gap-6 px-6 py-6 lg:grid-cols-[340px_1fr]">
         {/* 목차 */}
-        <aside className="no-print card h-fit lg:sticky lg:top-4">
+        <aside className="no-print card h-fit lg:sticky lg:top-4" data-tour="report-toc">
           <div className="flex items-center justify-between border-b border-line-weak px-5 py-4">
             <h2 className="text-[19px] font-bold">목차</h2>
             {!ro && (
