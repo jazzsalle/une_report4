@@ -101,6 +101,16 @@ export function WeatherBar({ weather, sigungu }: { weather: WeatherSnapshot; sig
           <ChevronDown size={20} className={clsx("transition", open && "rotate-180")} />
         </button>
         <div className="ml-2 flex shrink-0 items-center gap-2 border-l border-black/10 pl-4">
+          {/* 국민안전24 (행정안전부 재난안전정보 포털) — 다른 링크와 구분되게 파란 버튼 */}
+          <a
+            href="https://safekorea.go.kr/safekorea-kor/main/main.do"
+            target="_blank"
+            rel="noreferrer"
+            className="hidden h-8 items-center gap-1 rounded-md border border-primary bg-primary-weak px-3 text-[15px] font-semibold text-primary-strong hover:bg-primary hover:text-white lg:flex"
+          >
+            국민안전24
+            <ExternalLink size={14} />
+          </a>
           {LINKS.map((l) => (
             <a
               key={l.href}
