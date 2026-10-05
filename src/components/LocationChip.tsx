@@ -100,7 +100,7 @@ export function LocationChip({ location, fallbackSido }: { location: Loc; fallba
             </Button>
             <Button
               variant="primary"
-              disabled={pending || !sgg}
+              disabled={pending || !sido}
               onClick={() =>
                 start(async () => {
                   try {
@@ -135,7 +135,7 @@ export function LocationChip({ location, fallbackSido }: { location: Loc; fallba
             ))}
           </select>
           <select className="input" value={sgg} onChange={(e) => setSgg(e.target.value)}>
-            <option value="">시군구 선택</option>
+            <option value="">시군구 전체</option>
             {node?.s.map((s) => (
               <option key={s.c} value={s.n}>
                 {s.n}

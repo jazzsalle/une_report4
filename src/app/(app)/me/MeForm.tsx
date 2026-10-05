@@ -2,11 +2,15 @@
 import { useActionState } from "react";
 import { updateMe } from "@/app/actions/auth";
 import { Button, Card, CardHead, FieldRow } from "@/components/ui";
+import { BackButton } from "@/components/BackButton";
 
 export function MeForm({ name, dept, loginId }: { name: string; dept: string; loginId: string }) {
   const [state, action, pending] = useActionState(updateMe, {});
   return (
     <main className="mx-auto max-w-[900px] px-6 py-8">
+      <div className="mb-3">
+        <BackButton fallback="/" />
+      </div>
       <form action={action}>
         <Card>
           <CardHead title="내 정보" />

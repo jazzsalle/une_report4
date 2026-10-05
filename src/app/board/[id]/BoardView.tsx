@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { PanelTopClose } from "lucide-react";
 import type { Sop } from "@/lib/types";
 import { Button } from "@/components/ui";
+import { progress } from "@/lib/sop/kind";
 import { SopMetro } from "@/app/(app)/s/[id]/sop/SopMetro";
 import { propagationTargets, sopChannel, type SopMessage } from "@/lib/sop/targets";
 
@@ -41,13 +42,13 @@ export function BoardView({
   // 다른 사용자의 변경도 반영 (창이 보일 때만)
   useVisibleRefresh(20000);
 
-  const done = sop.missions.filter((m) => m.status === "done").length;
+  const { done, total } = progress(sop.missions);
   return (
     <main className="flex h-screen flex-col bg-[#0e1240] text-white">
       <header className="flex items-center gap-4 px-6 py-3">
         <h1 className="truncate text-[20px] font-bold">{title}</h1>
         <span className="text-white/70">
-          완료 {done} / {sop.missions.length}
+          완료 {done} / {total}
         </span>
         <Button
           size="sm"

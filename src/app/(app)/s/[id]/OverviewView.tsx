@@ -13,7 +13,7 @@ import {
   type SituationInput,
 } from "@/app/actions/situation";
 import { STEP_LABEL, type ResponseStep, type WeatherImages, type WeatherSnapshot } from "@/lib/types";
-import { weatherReportContent, weatherSection } from "@/lib/report/weather";
+import { WEATHER_SLOTS, weatherCaption, weatherReportContent, weatherSection } from "@/lib/report/weather";
 import { DocBlocks } from "@/components/DocView";
 import { ImageDrop } from "@/components/ImageDrop";
 import { exportHwpx } from "@/lib/export/client";
@@ -143,25 +143,20 @@ export function OverviewView({
           <DocBlocks
             s={section}
             imageSlot={() => (
-              <div className="grid grid-cols-2 gap-0 font-sans">
-                <ImageDrop
-                  value={images?.alert}
-                  caption={section.images?.[0]?.caption ?? "특보발표현황"}
-                  editable={editable}
-                  onChange={async (img) => {
-                    await saveWeatherImage(id, "alert", img);
-                    router.refresh();
-                  }}
-                />
-                <ImageDrop
-                  value={images?.radar}
-                  caption={section.images?.[1]?.caption ?? "레이더 영상"}
-                  editable={editable}
-                  onChange={async (img) => {
-                    await saveWeatherImage(id, "radar", img);
-                    router.refresh();
-                  }}
-                />
+              <div className="grid grid-cols-3 gap-0 font-sans">
+                {WEATHER_SLOTS.map((slot) => (
+                  <ImageDrop
+                    key={slot.key}
+                    value={images?.[slot.key]}
+                    caption={weatherCaption(slot.label, images?.[slot.key]?.at ?? weather?.announcedAt ?? weather?.retrievedAt)}
+                    hint={slot.hint}
+                    editable={editable}
+                    onChange={async (img) => {
+                      await saveWeatherImage(id, slot.key, img);
+                      router.refresh();
+                    }}
+                  />
+                ))}
               </div>
             )}
           />

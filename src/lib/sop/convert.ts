@@ -57,6 +57,7 @@ export function buildContext(s: {
   responseStep: string;
   sido: string;
   areas: string[];
+  dept?: string;
   title: string;
   currentStatus: string;
   periodStart: Date | string;
@@ -71,6 +72,7 @@ export function buildContext(s: {
     disasterType: { code: HAZARD_CODE[s.hazard]?.code ?? "ETC", name: s.hazard, group: HAZARD_CODE[s.hazard]?.group },
     alertLevel: LEVEL_CODE[s.alertLevel] ?? "CAUTION",
     responseStep: STEP_CODE[s.responseStep] ?? "INITIAL_RESPONSE",
+    department: s.dept || undefined,
     baseTime: new Date().toISOString(),
     title: s.title,
     currentSituation: s.currentStatus || undefined,
@@ -135,6 +137,8 @@ export function responseToSop(res: SopActionsResponse, fallback: boolean): Sop {
     });
   return {
     source: res.meta.mock || fallback ? "mock" : "t3q",
+    manual: res.manual?.docTitle,
+    deptMatched: res.manual?.departmentMatched,
     generatedAt: new Date().toISOString(),
     missions,
   };

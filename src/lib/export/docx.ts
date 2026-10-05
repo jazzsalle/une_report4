@@ -82,7 +82,8 @@ export async function buildDocx(c: ReportContent): Promise<Blob> {
         const imgCell = (it: (typeof b.items)[number]) => {
           const d = it.src ? dataUrlBytes(it.src) : null;
           if (!d) return new TableCell({ children: [new Paragraph({ spacing: { before: 1600, after: 1600 }, children: [] })] });
-          const w = 300;
+          // 칸 수에 맞춰 그림 폭을 나눈다 (본문 폭 약 600px)
+          const w = Math.floor(600 / b.items.length) - 24;
           const h = Math.round(w * (it.width && it.height ? it.height / it.width : 0.75));
           return new TableCell({
             children: [

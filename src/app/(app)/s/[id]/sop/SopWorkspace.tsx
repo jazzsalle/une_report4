@@ -18,6 +18,8 @@ import {
   Square,
   Workflow,
   List,
+  Zap,
+  BookOpen,
 } from "lucide-react";
 import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
 import {
@@ -40,7 +42,7 @@ import {
   reorderMissions,
 } from "@/app/actions/situation";
 import { KindIcon } from "./KindIcon";
-import { missionKind } from "@/lib/sop/kind";
+import { counted, isOnDemand, missionKind } from "@/lib/sop/kind";
 import { missionFromLibrary, missionsFromLibrary } from "@/app/actions/library";
 import { emptyMission } from "@/lib/sop/convert";
 import { fmtDateTime, fmtTime } from "@/lib/format";
@@ -213,7 +215,8 @@ export function SopWorkspace({
 
   const counts = useMemo(() => {
     const c = { todo: 0, doing: 0, done: 0, skipped: 0 };
-    missions.forEach((m) => c[m.status]++);
+    // 필요시 임무는 실행했을 때만 센다
+    missions.filter(counted).forEach((m) => c[m.status]++);
     return c;
   }, [missions]);
 
@@ -310,10 +313,11 @@ export function SopWorkspace({
     .sort((a, b) =>
       a === "직접 추가" ? 1 : b === "직접 추가" ? -1 : a.localeCompare(b),
     )
-    .map((label) => ({
-      label,
-      items: missions.filter((m) => groupOf(m) === label),
-    }));
+    .map((label) => {
+      const all = missions.filter((m) => groupOf(m) === label);
+      // 필요시 임무는 단계 끝에 따로 모은다
+      return { label, items: [...all.filter((m) => !isOnDemand(m)), ...all.filter(isOnDemand)] };
+    });
 
   return (
     <div className="space-y-5">
@@ -363,6 +367,17 @@ export function SopWorkspace({
         </span>
         {sop.source === "mock" && !sop.startedAt && (
           <Badge tone="gray">기본 SOP</Badge>
+        )}
+        {sop.manual && (
+          <span className="flex items-center gap-1.5 text-[16px] text-sub">
+            <BookOpen size={17} />
+            {sop.manual.replace(/\s*\([^)]*\)\s*$/, "")} 기준
+          </span>
+        )}
+        {sop.deptMatched === false && (
+          <span className="text-[16px] font-semibold text-warning">
+            요청 부서 없음 — 초기대응부서 기준
+          </span>
         )}
         <div className="ml-auto flex flex-wrap gap-2">
           {editable && !sop.startedAt && (
@@ -469,10 +484,17 @@ export function SopWorkspace({
                   </div>
                   {g.items.map((m, i) => {
                     const st = MISSION_STATUS[m.status];
+                    const onDemand = isOnDemand(m);
+                    const firstOnDemand = onDemand && !(i > 0 && isOnDemand(g.items[i - 1]));
                     const newGroup =
-                      m.group && m.group.code !== g.items[i - 1]?.group?.code;
+                      !onDemand && m.group && m.group.code !== g.items[i - 1]?.group?.code;
                     return (
                       <div key={m.id}>
+                        {firstOnDemand && (
+                          <div className="flex items-center gap-1.5 border-b border-line-weak bg-warning-weak px-5 pb-1.5 pt-3 text-[15px] font-bold text-warning">
+                            <Zap size={16} /> 필요시 임무
+                          </div>
+                        )}
                         {newGroup && (
                           <div className="border-b border-line-weak bg-canvas px-5 pb-1.5 pt-3 text-[15px] font-bold leading-snug">
                             [{m.group!.code}] {m.group!.name}
@@ -487,7 +509,9 @@ export function SopWorkspace({
                             "group flex w-full cursor-pointer items-start gap-3 border-l-4 px-5 py-3.5 text-left transition",
                             sel === m.id
                               ? "border-primary bg-primary-weak"
-                              : "border-transparent hover:bg-canvas",
+                              : onDemand
+                                ? "border-warning/60 hover:bg-canvas"
+                                : "border-transparent hover:bg-canvas",
                           )}
                         >
                           <KindIcon kind={missionKind(m)} />
@@ -505,12 +529,12 @@ export function SopWorkspace({
                                 </span>
                               )}
                               {m.title || "제목 없음"}
-                              {m.condition && (
-                                <span className="ml-1.5 rounded bg-warning-weak px-1.5 py-0.5 text-[13px] font-semibold text-warning box-decoration-clone">
-                                  {m.condition}
-                                </span>
-                              )}
                             </div>
+                            {m.condition && (
+                              <div className="mt-1 text-[15px] font-semibold text-warning">
+                                {m.condition}
+                              </div>
+                            )}
                             {(m.startedAt || m.doneAt) && (
                               <div className="mt-1 text-[15px] text-mute">
                                 {m.startedAt ? fmtTime(m.startedAt) : ""}

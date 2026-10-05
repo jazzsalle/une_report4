@@ -1,12 +1,10 @@
 "use client";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
 import {
   ArrowDown,
-  ArrowLeft,
   ArrowUp,
   CheckCircle2,
   ChevronDown,
@@ -24,6 +22,7 @@ import { Badge, Button, Modal } from "@/components/ui";
 import type { ReportContent, ReportSection } from "@/lib/types";
 import { recomposeReport, saveReport, setReportStatus, trashReport, getHwpx } from "@/app/actions/report";
 import { subtitleOf, safeFilename } from "@/lib/export/blocks";
+import { BackButton } from "@/components/BackButton";
 import { DocBlocks } from "@/components/DocView";
 import { downloadBytes, exportDocx, exportHwpx, base64ToBytes } from "@/lib/export/client";
 import { fmtTime } from "@/lib/format";
@@ -131,11 +130,8 @@ export function ReportEditor({
       {/* 도구 영역 */}
       <div className="no-print border-b border-line bg-white px-6">
         <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 py-3">
-          {situationId && (
-            <Link href={`/s/${situationId}/report`} className="mr-2 rounded p-2 text-sub hover:bg-canvas" aria-label="뒤로">
-              <ArrowLeft size={22} />
-            </Link>
-          )}
+          {/* 떠나기 전에 저장 대기 중인 수정 내용을 저장한다 (1초 자동저장 전에 나가면 사라짐) */}
+          <BackButton fallback={situationId ? `/s/${situationId}/report` : "/docs"} before={flush} />
           <span className="mr-2 text-[19px] font-bold">{c.title}</span>
           {final ? <Badge tone="green">확정</Badge> : <Badge tone="gray">작성 중</Badge>}
           <span className="ml-1 text-[15px] text-mute">

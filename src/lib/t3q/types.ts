@@ -27,9 +27,12 @@ export interface SituationContext {
   responsibleRegion: Region;
   affectedRegions?: Region[];
   disasterType: DisasterType;
-  alertLevel: AlertLevelCode;
+  /** (선택) 위기경보 — 매뉴얼 단계가 위기경보로 나뉜 경우(중앙부처 실무매뉴얼형)에만 단계 선택에 쓴다 */
+  alertLevel?: AlertLevelCode;
   /** 대응단계 — API-02 는 이 단계의 조치를 돌려준다 */
   responseStep: ResponseStepCode;
+  /** (v1.9) 담당부서 원문 — 매뉴얼에서 이 부서의 행만 뽑는다 (R19). 예: "자연재난과" */
+  department?: string;
   baseTime: string;
   title?: string;
   currentSituation?: string;
@@ -101,7 +104,7 @@ export interface SopAction {
   phaseLabel?: string;
   /** 이 조치가 속한 대응단계 */
   responseStep?: ResponseStepCode;
-  /** 수행 조건 — "필요시", "태풍 한반도 북상 우려시" 등 (매뉴얼 원문 그대로) */
+  /** 수행 조건 — 조치 전체에 붙은 "필요시", "태풍 한반도 북상 우려시" 등 (원문 그대로, R8·R18). 있으면 「필요시 임무」 */
   condition?: string;
   /** 비고 — 매뉴얼의 ※·* 줄 */
   notes?: string[];
@@ -131,9 +134,25 @@ export interface SopMission {
   actionCodes: string[];
 }
 
+/** T3Q가 고른 매뉴얼 — 재난유형 → 발생 시군구 → 시도 → 중앙 순 */
+export interface ManualRef {
+  docId: string;
+  docTitle: string;
+  scope: "SIGUNGU" | "SIDO" | "CENTRAL";
+  region?: Region;
+  version?: string;
+  /** 단계를 대응단계로 골랐는지, 위기경보로 골랐는지 */
+  stepBasis: "RESPONSE_STEP" | "ALERT_LEVEL";
+  /** (v1.9) 실제로 고른 부서 칸·주관부서 원문 (예: ["재난상황실", "자연재난과"]) */
+  departments?: string[];
+  /** (v1.9) 요청 부서가 매뉴얼에 있었는지 — false 면 초기대응(총괄) 행으로 대신함 */
+  departmentMatched?: boolean;
+}
+
 export interface SopActionsResponse {
   meta: T3QMeta;
   disasterType: DisasterType;
+  manual?: ManualRef;
   missions: SopMission[];
   actions: SopAction[];
   organizationSummary?: { name: string; roles: OrgRef["role"][]; actionCodes: string[] }[];

@@ -13,6 +13,8 @@ import { buildContext, responseToSop } from "@/lib/sop/convert";
 import { recipientIds } from "@/lib/sop/recipients";
 import { appendMissions, orderMissions, patchMission, patchSopHead, putMission, removeMission } from "@/lib/sop/store";
 import { composeReport } from "@/lib/report/compose";
+import { progress } from "@/lib/sop/kind";
+import { WEATHER_SLOTS, type WeatherSlot } from "@/lib/report/weather";
 import { fromLocalInput } from "@/lib/format";
 import type { Mission, WeatherImage } from "@/lib/types";
 
@@ -42,6 +44,8 @@ export interface SituationInput {
   /** 발생 시도 */
   sido: string;
   areas: string[];
+  /** 담당부서 — 매뉴얼에서 이 부서의 행만 뽑는다 */
+  dept: string;
   periodStart: string; // datetime-local
   periodEnd: string | null;
   currentStatus: string;
@@ -53,6 +57,7 @@ function validate(v: SituationInput) {
   if (!v.alertLevel) return "위기경보 수준을 선택하세요.";
   if (!v.step) return "대응단계를 선택하세요.";
   if (!v.sido) return "발생 시도를 선택하세요.";
+  if (!v.dept?.trim()) return "담당부서를 입력하세요.";
   if (!v.periodStart) return "시작 일시를 입력하세요.";
   return null;
 }
@@ -76,6 +81,7 @@ export async function createSituation(v: SituationInput, generate: boolean): Pro
     responseStep: v.step,
     sido: v.sido,
     areas: v.areas,
+    dept: v.dept.trim(),
     periodStart: new Date(fromLocalInput(v.periodStart)),
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
     currentStatus: v.currentStatus,
@@ -99,6 +105,7 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
   if (err) return { error: err };
   const levelChanged = s.alertLevel !== v.alertLevel;
   const stepChanged = s.responseStep !== v.step;
+  const deptChanged = s.dept !== v.dept.trim();
   // 발생 시도가 바뀌면 그 시도의 기상특보를 다시 가져온다
   const sidoChanged = (s.sido || "") !== v.sido;
   const weather = sidoChanged ? await getWeatherSnapshot(v.sido) : undefined;
@@ -110,6 +117,7 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
     responseStep: v.step,
     sido: v.sido,
     areas: v.areas,
+    dept: v.dept.trim(),
     periodStart: new Date(fromLocalInput(v.periodStart)),
     periodEnd: v.periodEnd ? new Date(fromLocalInput(v.periodEnd)) : null,
     currentStatus: v.currentStatus,
@@ -128,6 +136,9 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
   }
   if (stepChanged) {
     await addEvent(id, { type: "change", title: "대응단계 변경", body: `${s.responseStep} → ${v.step}`, userName: u.name });
+  }
+  if (deptChanged) {
+    await addEvent(id, { type: "change", title: "담당부서 변경", body: `${s.dept} → ${v.dept.trim()}`, userName: u.name });
   }
   revalidatePath(`/s/${id}`);
   return {};
@@ -179,13 +190,13 @@ export async function startSop(id: string) {
 export async function endSop(id: string) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
-  const done = s.sop.missions.filter((m) => m.status === "done").length;
+  const { done, total } = progress(s.sop.missions);
   await patchSopHead(id, { endedAt: new Date().toISOString() });
   await touch(id, { status: "done" });
   await addEvent(id, {
     type: "sop",
     title: "SOP 실행 종료",
-    body: `완료 ${done} / 전체 ${s.sop.missions.length}`,
+    body: `완료 ${done} / 전체 ${total}`,
     userName: u.name,
   });
   revalidatePath(`/s/${id}`);
@@ -385,8 +396,9 @@ export async function trashSituation(id: string) {
   redirect("/");
 }
 
-/** 기상특보 보고 그림 저장 (특보발표현황 / 레이더 영상). img=null 이면 삭제 */
-export async function saveWeatherImage(id: string, which: "alert" | "radar", img: WeatherImage | null) {
+/** 기상특보 보고 그림 저장 (기상특보 현황 / 레이더 영상 / 위성영상). img=null 이면 삭제 */
+export async function saveWeatherImage(id: string, which: WeatherSlot, img: WeatherImage | null) {
+  if (!WEATHER_SLOTS.some((x) => x.key === which)) throw new Error("그림 칸이 올바르지 않습니다.");
   const { u, s } = await editable(id);
   if (img && img.src.length > 3_000_000) throw new Error("그림이 너무 큽니다.");
   if (img && !/^data:image\/(jpeg|png);base64,/.test(img.src)) throw new Error("그림 형식이 올바르지 않습니다.");
@@ -397,7 +409,7 @@ export async function saveWeatherImage(id: string, which: "alert" | "radar", img
   if (img) {
     await addEvent(id, {
       type: "weather",
-      title: which === "alert" ? "특보발표현황 그림 첨부" : "레이더 영상 첨부",
+      title: `${WEATHER_SLOTS.find((x) => x.key === which)!.label} 그림 첨부`,
       userName: u.name,
     });
   }

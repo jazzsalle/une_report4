@@ -3,6 +3,8 @@
 > **최종 규격(정본)은 Swagger 문서입니다:** https://unereport4.vercel.app/api-docs (① T3Q 연계 API 요청서)
 > 원본 파일 `public/api-docs/t3q.yaml` · 코드 계약 `src/lib/t3q/types.ts` — 이 문서는 배경 설명용입니다.
 >
+> v1.9 반영 사항: **담당부서** `SituationContext.department` 추가 — 재난대응 프로세스 표의 부서 칸 중 **요청 부서의 행만** 추출(규칙 R19, 기본 「자연재난과」 → 초기대응부서). 응답 `manual.departments`·`departmentMatched` 추가.
+> v1.8 반영 사항: **매뉴얼 고르기 규칙**(재난유형 → 발생 시군구 → 시도 → 중앙) 명시, `alertLevel`을 선택 항목으로(위기경보로 단계를 나눈 매뉴얼에서만 사용), 응답 `manual`(고른 매뉴얼) 추가, 규칙 R18(제목 일부의 조건은 `condition` 아님) 추가 — 앱은 `condition` 조치를 「필요시 임무」로 따로 배치.
 > v1.7 반영 사항: 추출 규칙 R10~R17 추가(다른 매뉴얼 4종 검증), `SopMission.functionCode/functionName`, `SopAction.linkedActionCodes` 추가.
 > v1.6 반영 사항: **API-01 기상요약 폐지** (기상청 기상정보 원문 사용). SOP 응답에 `condition`·`notes`·`SopMission.responseStep`·`PropagationTarget.method` 추가, [매뉴얼 ↔ JSON 대응 설명서](https://unereport4.vercel.app/api-docs/mapping.html) 추가.
 > v1.3 반영 사항: `SituationContext.responseStep`(대응단계: 징후감지·초기대응·비상대응·수습복구) 추가 — API-02는 이 단계의 조치만 반환, `SopAction.responseStep` 추가.
@@ -100,8 +102,9 @@ export interface SituationContext {
   responsibleRegion: Region;         // 대응 지자체
   affectedRegions?: Region[];        // 발생·영향지역(복수)
   disasterType: DisasterType;
-  alertLevel: AlertLevel;
+  alertLevel?: AlertLevel;           // (선택 v1.8) 위기경보로 단계를 나눈 매뉴얼에서만 단계 선택에 사용
   responseStep: ResponseStep;        // 대응단계 (사용자 선택)
+  department?: string;               // (v1.9) 담당부서 원문 — 이 부서의 행만 추출 (R19). 예: '자연재난과'
   baseTime: string;                  // 기준시각
   title?: string;                    // 업무 제목
   currentSituation?: string;         // 현재상황(참고용 자유 텍스트)
@@ -168,10 +171,29 @@ export interface SopActionsRequest {
 }
 ```
 
+### 4.2-1 매뉴얼 고르기 (v1.8)
+
+상황정보는 상황일지의 기본 정보이면서, T3Q가 벡터DB에서 **맞는 매뉴얼 1종을 고르는 열쇠**입니다.
+
+| 순서 | 쓰는 항목 | 규칙 |
+|---|---|---|
+| 1 | `disasterType` | 재난유형이 같은 매뉴얼만 |
+| 2 | `affectedRegions` → `responsibleRegion` | 발생 시군구 매뉴얼(예: 영천시) → 없으면 시도 매뉴얼(경상북도) → 없으면 중앙부처 매뉴얼. 발생 시군구가 여럿이면 시도 매뉴얼 |
+| 3 | 문서 버전 | 같은 기관 매뉴얼이 여러 판이면 최신판 |
+| 4 | `responseStep` | 고른 매뉴얼에서 그 대응단계의 조치만 |
+| 5 | `alertLevel` (선택) | 매뉴얼 단계가 위기경보(관심·주의·경계·심각)로 나뉜 경우에만 사용 |
+| 6 | `department` (v1.9) | 요청 부서의 행만 (R19). 매뉴얼에 없는 부서면 초기대응(총괄) 행 + `departmentMatched: false` |
+
+- **부서 칸 (v1.9)**: 부산 풍수해 매뉴얼의 재난대응 프로세스 표는 왼쪽 부서 칸으로 행이 나뉩니다 — p.34 초기대응부서(재난상황실·자연재난과), p.35~37 협업부서(복지정책과·도로안전과 등 약 20개 과), p.38 유관기관(기상청·경찰·소방·53사단·한전 등). 상황정보의 담당부서(기본 「자연재난과」)가 든 행 묶음만 돌려주세요.
+
+- **위기경보를 선택으로 둔 근거**: 부산·영천 현장조치 행동매뉴얼은 표의 열이 대응단계(징후감지·초기대응·비상대응·수습복구)이고, 위기경보 단계 표기는 2~3회뿐입니다. 반면 기후부 풍수해·환경부 산불 실무매뉴얼은 조치가 「관심/주의/경계/심각 단계」로 나뉘어 있고(기후부 p.57·61·66·73), 대응단계와 위기경보가 1:1이 아니어서(징후감지 = 관심·주의) 이 형식에서는 위기경보가 있어야 단계를 가릴 수 있습니다.
+- `currentSituation`·`title`은 참고용, `workType`은 매뉴얼 선택과 무관합니다.
+- 고른 매뉴얼은 응답 `manual`로 돌려주세요. 화면에 「○○ 기준」으로 표시합니다. 맞는 매뉴얼이 없으면 `NO_DOCUMENT`.
+
 ### 4.3 응답
 
 > **매뉴얼 ↔ JSON 대응 설명서**: [/api-docs/mapping.html](https://unereport4.vercel.app/api-docs/mapping.html)
-> 매뉴얼 캡처에 번호 상자로 어느 칸이 어느 필드인지 표시하고, 추출 규칙(R1~R9)을 정리했습니다.
+> 매뉴얼 캡처에 번호 상자로 어느 칸이 어느 필드인지 표시하고, 추출 규칙(R1~R19)과 **우리 화면에 어떻게 적용되는지**를 정리했습니다.
 > 부산 풍수해 매뉴얼은 예시이며, 다른 재난유형·지자체 매뉴얼에도 같은 규칙을 적용해 주세요.
 
 **추출 규칙 요약**
@@ -185,7 +207,7 @@ export interface SopActionsRequest {
 | R5 | 기호 없이 이어지는 줄 | 앞 줄에 이어 붙임 (줄바꿈 복원) |
 | R6 | `[3-3][3-4] 제목` 한 줄 | 조치 1건, actionCode = `3-3,3-4` |
 | R7 | 상위 `[n]` 없이 `[n-m]`만 있음 | 임무를 만들고 이름은 행동카드 조치목록 |
-| R8 | `(필요시)`, `＊○○시` | `condition` (제목에서 떼어 냄) |
+| R8 | 조치 전체에 붙은 `(필요시)`, `(피해발생시)`, `＊○○시` | `condition` (제목에서 떼어 냄) → 앱은 「필요시 임무」로 따로 배치 |
 | R9 | `-` 줄이 없는 조치 | 행동카드 표준행동을 `detailTasks`로 |
 | R10 | 원문자 코드 `①-1-1` | 숫자로 `1-1-1` (①=협업기능 → `functionCode`, ①-1=임무, ①-1-1=조치) |
 | R11 | 같은 코드가 여러 단계에 나옴 | 단계별로 따로, 요청한 단계 것만 응답 |
@@ -195,6 +217,8 @@ export interface SopActionsRequest {
 | R15 | 하위 항목이 「시기/전파기관:」 같은 속성 | 부모 1건, 전파기관 → `propagation`, 협조기관 → `organizations` |
 | R16 | 중앙부처·공사 등 기관 매뉴얼 | 지자체가 실행하는 조치만 (없으면 `actions: []`) |
 | R17 | 실명·전화번호 | 보내지 않음 (기관·직위만) |
+| R18 | 제목 **일부**에만 붙은 조건 `교통통제 및 (필요시) 교통통제소 운영` | 제목 그대로, `condition` 비움 (조치 자체는 꼭 할 일) |
+| R19 | 재난대응 프로세스 표의 **부서 칸** (초기대응부서 / 협업부서 / 유관기관) | 요청 `department`가 든 행 묶음만. 협업기능형(영천)은 주관부서가 그 부서인 조치만. 띄어쓰기 무시, 상위 조직이 붙어도 같은 부서. 없으면 초기대응 행 + `departmentMatched: false` |
 
 검증한 매뉴얼: 영천 풍수해(흐름표 142건 = 행동카드 142장, 잘 맞음) · 기후부 풍수해 실무 · 환경부 산불 실무 · 인천항만공사 해양선박사고.
 
@@ -263,9 +287,21 @@ export interface SopMission {          // 임무(조치 묶음)
   actionCodes: string[];
 }
 
+export interface ManualRef {           // (v1.8) T3Q가 고른 매뉴얼
+  docId: string;
+  docTitle: string;                    // 예: '영천시 풍수해 현장조치 행동매뉴얼'
+  scope: 'SIGUNGU' | 'SIDO' | 'CENTRAL';
+  region?: Region;
+  version?: string;                    // 판·기준일
+  stepBasis: 'RESPONSE_STEP' | 'ALERT_LEVEL'; // 단계를 무엇으로 골랐는지
+  departments?: string[];              // (v1.9) 실제로 고른 부서 칸·주관부서
+  departmentMatched?: boolean;         // (v1.9) 요청 부서가 매뉴얼에 있었는지
+}
+
 export interface SopActionsResponse {
   meta: T3QMeta;
   disasterType: DisasterType;
+  manual?: ManualRef;                  // (v1.8) 꼭 채워 주세요
   missions: SopMission[];
   actions: SopAction[];                // 조치 목록+상세(평면 배열, missions에서 참조)
   organizationSummary?: {              // 기관별 역할 요약(조직 편성 참고)
@@ -577,3 +613,5 @@ data: [DONE]
 5. 인증 방식(서비스 계정 Bearer 토큰) 및 토큰 유효기간
 6. `compns` 직접 생성(includeCompns) 지원 여부 — 미지원 시 신규 앱이 §5.3 규칙으로 변환
 7. (API-03) 링크 토큰 발급 방식·유효시간, 사용자 정보 항목, 기관코드 제공 가능 여부
+8. (v1.8) 벡터DB 매뉴얼에 재난유형·기관(시도/시군구)·판(기준일) 메타데이터가 있는지 — 4.2-1 매뉴얼 고르기 규칙의 전제
+9. (v1.9) 재난대응 프로세스 표의 부서 칸(행 묶음)을 조치마다 보존해 적재하는지 — R19 부서별 추출의 전제

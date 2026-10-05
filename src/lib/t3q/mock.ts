@@ -27,7 +27,20 @@ function meta(): T3QMeta {
   };
 }
 
-/** API-02 모의: 매뉴얼 시드에서 위기경보 수준에 맞는 조치를 추출 */
+/**
+ * 시드는 재난대응 프로세스 표의 초기대응부서 행(부산 p.34)만 담고 있다.
+ * 다른 부서를 요청하면 같은 시드를 주되 「일치 없음」으로 알린다 (R19 — 없으면 초기대응 행으로 대신).
+ */
+const SEED_DEPTS = ["재난상황실", "자연재난과"];
+const norm = (s: string) => s.replace(/\s/g, "");
+function deptMatched(dept?: string): boolean {
+  if (!dept?.trim()) return true;
+  const d = norm(dept);
+  // 「시민안전실 자연재난과」처럼 상위 조직이 붙어도 같은 부서, 「시민안전실」만 적어도 그 아래 부서 묶음
+  return [...SEED_DEPTS, "시민안전실"].some((k) => d.includes(k) || (d.length >= 3 && k.includes(d)));
+}
+
+/** API-02 모의: 매뉴얼 시드에서 대응단계에 맞는 조치를 추출 */
 export async function mockSopActions(req: SopActionsRequest): Promise<SopActionsResponse> {
   const step = STEP_BY_CODE[req.context.responseStep] ?? "초기대응";
   const { source, actions } = selectSeed(req.context.disasterType.name, step);
@@ -75,6 +88,16 @@ export async function mockSopActions(req: SopActionsRequest): Promise<SopActions
   return {
     meta: meta(),
     disasterType: req.context.disasterType,
+    manual: {
+      docId: "seed",
+      docTitle: source,
+      scope: "SIDO",
+      stepBasis: "RESPONSE_STEP",
+      // 부서 행 구분은 부산 풍수해 시드에만 있다 (산불·공통 시드는 판단하지 않음)
+      ...(req.context.disasterType.name === "태풍/호우"
+        ? { departments: SEED_DEPTS, departmentMatched: deptMatched(req.context.department) }
+        : {}),
+    },
     missions: [...missions.values()],
     actions: out,
   };

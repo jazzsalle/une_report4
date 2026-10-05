@@ -30,14 +30,17 @@ async function toImage(blob: Blob): Promise<WeatherImage> {
   }
 }
 
-/** 특보발표현황·레이더 영상 칸 — 끌어다 놓기 / 붙여넣기 / 파일 선택 */
+/** 기상특보 현황·레이더 영상·위성영상 칸 — 끌어다 놓기 / 붙여넣기 / 파일 선택 */
 export function ImageDrop({
   value,
   caption,
+  hint,
   editable,
   onChange,
 }: {
   value?: WeatherImage;
+  /** 빈 칸에 보이는 그림 찾는 곳 (예: 방재기상정보시스템 › 위험기상감시 › 위성) */
+  hint?: string;
   caption: string;
   editable: boolean;
   onChange: (img: WeatherImage | null) => Promise<void>;
@@ -143,6 +146,7 @@ export function ImageDrop({
           <div className="flex flex-col items-center gap-2 px-4 text-center text-sub">
             <ImagePlus size={34} className="text-placeholder" />
             {busy ? "그림 넣는 중" : editable ? "끌어다 놓기 · 클릭 · 마우스 올리고 Ctrl+V" : "그림 없음"}
+            {hint && editable && !busy && <span className="text-[15px] text-primary/70">{hint}</span>}
           </div>
         )}
         {value && editable && (

@@ -19,6 +19,7 @@ export function defaultInput(sido: string, hazard: string): SituationInput {
     step: "초기대응",
     sido,
     areas: [],
+    dept: "자연재난과",
     periodStart: now,
     periodEnd: null,
     currentStatus: "",
@@ -36,7 +37,7 @@ export function SituationFields({
 
   return (
     <div>
-      <h3 className="mb-2 mt-2 text-[18px] font-bold">상황</h3>
+      <h3 className="mb-2 mt-2 text-[18px] font-bold">상황정보</h3>
       <FieldRow label="상황 제목" required>
         <input className="input max-w-[560px]" value={value.title} onChange={(e) => set("title", e.target.value)} />
       </FieldRow>
@@ -106,6 +107,9 @@ export function SituationFields({
             });
           }}
         />
+      </FieldRow>
+      <FieldRow label="담당부서" required>
+        <input className="input max-w-[360px]" value={value.dept} onChange={(e) => set("dept", e.target.value)} />
       </FieldRow>
 
       <h3 className="mb-2 mt-10 text-[18px] font-bold">기간</h3>

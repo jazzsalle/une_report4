@@ -1,0 +1,1 @@
+ALTER TABLE "situations" ADD COLUMN "dept" text DEFAULT '자연재난과' NOT NULL;

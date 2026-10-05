@@ -23,6 +23,7 @@ export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
         step: s.responseStep,
         sido: s.sido || ORG_SIDO[s.orgId] || "부산광역시",
         areas: s.areas,
+        dept: s.dept,
         periodStart: toLocalInput(s.periodStart),
         periodEnd: s.periodEnd ? toLocalInput(s.periodEnd) : null,
         currentStatus: s.currentStatus,

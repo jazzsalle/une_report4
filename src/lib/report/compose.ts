@@ -1,6 +1,7 @@
 import { STEP_LABEL, type ResponseStep, type Mission, type ReportContent, type ReportSection, type Sop, type WeatherSnapshot, type WeatherImages } from "@/lib/types";
 import { weatherSection } from "./weather";
 import { fmtTime, fmtPeriod } from "@/lib/format";
+import { isOnDemand } from "@/lib/sop/kind";
 
 export interface ComposeInput {
   situation: {
@@ -104,7 +105,7 @@ export function composeReport(input: ComposeInput): ReportContent {
   recordsOf(input, ["상황"]).forEach((e) => overview.push(`○ (${fmtTime(e.at)}) ${e.body || e.title}`));
   sec("상황 개요", overview);
 
-  // 2. 기상특보 — 기상특보 보고(특보 요약 + 특보발표현황·레이더 영상)
+  // 2. 기상특보 — 기상특보 보고(특보 요약 + 기상특보 현황·레이더 영상·위성영상)
   const ws = weatherSection({ weather: s.weather, weatherImages: s.weatherImages }, `s${sections.length + 1}`);
   sections.push(ws);
 
@@ -196,7 +197,8 @@ export function composeReport(input: ComposeInput): ReportContent {
   sec("복구 및 피해 조치", rec);
 
   // 7. 향후 계획
-  const remain = missions.filter((m) => m.status === "todo");
+  // 실행하지 않은 필요시 임무는 해당 없음 — 미완료로 넣지 않는다
+  const remain = missions.filter((m) => m.status === "todo" && !isOnDemand(m));
   const plan: string[] = [];
   if (remain.length) {
     plan.push("□ 미완료 임무 지속 추진");

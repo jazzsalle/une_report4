@@ -4,10 +4,18 @@ import { IMAGE_MARK } from "@/lib/export/blocks";
 /**
  * 기상특보 보고 (부산 매뉴얼 붙임 8-1-① 대처상황 보고 형식에서 피해·통제·조치 현황을 뺀 것)
  *   □ 기상특보 : 10.5.(월) 09:00 호우주의보 발효
- *   [특보발표현황] [레이더 영상]
+ *   [기상특보 현황] [레이더 영상] [위성영상]
  *   □ 강수 현황과 전망
  *   □ 예비특보
  */
+
+/** 기상특보 그림 3칸 — 부산 상황보고 양식 순서. hint = 그림을 찾는 곳 (방재기상정보시스템 메뉴) */
+export const WEATHER_SLOTS = [
+  { key: "alert", label: "기상특보 현황", hint: "방재기상정보시스템 › 위험기상감시 › 특·정보" },
+  { key: "radar", label: "레이더 영상", hint: "방재기상정보시스템 › 위험기상감시 › 태풍·호우 › 레이더/낙뢰 › SITE영상" },
+  { key: "satellite", label: "위성영상", hint: "방재기상정보시스템 › 위험기상감시 › 태풍·호우 › 위성" },
+] as const;
+export type WeatherSlot = (typeof WEATHER_SLOTS)[number]["key"];
 
 const TZ = "Asia/Seoul";
 function parts(d: string) {
@@ -58,6 +66,11 @@ export function weatherReportTitle(w: WeatherSnapshot | null) {
   return `${p.month}.${p.day}. ${names.length ? names.join("·") + " " : ""}기상상황 보고`;
 }
 
+/** 그림 설명: "레이더 영상(10.5. 09:00)" */
+export function weatherCaption(label: string, at?: string) {
+  return `${label}(${captionStamp(at ?? new Date().toISOString())})`;
+}
+
 /** 기상특보 보고 본문 — 상황일지 「기상특보」 장과 단독 문서가 함께 쓴다 */
 export function weatherSection(s: WeatherReportInput, id = "weather"): ReportSection {
   const w = s.weather;
@@ -83,15 +96,17 @@ export function weatherSection(s: WeatherReportInput, id = "weather"): ReportSec
   }
 
   const img = s.weatherImages ?? {};
-  const cap = (label: string, t?: string) => `${label}(${captionStamp(t ?? at ?? new Date().toISOString())})`;
+  const items = WEATHER_SLOTS.map(({ key, label }) => {
+    const it = img[key];
+    return { src: it?.src ?? "", caption: weatherCaption(label, it?.at ?? at), width: it?.width ?? 0, height: it?.height ?? 0 };
+  });
+  // 넣은 그림만 칸으로 (그림이 하나도 없으면 3칸 빈 틀을 남겨 한글에서 붙여 넣게)
+  const filled = items.filter((x) => x.src);
   return {
     id,
     title: "기상특보",
     body: lines.join("\n"),
-    images: [
-      { src: img.alert?.src ?? "", caption: cap("특보발표현황", img.alert?.at), width: img.alert?.width ?? 0, height: img.alert?.height ?? 0 },
-      { src: img.radar?.src ?? "", caption: cap("레이더 영상", img.radar?.at), width: img.radar?.width ?? 0, height: img.radar?.height ?? 0 },
-    ],
+    images: filled.length ? filled : items,
   };
 }
 

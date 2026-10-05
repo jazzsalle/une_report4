@@ -56,11 +56,13 @@ export const situations = pgTable(
     sido: text("sido").notNull().default(""),
     /** 발생지역: "해운대구" 또는 "해운대구 우동" */
     areas: jsonb("areas").$type<string[]>().notNull().default([]),
+    /** 담당부서 — T3Q가 매뉴얼에서 이 부서의 행만 뽑는다 (R19) */
+    dept: text("dept").notNull().default("자연재난과"),
     periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
     periodEnd: timestamp("period_end", { withTimezone: true }),
     currentStatus: text("current_status").notNull().default(""),
     weather: jsonb("weather").$type<WeatherSnapshot | null>(),
-    /** 기상특보 보고: 특보발표현황·레이더 영상 이미지 */
+    /** 기상특보 보고: 기상특보 현황·레이더 영상·위성영상 이미지 */
     weatherImages: jsonb("weather_images").$type<WeatherImages | null>(),
     sop: jsonb("sop").$type<Sop | null>(),
     /** setup → sop → running → done */

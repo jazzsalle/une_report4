@@ -45,7 +45,7 @@ function BlockView({ b, imageSlot }: { b: Block; imageSlot?: () => ReactNode }) 
     case "images":
       if (imageSlot) return <div className="my-3">{imageSlot()}</div>;
       return (
-        <div className="my-3 grid grid-cols-2 border border-ink font-sans">
+        <div className="my-3 grid border border-ink font-sans" style={{ gridTemplateColumns: `repeat(${b.items.length}, minmax(0, 1fr))` }}>
           {b.items.map((it, k) => (
             <figure key={k} className={clsx("flex flex-col", k > 0 && "border-l border-ink")}>
               <div className="flex aspect-[4/3] items-center justify-center bg-white">

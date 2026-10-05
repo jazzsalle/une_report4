@@ -13,3 +13,19 @@ export function missionKind(m: Pick<Mission, "kind" | "title">): MissionKind {
   if (/전파|보고|홍보|통보|문자|안내|발령/.test(m.title)) return "propagation";
   return "process";
 }
+
+/** 필요시 임무 — 조치 전체에 조건이 붙은 것(매뉴얼 R8). 흐름선에 넣지 않고 상황이 생기면 바로 실행한다. */
+export function isOnDemand(m: Pick<Mission, "condition">): boolean {
+  return !!m.condition?.trim();
+}
+
+/** 진행 집계 대상 — 필요시 임무는 실행했을 때만 센다 (실행 안 하면 해당 없음) */
+export function counted(m: Pick<Mission, "condition" | "status">): boolean {
+  return !isOnDemand(m) || m.status === "doing" || m.status === "done";
+}
+
+/** 완료 / 전체 (필요시 미실행 제외) */
+export function progress(missions: Pick<Mission, "condition" | "status">[]) {
+  const list = missions.filter(counted);
+  return { done: list.filter((m) => m.status === "done").length, total: list.length };
+}

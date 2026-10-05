@@ -2,14 +2,15 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
-import { Check, CircleCheck, Megaphone, Split, Users } from "lucide-react";
+import { Check, CircleCheck, Megaphone, Split, Users, Zap } from "lucide-react";
 import type { Mission } from "@/lib/types";
-import { KIND_LABEL, missionKind } from "@/lib/sop/kind";
+import { KIND_LABEL, isOnDemand, missionKind, progress } from "@/lib/sop/kind";
 import { fmtTime } from "@/lib/format";
 
 /**
  * SOP 흐름도 — 임무를 역으로, 대응단계를 구간으로 보여준다.
  *  완료 구간: 밝은 파랑 / 현재 임무로 들어가는 구간: 분홍(흐름) / 남은 구간: 흐림
+ *  필요시 임무(condition)는 흐름선에 넣지 않고 아래 「필요시 임무」 칸에 따로 둔다 — 상황이 생기면 순서와 상관없이 바로 실행
  */
 
 const STEP = 176; // 역 간격
@@ -68,13 +69,18 @@ export function SopMetro({
     return () => ro.disconnect();
   }, []);
 
-  const current = started && !ended ? (missions.find((m) => m.status === "doing") ?? missions.find((m) => m.status === "todo")) : undefined;
+  const main = useMemo(() => missions.filter((m) => !isOnDemand(m)), [missions]);
+  const onDemand = useMemo(() => {
+    const lanes = Array.from(new Set(missions.map(laneOf))).sort();
+    return lanes.flatMap((l) => missions.filter((m) => isOnDemand(m) && laneOf(m) === l));
+  }, [missions]);
+  const current = started && !ended ? (main.find((m) => m.status === "doing") ?? main.find((m) => m.status === "todo")) : undefined;
 
   const { stations, height, segs } = useMemo(() => {
-    const lanes = Array.from(new Set(missions.map(laneOf))).sort((a, b) =>
+    const lanes = Array.from(new Set(main.map(laneOf))).sort((a, b) =>
       a === "직접 추가" ? 1 : b === "직접 추가" ? -1 : a.localeCompare(b),
     );
-    const ordered = lanes.flatMap((l) => missions.filter((m) => laneOf(m) === l));
+    const ordered = lanes.flatMap((l) => main.filter((m) => laneOf(m) === l));
     const perRow = Math.max(3, Math.floor((width - PAD_X * 2) / STEP));
     const all: StationBase[] = [
       { kind: "terminal", id: "start", label: "시작" },
@@ -113,7 +119,7 @@ export function SopMetro({
     });
     const rows = Math.ceil(stations.length / perRow);
     return { stations, height: PAD_TOP + (rows - 1) * ROW + 90, segs };
-  }, [missions, width, started, current]);
+  }, [main, width, started, current]);
 
   // 현재 임무가 보이도록 스크롤
   const focus = current?.id;
@@ -123,10 +129,13 @@ export function SopMetro({
     if (st) box.current.scrollTo({ top: Math.max(0, st.y - 120), behavior: "smooth" });
   }, [focus, stations]);
 
-  const hovered = stations.find((s) => s.id === hover?.id && s.kind === "mission") as
-    | Extract<Station, { kind: "mission" }>
-    | undefined;
-  const done = missions.filter((m) => m.status === "done").length;
+  const hoveredOnDemand = onDemand.find((m) => m.id === hover?.id);
+  const hovered =
+    (stations.find((s) => s.id === hover?.id && s.kind === "mission") as Extract<Station, { kind: "mission" }> | undefined) ??
+    (hoveredOnDemand
+      ? { kind: "mission" as const, id: hoveredOnDemand.id, m: hoveredOnDemand, no: 0, lane: laneOf(hoveredOnDemand), laneStart: false, x: 0, y: 0 }
+      : undefined);
+  const { done, total } = progress(missions);
 
   return (
     <div
@@ -140,7 +149,7 @@ export function SopMetro({
       <div className="sticky left-0 top-0 z-20 flex flex-wrap items-center gap-x-5 gap-y-1 bg-gradient-to-b from-[#141a52] to-transparent px-6 pb-3 pt-4 text-[15px]">
         <b className="text-[17px]">SOP 흐름도</b>
         <span className="text-white/70">
-          완료 {done} / {missions.length}
+          완료 {done} / {total}
         </span>
         <span className="flex items-center gap-1.5 text-white/80">
           <span className="flex h-5 w-5 rotate-45 items-center justify-center rounded-[4px] bg-[#fbbf24]" /> 상황판단
@@ -151,6 +160,11 @@ export function SopMetro({
           </span>
           상황전파
         </span>
+        {onDemand.length > 0 && (
+          <span className="flex items-center gap-1.5 text-white/80">
+            <span className="h-5 w-6 rounded-[5px] border-2 border-dashed border-[#fb923c]" /> 필요시
+          </span>
+        )}
         {current && (
           <span className="flex items-center gap-1.5 text-white/80">
             <span className="h-3 w-6 rounded-full bg-[#ff3d8b]" /> 현재 임무
@@ -226,7 +240,73 @@ export function SopMetro({
           hover &&
           createPortal(<HoverCard s={hovered} rect={hover.rect} targets={people.targets[hovered.id] ?? []} />, document.body)}
       </div>
+
+      {onDemand.length > 0 && (
+        <div className="border-t border-white/15 px-6 pb-6 pt-4">
+          <div className="mb-3 flex items-center gap-2 text-[17px] font-bold text-[#fdba74]">
+            <Zap size={18} /> 필요시 임무
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {onDemand.map((m) => (
+              <OnDemandView
+                key={m.id}
+                m={m}
+                selected={selected === m.id}
+                onEnter={(rect) => setHover({ id: m.id, rect })}
+                onLeave={() => setHover((h) => (h?.id === m.id ? null : h))}
+                onClick={() => onSelect(m.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+/** 필요시 임무 — 점선 주황 칸. 실행하면 칠해지고 실행 시각이 붙는다 */
+function OnDemandView({
+  m,
+  selected,
+  onEnter,
+  onLeave,
+  onClick,
+}: {
+  m: Mission;
+  selected: boolean;
+  onEnter: (rect: DOMRect) => void;
+  onLeave: () => void;
+  onClick: () => void;
+}) {
+  const st = m.status;
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={(e) => onEnter(e.currentTarget.getBoundingClientRect())}
+      onMouseLeave={onLeave}
+      onFocus={(e) => onEnter(e.currentTarget.getBoundingClientRect())}
+      onBlur={onLeave}
+      className={clsx(
+        "relative flex max-w-[320px] items-center gap-2.5 rounded-lg border-2 px-4 py-2.5 text-left outline-none transition hover:scale-[1.03]",
+        st === "done"
+          ? "border-[#fb923c] bg-[#fb923c] text-[#0e1240]"
+          : st === "doing"
+            ? "animate-pulse border-[#fb923c] bg-[#fb923c]/30"
+            : st === "skipped"
+              ? "border-dashed border-white/30 text-white/40 line-through"
+              : "border-dashed border-[#fb923c] bg-[#fb923c]/10",
+        selected && "ring-4 ring-white/60",
+      )}
+    >
+      {st === "done" ? <Check size={18} strokeWidth={3} className="shrink-0" /> : <Zap size={17} className="shrink-0 text-[#fdba74]" />}
+      <span className="min-w-0">
+        <span className="line-clamp-2 text-[15px] font-semibold leading-snug">{m.title}</span>
+        <span className={clsx("block text-[14px]", st === "done" ? "text-[#0e1240]/80" : "text-[#fdba74]")}>
+          {m.condition}
+          {m.startedAt && ` · ${fmtTime(m.startedAt).split(" ").pop()} 실행`}
+        </span>
+      </span>
+    </button>
   );
 }
 

@@ -102,7 +102,7 @@ paths:
   /action/situation/saveWeatherImage:
     post:
       tags: [상황·기상]
-      summary: saveWeatherImage — 기상특보 보고 그림 저장 (특보발표현황 / 레이더 영상)
+      summary: saveWeatherImage — 기상특보 보고 그림 저장 (기상특보 현황 / 레이더 영상 / 위성영상)
       description: 화면에서 1400px 이하 JPEG 로 줄인 data URL 을 저장합니다 (약 3MB 이하). img=null 이면 삭제. 상황일지 「기상특보」 장과 HWPX·DOCX 에 그대로 들어갑니다.
       requestBody:
         content:
@@ -111,7 +111,7 @@ paths:
               type: object
               properties:
                 id: { type: string }
-                which: { type: string, enum: [alert, radar] }
+                which: { type: string, enum: [alert, radar, satellite], description: "기상특보 현황 / 레이더 영상 / 위성영상" }
                 img: { oneOf: [{ $ref: "#/components/schemas/WeatherImage" }, { type: "null" }] }
       responses: { "200": { description: 완료 } }
   /action/location/locateByGps:
@@ -500,7 +500,7 @@ components:
   schemas:
     SituationInput:
       type: object
-      required: [title, kind, hazard, alertLevel, step, areas, periodStart, currentStatus]
+      required: [title, kind, hazard, alertLevel, step, areas, dept, periodStart, currentStatus]
       properties:
         title: { type: string, example: 26.10.04. 부산 태풍/호우 대응 }
         kind: { type: string, enum: [real, drill], description: 실제재난 / 안전한국훈련 }
@@ -509,6 +509,7 @@ components:
         step: { type: string, enum: [징후감지, 초기대응, 비상대응, 수습복구], description: "대응단계 — SOP 구성 기준 (위기경보 선택 시 자동 추천)" }
         sido: { type: string, example: 부산광역시, description: "발생 시도 (전국 17개). 기상특보 조회 지역도 이 시도로 정한다" }
         areas: { type: array, items: { type: string }, example: [해운대구 우동, 수영구], description: "발생지역 — 시군구 또는 '시군구 읍면동'" }
+        dept: { type: string, example: 자연재난과, description: "담당부서 (필수, 기본 자연재난과) — T3Q가 매뉴얼에서 이 부서의 행만 뽑는다 (R19). 바뀌면 「담당부서 변경」 이벤트" }
         periodStart: { type: string, example: "2026-10-04T22:00", description: datetime-local (KST) }
         periodEnd: { type: [string, "null"], description: null 이면 종료 미정 }
         currentStatus: { type: string }

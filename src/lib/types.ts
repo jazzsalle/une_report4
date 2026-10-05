@@ -84,10 +84,12 @@ export interface WeatherImage {
   height: number;
 }
 export interface WeatherImages {
-  /** 특보발표현황 */
+  /** 기상특보 현황 */
   alert?: WeatherImage;
   /** 레이더 영상 */
   radar?: WeatherImage;
+  /** 위성영상 */
+  satellite?: WeatherImage;
 }
 
 /* ---------- SOP ---------- */
@@ -152,6 +154,10 @@ export interface Mission {
 
 export interface Sop {
   source: "t3q" | "mock";
+  /** T3Q가 고른 매뉴얼 이름 — 「○○ 기준」 표시 */
+  manual?: string;
+  /** 요청한 담당부서가 매뉴얼에 있었는지 (false = 초기대응부서 기준으로 대신함) */
+  deptMatched?: boolean;
   generatedAt: string;
   missions: Mission[];
   startedAt?: string;
@@ -173,7 +179,7 @@ export interface ReportSection {
   body: string;
   /** 표 (선택) */
   table?: { head: string[]; rows: string[][] };
-  /** 그림 (선택, 나란히 배치) — 기상특보 보고의 특보발표현황·레이더 영상 */
+  /** 그림 (선택, 나란히 배치) — 기상특보 보고의 기상특보 현황·레이더 영상·위성영상 */
   images?: { src: string; caption: string; width: number; height: number }[];
 }
 

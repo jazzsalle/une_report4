@@ -2,12 +2,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, FileCode2, LogOut, UserRound } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { logout } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/types";
 import { LocationChip } from "./LocationChip";
+import { recordPath } from "./BackButton";
 
 export function Header({
   user,
@@ -22,6 +23,7 @@ export function Header({
 }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  useEffect(() => recordPath(path), [path]);
   const nav = [
     { href: "/", label: "홈" },
     { href: "/docs", label: "문서함" },
