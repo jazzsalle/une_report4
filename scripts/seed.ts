@@ -13,7 +13,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import * as schema from "../src/lib/db/schema";
-import { ORGS, BUSAN_TREE, GB_TREE, flattenTree, GROUP_RULES } from "../src/lib/db/seed-data";
+import { ORGS, orgContactsSeed } from "../src/lib/db/seed-data";
 
 config({ path: ".env.local" });
 
@@ -60,39 +60,12 @@ async function main() {
   }
 
   // 연락망: 기관별로 비어 있을 때만 채운다
-  for (const [orgId, tree] of [
-    ["busan", BUSAN_TREE],
-    ["gyeongbuk", GB_TREE],
-  ] as const) {
+  for (const orgId of ["busan", "gyeongbuk"] as const) {
     const exist = await db.select().from(schema.orgUnits).where(eq(schema.orgUnits.orgId, orgId)).limit(1);
     if (exist.length) continue;
-    const { units, people } = flattenTree(orgId, tree);
+    const { units, people, groups } = orgContactsSeed(orgId);
     await db.insert(schema.orgUnits).values(units);
     await db.insert(schema.contacts).values(people);
-    const unitName = new Map(units.map((u) => [u.id, u]));
-    const pathOf = (unitId: string) => {
-      const names: string[] = [];
-      let u = unitName.get(unitId);
-      while (u) {
-        names.push(u.name);
-        u = u.parentId ? unitName.get(u.parentId) : undefined;
-      }
-      return names;
-    };
-    const groups = GROUP_RULES[orgId].map((g, i) => ({
-      id: `${orgId}-g${i + 1}`,
-      orgId,
-      name: g.name,
-      sort: i,
-      memberIds: people
-        .filter((p) => {
-          const names = pathOf(p.unitId);
-          // 지휘부 그룹은 본부 직속 인원만
-          if (g.match[0].includes("대책본부")) return names[0].includes("대책본부");
-          return g.match.some((m) => names[0].includes(m));
-        })
-        .map((p) => p.id),
-    }));
     await db.insert(schema.contactGroups).values(groups);
     console.log(`연락망 ${orgId}: 조직 ${units.length}, 담당자 ${people.length}, 그룹 ${groups.length}`);
   }

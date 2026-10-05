@@ -380,7 +380,10 @@ paths:
       summary: importContacts — 엑셀 일괄 등록
       description: |
         화면에서 엑셀(.xlsx)을 읽어(`src/lib/contacts-xlsx.ts`) 행 목록으로 보냅니다. 기관관리 이상만 가능, 한 번에 3,000명까지.
-        없는 조직(상위 조직 → 조직)·전파그룹은 새로 만들고, 같은 조직의 같은 이름(또는 같은 이름·번호)이면 수정, 없으면 추가합니다. 엑셀에 없는 기존 담당자는 지우지 않습니다.
+        조직은 「상위 조직 › 조직(부서)」을 조직도 전체에서 찾아(어느 깊이든) 붙이고, 없으면 만듭니다. 같은 조직의 같은 이름(또는 같은 이름·번호)이면 수정, 없으면 추가합니다. 이름이 빈 줄은 「조직만」(담당자 없는 조직 유지).
+        - `opts.sync=false`(기본, 추가·수정만): 엑셀에 없는 기존 담당자·조직은 그대로 둡니다.
+        - `opts.sync=true`(엑셀과 똑같이 맞추기): 엑셀에 없는 담당자를 지우고, 담당자·하위 조직이 없고 엑셀에도 없는 조직을 지웁니다. 전파그룹 소속도 엑셀대로.
+        - `opts.dryRun=true`: 바꾸지 않고 결과(추가·수정·삭제 수와 지울 이름)만 돌려줍니다 — 올리기 창 미리 보기.
       requestBody:
         content:
           application/json:
@@ -388,15 +391,20 @@ paths:
               type: object
               properties:
                 orgId: { type: string }
+                opts:
+                  type: object
+                  properties:
+                    sync: { type: boolean, default: false, description: 엑셀과 똑같이 맞추기 (엑셀에 없는 담당자·빈 조직 삭제) }
+                    dryRun: { type: boolean, default: false, description: 미리 보기 — 바꾸지 않음 }
                 rows:
                   type: array
                   items:
                     type: object
-                    required: [unit, name]
+                    required: [unit]
                     properties:
                       upper: { type: string, description: 상위 조직 (비우면 조직이 맨 위) }
                       unit: { type: string, description: 조직(부서) }
-                      name: { type: string }
+                      name: { type: string, description: "비우면 조직만 (담당자 없는 조직)" }
                       title: { type: string }
                       duty: { type: string }
                       phone: { type: string, example: 010-1234-5678 }

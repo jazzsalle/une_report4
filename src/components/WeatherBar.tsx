@@ -11,6 +11,7 @@ const KMA_URL = "https://www.weather.go.kr/w/special-report/overall.do";
 /** 상시 확인용 외부 사이트 (기상·태풍·산사태) */
 const LINKS = [
   { label: "방재기상플랫폼", href: "https://dmdw.kma.go.kr" },
+  { label: "기상청 날씨누리", href: "https://www.weather.go.kr/" },
   { label: "태풍연구센터", href: "http://www.typhoon.or.kr" },
   { label: "산사태정보시스템", href: "https://sansatai.forest.go.kr/mhms_pub/mhms/main/mainPage.do" },
 ];

@@ -213,3 +213,33 @@ export const GROUP_RULES: Record<string, { name: string; match: string[] }[]> = 
     { name: "유관기관", match: ["산림청", "소방", "경찰", "기상청", "사단"] },
   ],
 };
+
+/** 기관 초기 연락망 (조직·담당자·전파그룹) — 처음 채울 때와 초기 상태로 되돌릴 때 함께 쓴다. 아이디가 고정이라 되돌려도 전파 지정이 다시 이어진다. */
+export function orgContactsSeed(orgId: "busan" | "gyeongbuk") {
+  const { units, people } = flattenTree(orgId, orgId === "busan" ? BUSAN_TREE : GB_TREE);
+  const unitById = new Map(units.map((u) => [u.id, u]));
+  const pathOf = (unitId: string) => {
+    const names: string[] = [];
+    let u = unitById.get(unitId);
+    while (u) {
+      names.push(u.name);
+      u = u.parentId ? unitById.get(u.parentId) : undefined;
+    }
+    return names;
+  };
+  const groups = GROUP_RULES[orgId].map((g, i) => ({
+    id: `${orgId}-g${i + 1}`,
+    orgId,
+    name: g.name,
+    sort: i,
+    memberIds: people
+      .filter((p) => {
+        const names = pathOf(p.unitId);
+        // 지휘부 그룹은 본부 직속 인원만
+        if (g.match[0].includes("대책본부")) return names[0].includes("대책본부");
+        return g.match.some((m) => names[0].includes(m));
+      })
+      .map((p) => p.id),
+  }));
+  return { units, people, groups };
+}

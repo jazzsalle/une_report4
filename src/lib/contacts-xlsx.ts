@@ -29,12 +29,13 @@ const GUIDE = [
   "연락망 일괄 등록 안내",
   "",
   "1. 「연락망」 시트의 2행부터 한 사람씩 입력합니다. 1행(제목)은 지우지 마세요.",
-  "2. 조직(부서)·이름은 꼭 입력합니다.",
-  "3. 상위 조직은 조직(부서)가 속한 큰 조직입니다. 비우면 조직(부서)가 맨 위 조직이 됩니다.",
+  "2. 조직(부서)는 꼭 입력합니다. 이름을 비우면 담당자 없는 조직만 만듭니다(내려받은 파일의 빈 조직 줄).",
+  "3. 상위 조직은 조직(부서)가 바로 속한 조직입니다(예: 재난상황관리반 › 자연재난과). 비우면 조직(부서)가 맨 위 조직이 됩니다.",
   "4. 없는 조직·전파그룹은 새로 만듭니다.",
   "5. 같은 조직에 같은 이름이 있으면 내용을 고칩니다(직위·번호 등). 없으면 새로 추가합니다.",
   "6. 전파그룹이 여러 개면 쉼표(,)로 구분합니다. 예: 상황관리반, 구·군 재난부서",
-  "7. 엑셀에 없는 기존 담당자는 지우지 않습니다.",
+  "7. 올릴 때 「추가·수정만」을 고르면 엑셀에 없는 기존 담당자는 그대로 둡니다.",
+  "8. 「엑셀과 똑같이 맞추기」를 고르면 엑셀에 없는 담당자와 빈 조직을 지웁니다. 줄을 지워 조직·담당자를 없앨 때 씁니다.",
 ];
 
 async function excel() {
@@ -67,6 +68,13 @@ export async function downloadContactsXlsx(bundle: ContactsBundle | null, fileNa
 
   if (bundle) {
     const unit = new Map(bundle.units.map((u) => [u.id, u]));
+    // 담당자 없는 조직도 한 줄 (맞추기로 올려도 조직이 사라지지 않게)
+    const staffed = new Set(bundle.contacts.map((c) => c.unitId));
+    for (const u of bundle.units) {
+      if (staffed.has(u.id)) continue;
+      const parent = u.parentId ? unit.get(u.parentId) : undefined;
+      ws.addRow({ upper: parent?.name ?? "", unit: u.name });
+    }
     for (const c of bundle.contacts) {
       const u = unit.get(c.unitId);
       const parent = u?.parentId ? unit.get(u.parentId) : undefined;
@@ -164,9 +172,9 @@ export async function parseContactsXlsx(file: File): Promise<{ rows: ContactRow[
     };
     if (!v.unit && !v.name && !v.phone) return; // 빈 줄
     if (!v.unit) return void errors.push(`${n}행: 조직(부서)가 비어 있습니다.`);
-    if (!v.name) return void errors.push(`${n}행: 이름이 비어 있습니다.`);
+    if (!v.name && v.phone) return void errors.push(`${n}행: 이름이 비어 있습니다.`);
     rows.push({ row: n, ...v });
   });
-  if (!rows.length && !errors.length) errors.push("입력된 담당자가 없습니다.");
+  if (!rows.length && !errors.length) errors.push("입력된 조직·담당자가 없습니다.");
   return { rows, errors };
 }
