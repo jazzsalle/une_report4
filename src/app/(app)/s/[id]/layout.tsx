@@ -26,6 +26,7 @@ export default async function SituationLayout({ children, params }: LayoutProps<
             <BackButton fallback="/" skip={[`/s/${id}`]} />
             <h1 className="mr-1 text-[24px] font-bold">{s.title}</h1>
             {s.tutorial && <Badge tone="orange">따라하기</Badge>}
+            {s.locked && <Badge tone="blue">예시</Badge>}
             <Badge tone="blue">{s.kind === "drill" ? "안전한국훈련" : "실제재난"}</Badge>
             <Badge tone="gray">{s.hazard}</Badge>
             <LevelBadge level={s.alertLevel} />

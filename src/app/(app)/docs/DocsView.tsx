@@ -18,6 +18,7 @@ type Row = {
   owner: string;
   ownerId: string;
   updatedAt: string;
+  locked?: boolean;
 };
 
 export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; canManage: boolean }) {
@@ -70,6 +71,11 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
                       <Link href={`/reports/${r.id}`} className="inline-flex items-center gap-1 font-medium hover:text-primary">
                         {r.title} <ChevronRight size={18} />
                       </Link>
+                      {r.locked && (
+                        <span className="ml-2 align-middle">
+                          <Badge tone="blue">예시</Badge>
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       {r.status === "final" ? <Badge tone="green">확정</Badge> : <Badge tone="gray">작성 중</Badge>}
@@ -79,7 +85,7 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
                     <td className="px-4 py-4">{r.owner}</td>
                     <td className="px-4 py-4 text-sub">{fmtDateTime(r.updatedAt)}</td>
                     <td className="px-4 py-4">
-                      {(r.ownerId === me || canManage) && r.status !== "final" && (
+                      {(r.ownerId === me || canManage) && r.status !== "final" && !r.locked && (
                         <Button
                           size="sm"
                           variant="ghost"

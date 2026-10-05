@@ -28,6 +28,7 @@ export function OverviewView({
   weather,
   images,
   me,
+  locked,
 }: {
   id: string;
   editable: boolean;
@@ -35,6 +36,8 @@ export function OverviewView({
   input: SituationInput;
   weather: WeatherSnapshot | null;
   images: WeatherImages | null;
+  /** 예시 문서 — 삭제 버튼 없음 */
+  locked?: boolean;
   me: { name: string; dept: string };
 }) {
   const router = useRouter();
@@ -85,9 +88,11 @@ export function OverviewView({
                 <Button variant="ghost" size="sm" onClick={() => (setDraft(input), setEdit(true))}>
                   <Pencil size={17} /> 수정
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setConfirmTrash(true)}>
-                  <Trash2 size={17} /> 삭제
-                </Button>
+                {!locked && (
+                  <Button variant="ghost" size="sm" onClick={() => setConfirmTrash(true)}>
+                    <Trash2 size={17} /> 삭제
+                  </Button>
+                )}
               </>
             )
           }

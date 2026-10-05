@@ -1,0 +1,277 @@
+[
+  {
+    "category": "AGENCY",
+    "org": "울주경찰서",
+    "dept": "경비교통과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "중부소방서",
+    "dept": "방호구조과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "온산소방서",
+    "dept": "방호구조과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "119종합상황실",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 20
+  },
+  {
+    "category": "AGENCY",
+    "org": "KT 언양지점",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전력공사 울산지사",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "육군 제7765부대",
+    "dept": "1대대(언양구수)·3대대(청량덕하)",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "울산 강남교육지원청",
+    "dept": "학교운영지원과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국가스안전공사 울산지역본부",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전기안전공사 울산지사",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "㈜경동도시가스",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국수자원공사",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 26
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "안전총괄과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 20
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "재난종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 20
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "총무과(당직실)",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 20
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "보건소",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 23
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "울산광역시",
+    "dept": "재난종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 20
+  },
+  {
+    "category": "HIGHER",
+    "org": "행정안전부",
+    "dept": "중앙재난안전상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 21
+  }
+]

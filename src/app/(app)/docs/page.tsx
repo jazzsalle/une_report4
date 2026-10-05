@@ -16,6 +16,7 @@ export default async function DocsPage() {
           id: r.id,
           title: r.title,
           status: r.status,
+          locked: r.locked,
           hazard: s?.hazard ?? "-",
           level: s?.alertLevel ?? "-",
           owner: r.ownerName ?? "-",

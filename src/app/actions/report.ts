@@ -74,7 +74,8 @@ export async function setReportStatus(rid: string, status: "draft" | "final") {
 }
 
 export async function trashReport(rid: string) {
-  await editable(rid);
+  const { r } = await editable(rid);
+  if (r.locked) throw new Error("예시 문서는 지울 수 없습니다.");
   await patch(rid, { deletedAt: new Date() });
   revalidatePath("/docs");
 }
@@ -87,7 +88,7 @@ export async function restoreReport(rid: string) {
 
 export async function purgeReport(rid: string) {
   const { r } = await editable(rid);
-  if (!r.deletedAt) return;
+  if (!r.deletedAt || r.locked) return;
   const db = await getDb();
   await db.delete(schema.reports).where(eq(schema.reports.id, rid));
   revalidatePath("/trash");

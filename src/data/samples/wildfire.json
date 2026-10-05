@@ -1,0 +1,631 @@
+{
+  "key": "wildfire",
+  "hazard": "산불",
+  "manual": {
+    "docTitle": "산불 재난 위기대응 실무매뉴얼 (환경부, 2024)",
+    "scope": "CENTRAL",
+    "region": "",
+    "version": "2024"
+  },
+  "scenario": {
+    "titleCore": "의성군 대형산불 대응",
+    "sido": "경상북도",
+    "areas": [
+      "의성군"
+    ],
+    "alertLevel": "심각",
+    "step": "비상대응",
+    "dept": "산림과",
+    "currentStatus": "10월 5일 13시 40분경 의성군 단촌면 야산에서 발생한 산불이 순간풍속 15m/s 강풍을 타고 인접 마을 방향으로 확산 중임. 산불영향구역 약 120ha, 주택 등 주요시설 20동 이상 피해가 우려되어 산불 3단계가 발령되고 산불위기경보 「심각」 단계로 대응 중임.",
+    "weather": {
+      "active": [
+        {
+          "name": "건조경보",
+          "areas": "경북(의성)",
+          "kind": "warning"
+        },
+        {
+          "name": "강풍주의보",
+          "areas": "경북(의성)",
+          "kind": "advisory"
+        }
+      ],
+      "preliminary": [],
+      "infoLines": [
+        "(현황) 의성 실효습도 25% 내외, 순간풍속 15m/s 내외 서풍 계속",
+        "(전망) 6일 오전까지 건조·강풍 지속, 비 예보 없음"
+      ]
+    }
+  },
+  "missions": [
+    {
+      "missionCode": "1",
+      "missionName": "진화 지휘·자원 동원"
+    },
+    {
+      "missionCode": "2",
+      "missionName": "상황보고·전파"
+    },
+    {
+      "missionCode": "3",
+      "missionName": "주민대피·현장통제"
+    },
+    {
+      "missionCode": "4",
+      "missionName": "유관기관 진화·구조 지원"
+    }
+  ],
+  "actions": [
+    {
+      "actionCode": "1-1",
+      "actionName": "산불진화 총괄·지휘 및 지원",
+      "missionCode": "1",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 2개 이상 시·군에 걸쳐 발생하면 시·도지사가 지휘"
+      ],
+      "summary": "시장·군수·구청장이 산불진화를 총괄·지휘하고 대형산불은 시·도지사가 통합지휘한다.",
+      "organizations": [
+        {
+          "name": "지자체(시장·군수·구청장)",
+          "role": "LEAD"
+        },
+        {
+          "name": "산림청",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "관할 산불진화 통합지휘(국·공·사유림에 걸치면 지자체장이 통합지휘)"
+        },
+        {
+          "seq": 2,
+          "title": "산불 3단계(100ha 이상)는 시·도지사가 통합지휘"
+        },
+        {
+          "seq": 3,
+          "title": "책임관으로부터 진화자원 인수 후 산불상황 교육·현장 투입"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "예방·특수·공무원 진화대"
+        },
+        {
+          "category": "장비",
+          "name": "산불지휘차·진화차"
+        },
+        {
+          "category": "항공",
+          "name": "산불진화헬기"
+        }
+      ],
+      "page": 74
+    },
+    {
+      "actionCode": "1-2",
+      "actionName": "산불대응단계 발령",
+      "missionCode": "1",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 신속한 대응이 필요한 경우 사전 발령 후 즉시 대통령비서실과 행정안전부에 통보"
+      ],
+      "summary": "산불 규모·확산 수준에 따라 산불대응단계를 판단·발령한다.",
+      "organizations": [
+        {
+          "name": "산림청(중앙산불방지대책본부)",
+          "role": "LEAD"
+        },
+        {
+          "name": "지자체",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "피해면적·평균풍속·진화시간·시설피해 기준으로 단계 판단"
+        },
+        {
+          "seq": 2,
+          "title": "확산속도가 진화속도보다 빠르거나 인명피해 우려 시 상향 발령"
+        },
+        {
+          "seq": 3,
+          "title": "시설피해 우려 시 상황판단회의를 거쳐 단계 발령"
+        },
+        {
+          "seq": 4,
+          "title": "산불 3단계 발령 시 대통령비서실·행정안전부와 사전 협의"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 74
+    },
+    {
+      "actionCode": "1-3",
+      "actionName": "진화자원 동원 및 지원 요청",
+      "missionCode": "1",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 공중진화대·드론진화대 투입은 중앙산불방지대책본부장 또는 산림항공본부장에게 요청"
+      ],
+      "summary": "지역산불방지대책본부는 인접 기관에 상황을 전파하고 동원 기준에 따라 진화자원을 요청한다.",
+      "organizations": [
+        {
+          "name": "지역산불방지대책본부(지자체)",
+          "role": "LEAD"
+        },
+        {
+          "name": "국유림관리소",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "인접 산불기관에 산불상황 전파"
+        },
+        {
+          "seq": 2,
+          "title": "동원 기준에 따른 진화자원 지원 요청"
+        },
+        {
+          "seq": 3,
+          "title": "산불 3단계: 관할·인접 시·군 인력과 광역(시·도) 단위 헬기 동원"
+        },
+        {
+          "seq": 4,
+          "title": "미동원 인접 기관에 출동상황 전파, 진화인력 비상연락망 유지"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "진화인력 650명(산불 3단계 기준)"
+        },
+        {
+          "category": "항공",
+          "name": "광역(시·도) 단위 산불진화헬기"
+        }
+      ],
+      "page": 146
+    },
+    {
+      "actionCode": "2-1",
+      "actionName": "산불진화 추가 상황보고 및 전파",
+      "missionCode": "2",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "summary": "산불진화 진행상황을 추가 보고하고 유관기관·언론에 전파한다.",
+      "organizations": [
+        {
+          "name": "지자체",
+          "role": "LEAD"
+        },
+        {
+          "name": "산림청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "산불진화 추가 상황 보고 및 전파"
+        },
+        {
+          "seq": 2,
+          "title": "산불상황도 현행화 후 유관기관·언론에 전파(산불 2~3단계)"
+        },
+        {
+          "seq": 3,
+          "title": "NDMS 상황전파시스템으로 중앙행정기관·지자체·유관기관 실시간 공유"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "산림청 중앙산불방지대책본부",
+          "targetType": "ORG",
+          "channelHint": "SMS",
+          "messageTemplate": "[○○군] ○○시 현재 ○○면 산불 산불영향구역 ○○ha, 진화율 ○○%, 대피 주민 ○○명. 산불 ○단계 대응 중."
+        },
+        {
+          "target": "행정안전부 중앙재난안전상황실",
+          "targetType": "ORG",
+          "channelHint": "SMS",
+          "messageTemplate": "[○○군] ○○시 현재 ○○면 산불 산불영향구역 ○○ha, 진화율 ○○%, 대피 주민 ○○명. 산불 ○단계 대응 중."
+        }
+      ],
+      "resources": [],
+      "page": 74
+    },
+    {
+      "actionCode": "2-2",
+      "actionName": "위기상황 대국민 전파 요청(CBS·DITS)",
+      "missionCode": "2",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 요청경로 : GIS상황관리 → 상황관리 → 상황보고전파관리 → 상황전파메시지작성"
+      ],
+      "summary": "산불 위험지수를 발표하고 긴급재난문자·재난방송으로 위기상황을 국민에게 알린다.",
+      "organizations": [
+        {
+          "name": "지자체",
+          "role": "LEAD"
+        },
+        {
+          "name": "산림청",
+          "role": "LEAD"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "방송통신위원회",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "산불 위험지수 발표(SMS 등)"
+        },
+        {
+          "seq": 2,
+          "title": "대피 명령 시 긴급재난문자(CBS) 발송"
+        },
+        {
+          "seq": 3,
+          "title": "재난방송온라인시스템(DITS)으로 위기상황·국민행동요령 자막방송 송출 요청"
+        },
+        {
+          "seq": 4,
+          "title": "NDMS 상황전파시스템으로 재난방송 지원 요청"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "인근 주민·등산객",
+          "targetType": "PUBLIC",
+          "channelHint": "SMS",
+          "messageTemplate": "[사용기관명] 금일 ○○시경 ○○(시·군·구), ○○(읍·면·동) (○○산)에서 산불 발생, ○○지역으로 확산 중, 현재 ○○지역에 계신 분들은 ○○마을회관 등 안전한 장소로 대피하여 주시기 바랍니다."
+        },
+        {
+          "target": "방송사(재난방송 자막)",
+          "targetType": "ORG",
+          "channelHint": "BROADCAST",
+          "messageTemplate": "[사용기관명] ○○일 ○○시부로 ○○(시·군·구)에 산불위기경보 \"심각\"단계가 발령, 산불이 발생하지 않도록 불씨 관리에 각별한 관심과 주의를 기울여 주시기 바랍니다."
+        }
+      ],
+      "resources": [],
+      "page": 74
+    },
+    {
+      "actionCode": "2-3",
+      "actionName": "언론브리핑 및 정부합동 담화문 발표",
+      "missionCode": "2",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "summary": "중대본과 공동으로 언론브리핑과 정부합동 담화문을 발표한다.",
+      "organizations": [
+        {
+          "name": "산림청",
+          "role": "LEAD"
+        },
+        {
+          "name": "지자체",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "행정안전부(중대본)",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "언론브리핑 실시(중대본과 공동)"
+        },
+        {
+          "seq": 2,
+          "title": "정부합동 담화문 발표"
+        },
+        {
+          "seq": 3,
+          "title": "산불 단계별 산불상황도를 언론보도 등으로 전파"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 74
+    },
+    {
+      "actionCode": "3-1",
+      "actionName": "민방위 경보 발령 및 주민대피",
+      "missionCode": "3",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "summary": "재난방송 지원을 요청하고 민방위 경보를 발령해 주민을 최우선으로 대피시킨다.",
+      "organizations": [
+        {
+          "name": "지자체",
+          "role": "LEAD"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "경찰청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "위기상황 대국민 전파 재난방송 지원 요청"
+        },
+        {
+          "seq": 2,
+          "title": "민방위 경보 발령"
+        },
+        {
+          "seq": 3,
+          "title": "주민대피 최우선 실시(대피 권고·명령 문안 사용)"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "산불 인근 주민·등산객",
+          "targetType": "PUBLIC",
+          "channelHint": "BROADCAST",
+          "messageTemplate": "[사용기관명] 오늘 ○○시경 ○○(시·군·구), ○○(읍·면·동) (○○산) 산불확산, 주민과 등산객은 즉시 산에서 멀리 떨어진 안전한 곳으로 대피바랍니다."
+        }
+      ],
+      "resources": [
+        {
+          "category": "시설",
+          "name": "민방위 경보시설"
+        }
+      ],
+      "page": 74
+    },
+    {
+      "actionCode": "3-2",
+      "actionName": "현장 접근 통제",
+      "missionCode": "3",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "summary": "재난 대응·수습과 직접 관련이 없는 사람의 현장 접근을 통제한다.",
+      "organizations": [
+        {
+          "name": "지자체",
+          "role": "LEAD"
+        },
+        {
+          "name": "경찰청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "재난 대응·수습과 직접 관련 없는 자의 현장 접근 통제"
+        },
+        {
+          "seq": 2,
+          "title": "산불발생지역 교통통제(경찰)"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 74
+    },
+    {
+      "actionCode": "4-1",
+      "actionName": "경찰 진화지원·주민대피·교통통제",
+      "missionCode": "4",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "summary": "경찰헬기 진화 지원, 주민대피·교통통제와 원인감식 합동조사반을 운영한다.",
+      "organizations": [
+        {
+          "name": "경찰청",
+          "role": "LEAD"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "경찰헬기 산불진화 지원 및 대민 공중방송"
+        },
+        {
+          "seq": 2,
+          "title": "인명구조·실종자 수색 지원 및 치안유지"
+        },
+        {
+          "seq": 3,
+          "title": "산불발생지역 주민대피·교통통제"
+        },
+        {
+          "seq": 4,
+          "title": "산불원인감식 합동조사반 운영"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "항공",
+          "name": "경찰헬기"
+        }
+      ],
+      "page": 74
+    },
+    {
+      "actionCode": "4-2",
+      "actionName": "소방 진화자원 지원 및 긴급구조",
+      "missionCode": "4",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "summary": "소방헬기·소방차·인력을 지원하고 중앙긴급구조통제단을 가동한다.",
+      "organizations": [
+        {
+          "name": "소방청",
+          "role": "LEAD"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "소방헬기·소방차·소방인력 지원"
+        },
+        {
+          "seq": 2,
+          "title": "도시지역 산불은 초동진화 지원, 주택·시설물 주변 소방자원 집중배치"
+        },
+        {
+          "seq": 3,
+          "title": "중앙긴급구조통제단 가동"
+        },
+        {
+          "seq": 4,
+          "title": "인명구조·구급 등 긴급구조 대응"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "항공",
+          "name": "소방헬기"
+        },
+        {
+          "category": "장비",
+          "name": "소방차"
+        }
+      ],
+      "page": 74
+    },
+    {
+      "actionCode": "4-3",
+      "actionName": "군 진화자원 지원",
+      "missionCode": "4",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "summary": "병력·군 헬기 등 진화자원과 응급환자 수송을 지원한다.",
+      "organizations": [
+        {
+          "name": "국방부",
+          "role": "LEAD"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "병력·군 헬기·군비행장 이용·산림청 헬기 급유 지원"
+        },
+        {
+          "seq": 2,
+          "title": "군사시설 지역 내 산불예방 조치 및 진화자원 투입"
+        },
+        {
+          "seq": 3,
+          "title": "응급환자 수송헬기 지원, 군의관 응급환자 치료"
+        },
+        {
+          "seq": 4,
+          "title": "탄약고·시설물 피해방지 대책(방화선 구축 등)"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "군 병력"
+        },
+        {
+          "category": "항공",
+          "name": "군 헬기"
+        }
+      ],
+      "page": 74
+    },
+    {
+      "actionCode": "4-4",
+      "actionName": "산불진로 모니터링 및 기상정보 전파",
+      "missionCode": "4",
+      "phaseLabel": "심각 단계",
+      "category": "RESPONSE",
+      "summary": "산불진로를 모니터링하고 기상정보를 유관기관에 전파한다.",
+      "organizations": [
+        {
+          "name": "기상청",
+          "role": "LEAD"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "산불진로 모니터링 및 기상정보 전파"
+        },
+        {
+          "seq": 2,
+          "title": "유관기관과 재난 관련 정보 공유체계 유지"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 74
+    }
+  ],
+  "execution": {
+    "doneCodes": [
+      "1-1",
+      "1-2",
+      "1-3",
+      "2-1",
+      "2-2"
+    ],
+    "doingCode": "3-1",
+    "results": {
+      "1-1": "14시 10분 의성군수 현장통합지휘본부 설치·지휘 개시, 15시 산불 3단계 발령에 따라 경북도지사로 통합지휘권 이관.",
+      "1-2": "15시 산림청 상황판단회의 결과 산불 3단계 발령, 대통령비서실·행정안전부 사전 협의 완료.",
+      "1-3": "인접 안동시·청송군 예방진화대와 경북 임차헬기 4대 지원 요청, 미동원 기관 출동상황 전파.",
+      "2-1": "15시 30분 현재 산불영향구역 120ha, 진화율 30% 추가 보고, NDMS로 유관기관 공유.",
+      "2-2": "15시 40분 단촌면 일대 긴급재난문자 발송, DITS 자막방송 송출 요청."
+    },
+    "propagateCode": "2-2",
+    "propagateMessage": "[의성군] 금일 13시 40분경 단촌면 ○○리 야산에서 산불 발생, 구계리 방향으로 확산 중입니다. 현재 구계리·하화리에 계신 분들은 단촌면 행정복지센터 등 안전한 장소로 즉시 대피하여 주시기 바랍니다.",
+    "fieldNotes": [
+      "단촌면 구계리 주민 42명 마을회관 집결 완료, 버스 2대로 단촌초교 이동 중",
+      "하화리 요양원 거동불편 어르신 11명 119구급차로 이송 요청",
+      "국도 5호선 단촌IC 구간 경찰 교통통제 시작, 우회 안내판 설치 중"
+    ]
+  }
+}

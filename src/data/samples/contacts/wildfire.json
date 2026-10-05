@@ -1,0 +1,222 @@
+[
+  {
+    "category": "HIGHER",
+    "org": "행정안전부",
+    "dept": "중앙재난안전상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO~O"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "재난안전통신망 OOO-OOOO-OOOO",
+    "page": 76
+  },
+  {
+    "category": "HIGHER",
+    "org": "산림청",
+    "dept": "산림재난통제관",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "산림재난업무 총괄",
+    "page": 75
+  },
+  {
+    "category": "HIGHER",
+    "org": "환경부",
+    "dept": "당직실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO~O"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 75
+  },
+  {
+    "category": "AGENCY",
+    "org": "산림청",
+    "dept": "산불방지과",
+    "title": "과장",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "산불방지과업무 총괄",
+    "page": 75
+  },
+  {
+    "category": "AGENCY",
+    "org": "대구지방환경청",
+    "dept": "당직실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 75
+  },
+  {
+    "category": "AGENCY",
+    "org": "낙동강유역환경청",
+    "dept": "당직실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 75
+  },
+  {
+    "category": "AGENCY",
+    "org": "국립공원공단",
+    "dept": "국립공원종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO~O"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 75
+  },
+  {
+    "category": "AGENCY",
+    "org": "소방청",
+    "dept": "119종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "재난안전통신망 OOO-OOOO-OOOO",
+    "page": 76
+  },
+  {
+    "category": "AGENCY",
+    "org": "경찰청",
+    "dept": "치안상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO",
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOOO-OOOO~O"
+    ],
+    "note": "",
+    "page": 167
+  },
+  {
+    "category": "AGENCY",
+    "org": "기상청",
+    "dept": "국가기상센터",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO~O"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 167
+  },
+  {
+    "category": "AGENCY",
+    "org": "국방부",
+    "dept": "육군재난대책상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 76
+  },
+  {
+    "category": "AGENCY",
+    "org": "국가유산청",
+    "dept": "안전기준과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO~O"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 167
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전력공사",
+    "dept": "재난종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 167
+  },
+  {
+    "category": "INTERNAL",
+    "org": "경상북도",
+    "dept": "자연재난과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 169
+  }
+]

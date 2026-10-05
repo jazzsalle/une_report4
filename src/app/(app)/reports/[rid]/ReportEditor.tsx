@@ -37,6 +37,7 @@ export function ReportEditor({
   hasHwpx: hasHwpxInit,
   hwpxSavedAt: hwpxSavedInit,
   editable,
+  locked,
 }: {
   id: string;
   situationId: string | null;
@@ -45,6 +46,8 @@ export function ReportEditor({
   hasHwpx: boolean;
   hwpxSavedAt: string | null;
   editable: boolean;
+  /** 예시 문서 — 삭제 버튼 없음 */
+  locked?: boolean;
 }) {
   const router = useRouter();
   const [c, setC] = useState<ReportContent>(initial);
@@ -178,7 +181,7 @@ export function ReportEditor({
             <Button size="sm" variant="ghost" onClick={() => window.print()}>
               <Printer size={17} /> 인쇄
             </Button>
-            {editable && !final && (
+            {editable && !final && !locked && (
               <Button size="sm" variant="ghost" onClick={() => setConfirm("trash")}>
                 <Trash2 size={17} /> 삭제
               </Button>

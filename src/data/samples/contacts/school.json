@@ -1,0 +1,252 @@
+[
+  {
+    "category": "AGENCY",
+    "org": "전남경찰청",
+    "dept": "경비교통과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "재해우려지역 경비, 교통두절 시 통제",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "광주기상청",
+    "dept": "예보과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "기상상황 모니터링",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "육군 제31사단",
+    "dept": "군수참모처",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "긴급동원체계 구축",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전력 광전지역본부",
+    "dept": "경영지원부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "재난지역 전력 및 전기 복구",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "수자원공사 광전지사",
+    "dept": "사업계획과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "대한적십자사 광주전남지사",
+    "dept": "구호복지팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "이재민 응급구호",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전기안전공사",
+    "dept": "고객지원부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국가스안전공사",
+    "dept": "검사2부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "KT전남본부",
+    "dept": "설로시설팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "현장지휘소 긴급전화 개설",
+    "page": 214
+  },
+  {
+    "category": "AGENCY",
+    "org": "광주국토관리사무소",
+    "dept": "구조물과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 214
+  },
+  {
+    "category": "HIGHER",
+    "org": "교육부",
+    "dept": "학교안전총괄과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 211
+  },
+  {
+    "category": "HIGHER",
+    "org": "교육부",
+    "dept": "통합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "상황실 운영시, OOO-OOO-OOOO~6602",
+    "page": 211
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "전남도청",
+    "dept": "자연재난과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 214
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "전남도청",
+    "dept": "재난안전대책본부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 214
+  },
+  {
+    "category": "INTERNAL",
+    "org": "전라남도교육청",
+    "dept": "안전복지과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 61
+  },
+  {
+    "category": "INTERNAL",
+    "org": "전라남도교육청",
+    "dept": "당직실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 212
+  },
+  {
+    "category": "INTERNAL",
+    "org": "목포교육지원청",
+    "dept": "비상연락",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 213
+  }
+]

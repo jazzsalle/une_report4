@@ -1,0 +1,267 @@
+[
+  {
+    "category": "HIGHER",
+    "org": "기후에너지환경부",
+    "dept": "대기환경정책과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "HIGHER",
+    "org": "행정안전부",
+    "dept": "기후재난관리과(중앙재난안전상황실)",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "괄호 번호는 중앙재난안전상황실",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "낙동강유역환경청",
+    "dept": "대기환경관리단",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "note": "주/야",
+    "page": 109
+  },
+  {
+    "category": "AGENCY",
+    "org": "국립환경과학원",
+    "dept": "대기질통합예보센터",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO~OO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국환경공단",
+    "dept": "대기정책지원부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "부산광역시",
+    "dept": "소방재난본부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 110
+  },
+  {
+    "category": "AGENCY",
+    "org": "소방청",
+    "dept": "대응총괄과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "경찰청",
+    "dept": "교통운영과(위기관리센터)",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO",
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOOO-OOOO",
+      "OO-OOOO-OOOO"
+    ],
+    "note": "괄호 번호는 위기관리센터",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "산림청",
+    "dept": "산불방지과(통합당직실)",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "국방부",
+    "dept": "재난안전관리과·재난상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "교육부",
+    "dept": "교육안전정책과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "고용노동부",
+    "dept": "직업건강증진팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "AGENCY",
+    "org": "보건복지부",
+    "dept": "비상안전기획관",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 107
+  },
+  {
+    "category": "INTERNAL",
+    "org": "부산광역시",
+    "dept": "탄소중립정책과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "note": "주/야",
+    "page": 109
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "울산광역시",
+    "dept": "환경대기과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "note": "주/야",
+    "page": 109
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "경상남도",
+    "dept": "기후대기과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "note": "주/야",
+    "page": 109
+  }
+]

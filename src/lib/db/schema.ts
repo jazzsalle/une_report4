@@ -60,6 +60,8 @@ export const situations = pgTable(
     dept: text("dept").notNull().default("자연재난과"),
     /** 따라하기로 만든 상황 (고정 시드 기상·SOP 사용, 목록에 「따라하기」 꼬리표) */
     tutorial: boolean("tutorial").notNull().default(false),
+    /** 예시 문서 — 지울 수 없음(내용 편집은 가능). scripts/samples.ts 가 만든다 */
+    locked: boolean("locked").notNull().default(false),
     periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
     periodEnd: timestamp("period_end", { withTimezone: true }),
     currentStatus: text("current_status").notNull().default(""),
@@ -107,6 +109,8 @@ export const reports = pgTable(
     hwpxData: text("hwpx_data"),
     hwpxSavedAt: timestamp("hwpx_saved_at", { withTimezone: true }),
     status: text("status").notNull().default("draft"),
+    /** 예시 문서 — 지울 수 없음 */
+    locked: boolean("locked").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),

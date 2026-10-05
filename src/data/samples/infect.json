@@ -1,0 +1,631 @@
+{
+  "key": "infect",
+  "hazard": "감염병",
+  "manual": {
+    "docTitle": "「감염병 재난」 현장조치 행동매뉴얼 (2025. 7.)",
+    "scope": "CENTRAL",
+    "region": "주식회사 에스알",
+    "version": "2025.7."
+  },
+  "scenario": {
+    "titleCore": "신종 감염병 '경계' 단계 SRT 역사·열차 방역 대응",
+    "sido": "서울특별시",
+    "areas": [
+      "강남구"
+    ],
+    "alertLevel": "경계",
+    "step": "초기대응",
+    "dept": "산업재난안전처",
+    "currentStatus": "해외에서 유입된 신종 감염병이 수도권 일부 지역사회로 제한적으로 전파되어 국가 위기경보가 '경계'로 상향되었다. 수서역 등 SRT 전용역과 열차 이용객이 많아 방역 강화가 필요하다.",
+    "weather": {
+      "active": [],
+      "preliminary": [],
+      "infoLines": []
+    }
+  },
+  "missions": [
+    {
+      "missionCode": "1",
+      "missionName": "위기경보 접수/전파"
+    },
+    {
+      "missionCode": "2",
+      "missionName": "대비점검"
+    },
+    {
+      "missionCode": "3",
+      "missionName": "대응조치"
+    },
+    {
+      "missionCode": "4",
+      "missionName": "보고 및 통보"
+    }
+  ],
+  "actions": [
+    {
+      "actionCode": "1-1",
+      "actionName": "국토교통부로부터 경보 접수",
+      "missionCode": "1",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "국토교통부로부터 위기경보 '경계'를 접수하고 SR 위기경보를 발령한다.",
+      "organizations": [
+        {
+          "name": "산업재난안전처",
+          "role": "LEAD"
+        },
+        {
+          "name": "운영상황센터",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "보건복지부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "질병관리청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "국토교통부",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "국토교통부로부터 위기경보 '경계(Orange)' 접수"
+        },
+        {
+          "seq": 2,
+          "title": "보건복지부·질병관리청 및 국토교통부를 통한 감염병 발생상황 접수 및 모니터링 강화"
+        },
+        {
+          "seq": 3,
+          "title": "국가위기경보단계에 따른 SR 위기경보 발령"
+        },
+        {
+          "seq": 4,
+          "title": "내부 임원진 상황보고 및 대책본부 소집"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 67
+    },
+    {
+      "actionCode": "1-2",
+      "actionName": "위기관리 유관기관 협의회 참석",
+      "missionCode": "1",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "유관기관 협의회에 참석하고 협의·지시 결과에 따른 협조사항을 내부에 알린다.",
+      "organizations": [
+        {
+          "name": "산업재난안전처",
+          "role": "LEAD"
+        },
+        {
+          "name": "보건복지부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "질병관리청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "국토교통부",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "위기관리 유관기관 협의회 참석"
+        },
+        {
+          "seq": 2,
+          "title": "국토교통부 지시사항, 위기상황판단회의 개최결과에 따른 협조사항 알림"
+        },
+        {
+          "seq": 3,
+          "title": "유관 협업부서 간(내부) 업무협조 요청 및 협의"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 67
+    },
+    {
+      "actionCode": "1-3",
+      "actionName": "부서 및 협력사 등 관련기관 전파",
+      "missionCode": "1",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "운영상황센터에서 전 부서와 협력사에 경보를 전파하고 이상징후 승객 신고를 지시한다.",
+      "organizations": [
+        {
+          "name": "산업재난안전처(운영상황센터)",
+          "role": "LEAD"
+        },
+        {
+          "name": "한국철도공사",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "협력사",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "산업재난안전처(운영상황센터) → 전 부서 상황전파"
+        },
+        {
+          "seq": 2,
+          "title": "전사·협력사 경보 전파 및 이상징후 승객 신고 지시"
+        },
+        {
+          "seq": 3,
+          "title": "이상징후 발생 시 즉시 상황보고 지시"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "전 부서",
+          "targetType": "ORG",
+          "channelHint": "SMS"
+        },
+        {
+          "target": "협력사",
+          "targetType": "ORG",
+          "channelHint": "SMS"
+        },
+        {
+          "target": "한국철도공사",
+          "targetType": "ORG",
+          "channelHint": "PHONE"
+        }
+      ],
+      "resources": [],
+      "page": 67
+    },
+    {
+      "actionCode": "2-1",
+      "actionName": "비상대책본부 설치·운영",
+      "missionCode": "2",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 종합상황반은 본사 9층 재난안전상황실에 조성하고 매일 2명 1개조로 오전·오후 순환근무 실시(주말포함), 야간은 재난안전상황실(운영상황센터) 중심으로 운영"
+      ],
+      "summary": "안전본부장을 본부장으로 비상대책본부를 설치하고 국토교통부 철도반과 연계 운영한다.",
+      "organizations": [
+        {
+          "name": "비상대책본부(안전본부장)",
+          "role": "LEAD"
+        },
+        {
+          "name": "산업재난안전처",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "국토교통부(철도반)",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "위기경보 발령에 따른 비상대책본부 구성(본부장: 안전본부장)"
+        },
+        {
+          "seq": 2,
+          "title": "종합상황반·비상대응반·여객/수송/차량/시설지원반·언론대응반 편성"
+        },
+        {
+          "seq": 3,
+          "title": "국토교통부 철도반 연계 운영"
+        },
+        {
+          "seq": 4,
+          "title": "종합상황반은 본사 9층 재난안전상황실에서 2명 1개조 오전·오후 순환근무"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "시설",
+          "name": "재난안전상황실(본사 9층)"
+        }
+      ],
+      "page": 68
+    },
+    {
+      "actionCode": "3-1",
+      "actionName": "감시체계 강화 및 유관기관 협조",
+      "missionCode": "3",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "감염병 대응 국면을 실시간 모니터링하고 각 반 임무수행 현황을 종합한다.",
+      "organizations": [
+        {
+          "name": "운영상황센터(종합상황반)",
+          "role": "LEAD"
+        },
+        {
+          "name": "보건복지부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "질병관리청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "국토교통부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "실시간 감염병 대응 국면(상황) 모니터링"
+        },
+        {
+          "seq": 2,
+          "title": "각 반별 임무수행 현황 종합"
+        },
+        {
+          "seq": 3,
+          "title": "보건복지부·질병관리청·국토교통부·지자체와 협조체계 유지"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 67
+    },
+    {
+      "actionCode": "3-2",
+      "actionName": "종사자 위생관리 교육",
+      "missionCode": "3",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "승무원 등 철도종사자 위생관리 교육을 하고 협력사 예방환경을 관리·감독한다.",
+      "organizations": [
+        {
+          "name": "승무처(수송지원반)",
+          "role": "LEAD"
+        },
+        {
+          "name": "산업재난안전처",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "협력사",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "승무원(기장, 객실장, 승무원) 위생관리 및 교육"
+        },
+        {
+          "seq": 2,
+          "title": "임직원 감염병 예방 위생활동 강화"
+        },
+        {
+          "seq": 3,
+          "title": "협력사 감염병 예방환경 관리 감독"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 68
+    },
+    {
+      "actionCode": "3-3",
+      "actionName": "방역소독계획 수립·시행",
+      "missionCode": "3",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "전용역과 차량의 방역(소독) 계획을 세워 시행하고 일일 방역현황을 보고한다.",
+      "organizations": [
+        {
+          "name": "영업운영처(여객지원반)",
+          "role": "LEAD"
+        },
+        {
+          "name": "차량기술처(차량지원반)",
+          "role": "LEAD"
+        },
+        {
+          "name": "시설기술처(시설지원반)",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "전용역 방역(소독) 활동 계획 수립 및 시행"
+        },
+        {
+          "seq": 2,
+          "title": "차량 방역(소독) 활동 계획 수립 및 시행"
+        },
+        {
+          "seq": 3,
+          "title": "시설기술처는 전용역 방역(소독) 활동 지원"
+        },
+        {
+          "seq": 4,
+          "title": "각 반 일일 상황보고(반장 및 종합상황반)"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 68
+    },
+    {
+      "actionCode": "3-4",
+      "actionName": "SRT 이용객 감염병 예방용품 소요파악 및 비치",
+      "missionCode": "3",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "이용객용 감염병 예방용품 소요를 파악해 역사에 비치·배포한다.",
+      "organizations": [
+        {
+          "name": "영업운영처(여객지원반)",
+          "role": "LEAD"
+        },
+        {
+          "name": "산업재난안전처",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "대국민 감염병 예방용품 소요파악"
+        },
+        {
+          "seq": 2,
+          "title": "예방용품 비치 및 배포"
+        },
+        {
+          "seq": 3,
+          "title": "역사 방역게이트, 열감지 카메라, 손소독제 등 예방용품 설치·운영"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "물자",
+          "name": "감염병 예방용품(손소독제 등)"
+        },
+        {
+          "category": "장비",
+          "name": "역사 방역게이트"
+        }
+      ],
+      "page": 68
+    },
+    {
+      "actionCode": "3-5",
+      "actionName": "전용역 열화상카메라 운영 및 임시보호소 설치·운영",
+      "missionCode": "3",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "전용역에 열화상카메라를 운용하고 의심환자용 임시보호소를 설치·운영한다.",
+      "organizations": [
+        {
+          "name": "영업운영처(여객지원반)",
+          "role": "LEAD"
+        },
+        {
+          "name": "시설기술처(시설지원반)",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "전용역 열화상카메라 운용"
+        },
+        {
+          "seq": 2,
+          "title": "전용역 감염병 임시보호소 설치"
+        },
+        {
+          "seq": 3,
+          "title": "임시보호소 운영"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "장비",
+          "name": "열화상카메라"
+        },
+        {
+          "category": "시설",
+          "name": "역별 임시보호소"
+        }
+      ],
+      "page": 68
+    },
+    {
+      "actionCode": "3-6",
+      "actionName": "현업 감염병 예방활동 지도·점검",
+      "missionCode": "3",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "비상대응반이 각 반과 현업 소속의 감염병 예방활동을 지도·점검한다.",
+      "organizations": [
+        {
+          "name": "산업재난안전처(비상대응반)",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "비상대책본부장 보좌"
+        },
+        {
+          "seq": 2,
+          "title": "감염병 대응 관련 예산소요 파악 및 지원"
+        },
+        {
+          "seq": 3,
+          "title": "각 반별 감염병 예방활동 지도 점검"
+        },
+        {
+          "seq": 4,
+          "title": "현업 소속 감염병 예방활동 지도점검"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 68
+    },
+    {
+      "actionCode": "3-7",
+      "actionName": "감염병 관련 언론대응 및 홍보",
+      "missionCode": "3",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "감염병 관련 보도자료를 작성해 취재에 대응하고 이용객 홍보를 시행한다.",
+      "organizations": [
+        {
+          "name": "고객홍보처(언론대응반)",
+          "role": "LEAD"
+        },
+        {
+          "name": "승무처(수송지원반)",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "감염병 관련 보도자료 작성 및 취재 대응"
+        },
+        {
+          "seq": 2,
+          "title": "감염병 국민(여객) 홍보계획 수립 및 시행"
+        },
+        {
+          "seq": 3,
+          "title": "동원 가능한 미디어 매체를 활용한 홍보"
+        },
+        {
+          "seq": 4,
+          "title": "열차 내 대국민 감염병 대응요령 홍보(안내)"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "SRT 이용객",
+          "targetType": "PUBLIC",
+          "channelHint": "BROADCAST"
+        }
+      ],
+      "resources": [],
+      "page": 68
+    },
+    {
+      "actionCode": "4-1",
+      "actionName": "현황 및 조치내용 보고",
+      "missionCode": "4",
+      "phaseLabel": "경계(Orange)",
+      "category": "RESPONSE",
+      "summary": "감염병 대응 현황과 조치내용을 안전본부장과 국토교통부에 매일 보고한다.",
+      "organizations": [
+        {
+          "name": "운영상황센터(종합상황반)",
+          "role": "LEAD"
+        },
+        {
+          "name": "산업재난안전처",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "보건복지부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "질병관리청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "국토교통부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "한국철도공사",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "각 반 일일 상황보고 취합(반장 → 종합상황반)"
+        },
+        {
+          "seq": 2,
+          "title": "일일 상황보고(안전본부장 및 국토교통부)"
+        },
+        {
+          "seq": 3,
+          "title": "국토교통부(철도반) 일일상황보고"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "국토교통부 철도안전정책과(철도반)",
+          "targetType": "ORG",
+          "channelHint": "EMAIL"
+        },
+        {
+          "target": "안전본부장",
+          "targetType": "ROLE",
+          "channelHint": "SMS"
+        }
+      ],
+      "resources": [],
+      "page": 67
+    }
+  ],
+  "execution": {
+    "doneCodes": [
+      "1-1",
+      "1-2",
+      "1-3",
+      "2-1"
+    ],
+    "doingCode": "3-3",
+    "results": {
+      "1-1": "09:10 국토교통부 철도반으로부터 위기경보 '경계' 접수, 09:30 SR 위기경보 '경계' 발령.",
+      "1-2": "10:00 국토교통부 주관 위기관리 유관기관 협의회(영상) 참석, 역사 방역 강화 지시사항 접수.",
+      "1-3": "09:40 운영상황센터에서 전 부서·협력사에 경보 전파, 이상징후 승객 신고 지시.",
+      "2-1": "11:00 비상대책본부 설치, 종합상황반 본사 9층 재난안전상황실 2명 1개조 근무 개시."
+    },
+    "propagateCode": "1-3",
+    "propagateMessage": "[SR 운영상황센터] 오늘 09:00부로 국가 감염병 위기경보가 '경계'로 상향되었습니다. 각 부서와 협력사는 역사·열차 방역을 강화하고, 발열 등 이상징후 승객 발견 시 즉시 임시보호소로 안내한 뒤 운영상황센터로 보고해 주십시오.",
+    "fieldNotes": [
+      "수서관리역: 대합실 열화상카메라 2대 가동, 임시보호소 1곳 설치 완료.",
+      "수서차량센터: 오늘 입고 편성 전 차량 방역소독 진행 중(14시 완료 예정).",
+      "영업운영처: 손소독제 추가 소요 200개, 내일 오전 전용역 배포 예정."
+    ]
+  }
+}

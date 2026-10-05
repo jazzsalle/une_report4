@@ -1,0 +1,298 @@
+[
+  {
+    "category": "AGENCY",
+    "org": "울산울주경찰서",
+    "dept": "112종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "울산광역시 소방본부",
+    "dept": "119재난대응과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "온산소방서",
+    "dept": "119재난대응과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "중부소방서",
+    "dept": "119재난대응과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "7765부대 3대대",
+    "dept": "군수과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "KT 언양지점",
+    "dept": "업무지원팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전기안전공사",
+    "dept": "점검팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국가스안전공사",
+    "dept": "검사부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "경동도시가스",
+    "dept": "안전기획팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "대한적십자사",
+    "dept": "구호봉사팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전력공사 울산지사",
+    "dept": "배전운영부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 13
+  },
+  {
+    "category": "HIGHER",
+    "org": "행정안전부",
+    "dept": "중앙재난안전상황실",
+    "title": "중앙재난안전상황실장",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 11
+  },
+  {
+    "category": "HIGHER",
+    "org": "국토교통부",
+    "dept": "건축안전과",
+    "title": "과장",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 11
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "울산광역시",
+    "dept": "재난관리과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 11
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "울산광역시",
+    "dept": "건축주택과",
+    "title": "과장",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 11
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "건축과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "안전총괄과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "복지정책과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "보건소",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  }
+]

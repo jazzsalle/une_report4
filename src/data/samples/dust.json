@@ -1,0 +1,514 @@
+{
+  "key": "dust",
+  "hazard": "황사",
+  "manual": {
+    "docTitle": "황사 재난 위기관리 표준매뉴얼 (기후에너지환경부, 2025)",
+    "scope": "CENTRAL",
+    "region": "",
+    "version": "2025.11"
+  },
+  "scenario": {
+    "titleCore": "부산 고농도 황사 대응",
+    "sido": "부산광역시",
+    "areas": [
+      "강서구",
+      "사하구",
+      "사상구"
+    ],
+    "alertLevel": "경계",
+    "step": "비상대응",
+    "dept": "탄소중립정책과",
+    "currentStatus": "중국 내몽골에서 발원한 황사가 유입되어 10월 5일 09시부터 부산 서부권 미세먼지(PM-10) 농도가 800㎍/㎥ 이상 2시간 지속됨. 기상청 황사경보가 발효되고 황사 위기경보 「경계」 단계가 발령되어 시 황사상황실을 운영 중임.",
+    "weather": {
+      "active": [
+        {
+          "name": "황사경보",
+          "areas": "부산",
+          "kind": "warning"
+        },
+        {
+          "name": "미세먼지(PM-10) 경보",
+          "areas": "부산 서부권(강서·사하·사상)",
+          "kind": "warning"
+        }
+      ],
+      "preliminary": [],
+      "infoLines": [
+        "(현황) 강서구 측정소 미세먼지(PM-10) 시간평균 820㎍/㎥, 2시간 지속",
+        "(전망) 6일 오전까지 고농도 황사 지속, 오후부터 점차 해소"
+      ]
+    }
+  },
+  "missions": [
+    {
+      "missionCode": "1",
+      "missionName": "황사 상황관리"
+    },
+    {
+      "missionCode": "2",
+      "missionName": "상황판단·지휘체계"
+    },
+    {
+      "missionCode": "3",
+      "missionName": "위기경보 전파·주민 알림"
+    },
+    {
+      "missionCode": "4",
+      "missionName": "피해 예방·지원"
+    }
+  ],
+  "actions": [
+    {
+      "actionCode": "1-1",
+      "actionName": "황사 시·도상황실 운영",
+      "missionCode": "1",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "summary": "황사 위기경보를 접수·전파하고 미세먼지·황사특보와 대기질을 실시간 모니터링한다.",
+      "organizations": [
+        {
+          "name": "시·도 및 시·군·구(황사 관련 부서)",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "황사 위기경보 접수·전파"
+        },
+        {
+          "seq": 2,
+          "title": "미세먼지 예·경보 및 황사특보 상황 모니터링"
+        },
+        {
+          "seq": 3,
+          "title": "실시간 대기질 모니터링 등 재난대응 체계 운영"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 78
+    },
+    {
+      "actionCode": "1-2",
+      "actionName": "황사 성분 분석 실시",
+      "missionCode": "1",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "summary": "황사 중 중금속 등 유해성분을 분석하고 대기질 예보 정보를 생산한다.",
+      "organizations": [
+        {
+          "name": "국립환경과학원",
+          "role": "LEAD"
+        },
+        {
+          "name": "시·도 보건환경연구원",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "기상청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "황사 중 중금속 등 유해성분 분석"
+        },
+        {
+          "seq": 2,
+          "title": "시·도 보건환경연구원·기상청과 협력하여 대기질 예보 정보 생산"
+        },
+        {
+          "seq": 3,
+          "title": "분석 결과를 중앙황사대책상황실 상황반에 보고"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 80
+    },
+    {
+      "actionCode": "1-3",
+      "actionName": "긴급통신체계 유지",
+      "missionCode": "1",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "condition": "필요시",
+      "summary": "재난현장 재난안전통신망(PS-LTE) 등으로 긴급통신체계를 유지한다.",
+      "organizations": [
+        {
+          "name": "시·도 및 시·군·구",
+          "role": "LEAD"
+        },
+        {
+          "name": "경찰청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "소방청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "상황 전파체계 점검 및 관리"
+        },
+        {
+          "seq": 2,
+          "title": "재난안전통신망(PS-LTE) 송수신 체제 유지"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "장비",
+          "name": "재난안전통신망(PS-LTE) 단말기"
+        }
+      ],
+      "page": 78
+    },
+    {
+      "actionCode": "2-1",
+      "actionName": "상황판단회의(자체위기평가회의) 개최",
+      "missionCode": "2",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "notes": [
+        "* 발령권자: 장관, 시행: 사고관련 주관부서의 담당과장"
+      ],
+      "summary": "「경계」 징후 포착 즉시 회의를 열어 위기상황을 평가하고 위기경보를 발령·통보한다.",
+      "organizations": [
+        {
+          "name": "기후에너지환경부",
+          "role": "LEAD"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "「경계」 단계 징후 포착 즉시 개최(시점은 상황에 따라 조정)"
+        },
+        {
+          "seq": 2,
+          "title": "담당과장이 소집, 휴일·야간에는 문자·SNS·유무선으로 대체"
+        },
+        {
+          "seq": 3,
+          "title": "위기상황 평가 및 대응전략 검토"
+        },
+        {
+          "seq": 4,
+          "title": "결과 보고 및 국가안보실·대통령비서실·행정안전부에 위기경보 발령 통보"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 79
+    },
+    {
+      "actionCode": "2-2",
+      "actionName": "지역재난안전대책본부 전환·운영",
+      "missionCode": "2",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "condition": "필요시",
+      "summary": "필요시 시·도상황실을 지역재난안전대책본부로 전환해 재난대응을 총괄한다.",
+      "organizations": [
+        {
+          "name": "시·도 및 시·군·구",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "황사 시·도상황실을 지역재난안전대책본부로 전환"
+        },
+        {
+          "seq": 2,
+          "title": "재난대응체계 구축 및 총괄"
+        },
+        {
+          "seq": 3,
+          "title": "전환에 따른 근무명령"
+        },
+        {
+          "seq": 4,
+          "title": "응급의료 지원체계 가동 준비"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 78
+    },
+    {
+      "actionCode": "3-1",
+      "actionName": "황사 위기경보 발령 및 전파",
+      "missionCode": "3",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "summary": "재난문자방송(CBS) 등으로 황사 위기경보를 발령·전파한다.",
+      "organizations": [
+        {
+          "name": "지자체",
+          "role": "LEAD"
+        },
+        {
+          "name": "행정안전부",
+          "role": "LEAD"
+        },
+        {
+          "name": "한국환경공단",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "재난문자방송(CBS) 등으로 황사 위기경보 발령 및 전파"
+        },
+        {
+          "seq": 2,
+          "title": "에어코리아로 미세먼지 예·경보 발령현황 신속 전파(한국환경공단)"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "지역 주민",
+          "targetType": "PUBLIC",
+          "channelHint": "SMS",
+          "messageTemplate": "오늘 ○○시 ○○지역에 미세먼지 경보. 어린이, 노약자 실외활동 금지, 대중교통 이용, 보건용 마스크 착용 등 건강관리에 유의해 주세요. [지방자치단체]"
+        }
+      ],
+      "resources": [],
+      "page": 80
+    },
+    {
+      "actionCode": "3-2",
+      "actionName": "지역주민 행동요령·조치사항 알림",
+      "missionCode": "3",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "summary": "시·도 홈페이지, 문자, FAX로 주민에게 행동요령과 조치사항을 알린다.",
+      "organizations": [
+        {
+          "name": "지자체",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "시·도 홈페이지에 행동요령·조치사항 게시"
+        },
+        {
+          "seq": 2,
+          "title": "문자·FAX로 행동요령·조치사항 알림"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "구·군 및 유관기관",
+          "targetType": "ORG",
+          "channelHint": "SMS",
+          "messageTemplate": "[○○시] ○○시부 황사 위기경보 「경계」 발령. 실외활동 자제·보건용 마스크 착용 등 국민행동요령을 주민에게 안내하고 조치결과를 회신 바랍니다."
+        }
+      ],
+      "resources": [],
+      "page": 80
+    },
+    {
+      "actionCode": "3-3",
+      "actionName": "전광판·마을앰프·가두방송 안내",
+      "missionCode": "3",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "summary": "전광판, 마을앰프, 가두방송, 재난문자로 황사 상황을 안내한다.",
+      "organizations": [
+        {
+          "name": "시·도 및 시·군·구",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "전광판 안내"
+        },
+        {
+          "seq": 2,
+          "title": "마을앰프 방송"
+        },
+        {
+          "seq": 3,
+          "title": "가두방송"
+        },
+        {
+          "seq": 4,
+          "title": "재난문자 안내"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "장비",
+          "name": "전광판·마을앰프·가두방송 차량"
+        }
+      ],
+      "page": 78
+    },
+    {
+      "actionCode": "4-1",
+      "actionName": "사고수습 행정적 지원체계 가동 준비",
+      "missionCode": "4",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "summary": "사고수습 상황실, 인력, 차량(앰뷸런스) 등 행정적 지원체계 가동을 준비한다.",
+      "organizations": [
+        {
+          "name": "시·도 및 시·군·구",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "사고수습 상황실 가동 준비"
+        },
+        {
+          "seq": 2,
+          "title": "인력·차량(앰뷸런스) 지원 준비"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "차량",
+          "name": "앰뷸런스"
+        }
+      ],
+      "page": 78
+    },
+    {
+      "actionCode": "4-2",
+      "actionName": "피해자 가족 관리 및 지원방안 마련",
+      "missionCode": "4",
+      "phaseLabel": "경계 단계",
+      "category": "DAMAGE",
+      "summary": "피해자 가족을 관리하고 지원방안을 마련한다.",
+      "organizations": [
+        {
+          "name": "시·도 및 시·군·구",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "피해자 가족 관리"
+        },
+        {
+          "seq": 2,
+          "title": "피해자 가족 지원방안 마련"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 78
+    },
+    {
+      "actionCode": "4-3",
+      "actionName": "사업장 탄력적 근무제도 운영 권고",
+      "missionCode": "4",
+      "phaseLabel": "경계 단계",
+      "category": "RESPONSE",
+      "summary": "시·도내 사업장에 탄력적 근무제도 운영을 권고하고 옥외노동자 보호조치를 함께 안내한다.",
+      "organizations": [
+        {
+          "name": "시·도 및 시·군·구",
+          "role": "LEAD"
+        },
+        {
+          "name": "고용노동부",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "시·도내 사업장에 탄력적 근무제도 운영 권고"
+        },
+        {
+          "seq": 2,
+          "title": "건설현장 등 옥외노동자 보호구 착용 등 보호조치 권고(고용노동부)"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 78
+    },
+    {
+      "actionCode": "4-4",
+      "actionName": "유관기관 협조 요청 및 피해 현황 파악",
+      "missionCode": "4",
+      "phaseLabel": "경계 단계",
+      "category": "DAMAGE",
+      "summary": "유관기관에 대응조치 협조를 요청하고 피해 발생현황을 파악·보고한다.",
+      "organizations": [
+        {
+          "name": "기후에너지환경부",
+          "role": "LEAD"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "유관기관에 황사 재난 상황 전파 및 대응조치 협조 요청"
+        },
+        {
+          "seq": 2,
+          "title": "유관기관 대처 상황 확인 및 피해 발생현황 파악"
+        },
+        {
+          "seq": 3,
+          "title": "황사 피해 상황 접수·보고"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 80
+    }
+  ],
+  "execution": {
+    "doneCodes": [
+      "1-1",
+      "1-2",
+      "2-1",
+      "3-1"
+    ],
+    "doingCode": "3-2",
+    "results": {
+      "1-1": "09시 30분 시 황사상황실 가동, 강서·사하·사상 측정소 실시간 모니터링 중.",
+      "1-2": "시 보건환경연구원 황사 시료 채취 후 중금속 분석 의뢰, 결과 14시 보고 예정.",
+      "2-1": "10시 기후에너지환경부 상황판단회의 결과 「경계」 발령 통보 접수.",
+      "3-1": "10시 20분 부산 전역 재난문자(CBS) 발송 완료."
+    },
+    "propagateCode": "3-1",
+    "propagateMessage": "오늘 10시 부산 서부권(강서·사하·사상)에 미세먼지 경보. 어린이, 노약자 실외활동 금지, 대중교통 이용, 보건용 마스크 착용 등 건강관리에 유의해 주세요. [부산광역시]",
+    "fieldNotes": [
+      "강서구 전광판 12곳 황사 행동요령 표출 완료",
+      "사하구 마을앰프 방송 3회 실시, 경로당 마스크 배부 중",
+      "사상구 공단 사업장 탄력근무 권고 공문 발송, 옥외작업 2곳 중지 확인"
+    ]
+  }
+}

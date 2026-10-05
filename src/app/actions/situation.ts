@@ -402,7 +402,8 @@ export async function createReport(id: string) {
 }
 
 export async function trashSituation(id: string) {
-  await editable(id);
+  const { s } = await editable(id);
+  if (s.locked) throw new Error("예시 문서는 지울 수 없습니다.");
   await touch(id, { deletedAt: new Date() });
   revalidatePath("/");
   redirect("/");

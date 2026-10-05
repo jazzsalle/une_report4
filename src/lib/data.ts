@@ -65,6 +65,7 @@ export async function listReports(u: SessionUser, opts: { trashed?: boolean } = 
       ownerId: r.ownerId,
       orgId: r.orgId,
       status: r.status,
+      locked: r.locked,
       updatedAt: r.updatedAt,
       createdAt: r.createdAt,
       deletedAt: r.deletedAt,

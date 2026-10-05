@@ -28,6 +28,7 @@ export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
         periodEnd: s.periodEnd ? toLocalInput(s.periodEnd) : null,
         currentStatus: s.currentStatus,
       }}
+      locked={s.locked}
       weather={s.weather}
       images={s.weatherImages}
       me={{ name: u.name, dept: u.dept }}
