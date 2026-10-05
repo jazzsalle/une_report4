@@ -82,6 +82,7 @@ export interface PropagationTarget {
   channelHint?: "SMS" | "EMAIL" | "BROADCAST" | "PHONE";
   /** 매뉴얼 전파 표의 구분·전파방법 원문 */
   method?: string;
+  /** 매뉴얼 행동카드의 「표준문안」 원문. 없으면 비움(만들지 않음) */
   messageTemplate?: string;
 }
 

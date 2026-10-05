@@ -248,7 +248,7 @@ export interface PropagationTarget {   // 전파대상(참고정보 — 실제 �
   targetType: 'ORG' | 'ROLE' | 'PUBLIC';
   method?: string;                     // 구분·전파방법 원문 (예: 'UMS — 휴대전화 문자메시지(SMS) 발송')
   channelHint?: 'SMS' | 'EMAIL' | 'BROADCAST' | 'PHONE';
-  messageTemplate?: string;            // 전파 문안 초안
+  messageTemplate?: string;            // 매뉴얼 「표준문안」 원문. 없으면 비움(만들지 않음)
 }
 
 export interface ResourceNeed {        // 필요자원
@@ -373,7 +373,7 @@ export interface SopActionsResponse {
       ],
       "propagation": [
         { "target": "16개 구·군 재난안전과", "targetType": "ORG", "channelHint": "SMS",
-          "messageTemplate": "[부산시] 호우경보 발효(7.16. 14:00). 비상 2단계 근무 돌입, 취약지역 예찰 강화 바랍니다." }
+          "messageTemplate": "○월 ○일 ○시 (태풍, 호우) (예비특보, 주의보, 경보)가 발효됨에 따라, 시설물, 어선·선박 관리 등 안전사고가 없도록 주의하시기 바랍니다." }
       ],
       "resources": [{ "category": "인력", "name": "비상근무 인원", "quantity": 20, "unit": "명" }],
       "sources": [{ "docId": "DOC-BUSAN-FLOOD-2026", "docTitle": "부산시 풍수해 재난 현장조치 행동매뉴얼", "page": 12 }]

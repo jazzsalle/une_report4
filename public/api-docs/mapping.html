@@ -99,7 +99,7 @@
 
 <section id="select">
   <h2><span class="no">⓪</span>상황정보 → 매뉴얼 고르기</h2>
-  <p class="lead">상황정보는 상황일지의 기본 정보이면서, T3Q가 벡터DB에서 <b>맞는 매뉴얼 1종</b>을 고르고 그 안에서 <b>필요한 단계</b>를 뽑는 열쇠입니다.
+  <p class="lead">상황정보는 T3Q가 벡터DB에서 <b>맞는 매뉴얼 1종</b>을 고르고 그 안에서 <b>필요한 단계</b>를 뽑는 열쇠입니다.
     매뉴얼을 잘못 고르면 규칙을 아무리 잘 지켜도 엉뚱한 SOP가 나옵니다.</p>
   <div class="grid">
     <figure><img src="/api-docs/img/app-new.png" alt="새 상황정보 등록 화면" /><figcaption>우리 화면 · 새 상황정보 등록</figcaption></figure>
@@ -110,9 +110,9 @@
         <tr><td>발생지역</td><td><code>affectedRegions</code><br><code>responsibleRegion</code></td><td><b>매뉴얼 고르기 ②</b> — 시군구 → 시도 → 중앙 순</td></tr>
         <tr><td>대응단계</td><td><code>responseStep</code></td><td><b>단계 고르기</b> — 이 단계의 조치만 돌려받음</td></tr>
         <tr><td>담당부서</td><td><code>department</code></td><td><b>부서 고르기</b> — 프로세스 표의 부서 칸 중 이 부서가 든 행만 (R19). 기본 「자연재난과」 → 초기대응부서</td></tr>
-        <tr><td>위기경보</td><td><code>alertLevel</code> (선택)</td><td>매뉴얼 단계가 위기경보로 나뉜 경우에만 단계 고르기에 사용. 그 외에는 상황일지용</td></tr>
+        <tr><td>위기경보</td><td><code>alertLevel</code> (선택)</td><td>매뉴얼 단계가 위기경보로 나뉜 경우에만 단계 고르기에 사용. 그 외에는 쓰지 않음</td></tr>
         <tr><td>현재 상황</td><td><code>currentSituation</code></td><td>참고만 (사실로 취급하지 않음)</td></tr>
-        <tr><td>상황 제목 · 업무유형 · 기간</td><td><code>title</code> · <code>workType</code> · <code>period</code></td><td>상황일지용. 매뉴얼 선택과 무관</td></tr>
+        <tr><td>상황 제목 · 업무유형 · 기간</td><td><code>title</code> · <code>workType</code> · <code>period</code></td><td>매뉴얼 고르기에 쓰지 않음</td></tr>
       </table>
       <h3 style="margin:20px 0 8px">고르는 순서</h3>
       <table>
@@ -179,6 +179,7 @@
       <tr><td class="n"><span class="dot">2</span></td><td>전파방법</td><td><code>propagation[].method</code> (구분과 함께 원문)</td></tr>
       <tr><td class="n"><span class="dot">3</span></td><td>전파대상</td><td><code>propagation[].target</code>, 성격에 따라 <code>targetType</code> (기관 ORG · 직위 ROLE · 시민 PUBLIC)</td></tr>
       <tr><td class="n"><span class="dot">4</span></td><td>구분 (UMS, One-Click …)</td><td><code>propagation[].channelHint</code> 가까운 값 — UMS·문자 → <code>SMS</code>, 방송·전광판 → <code>BROADCAST</code>, 유선 → <code>PHONE</code></td></tr>
+      <tr><td class="n">—</td><td>표준문안 (카드 아래 「표준문안」 칸)</td><td><code>propagation[].messageTemplate</code> — 원문 그대로. 매뉴얼에 문안이 없으면 <b>비움</b>(새로 만들지 않음)</td></tr>
     </table>
   </div>
   <p class="note">전파 표의 한 행 = <code>propagation[]</code> 1건입니다. 표 아래 <code>*</code> 설명줄(예: 긴급재난문자는 행정안전부 발송)은 조치의 <code>notes[]</code>로 넣습니다.</p>
@@ -317,7 +318,7 @@
 <section id="screen">
   <h2><span class="no">⑤</span>우리 화면에 이렇게 적용됩니다</h2>
   <p class="lead">위 JSON을 받아 <b>SOP 실행</b> 탭이 만들어지는 모습입니다. 조치 1건 = 화면의 SOP 임무 1개입니다.
-    T3Q를 다시 부르지 않고 이 한 번의 응답으로 목록·순서도·상세·전파·상황일지가 모두 만들어집니다.</p>
+    T3Q를 다시 부르지 않고 이 한 번의 응답으로 목록·순서도·상세·전파가 모두 만들어집니다.</p>
 
   <h3 class="sub"><span class="part">A</span>상황 머리 · 실행 바</h3>
   <figure><img src="/api-docs/img/app-sop-head.png" alt="SOP 실행 탭 상단" /><figcaption>상황 제목 줄과 SOP 실행 바</figcaption></figure>
@@ -367,22 +368,13 @@
     <table>
       <tr><th>화면</th><th>JSON</th><th>매뉴얼 (<a href="#s3">③</a>)</th></tr>
       <tr><td>「매뉴얼 전파대상 · 공무원·기자·시민…」</td><td><code>propagation[].target</code> (행마다 1건, 쉼표로 이어 표시)</td><td>전파 표의 전파대상 열</td></tr>
-      <tr><td>전파 내용 (문안)</td><td><code>propagation[0].messageTemplate</code></td><td>전파 문안 예시. 사용자가 고쳐서 보냄</td></tr>
+      <tr><td>전파 내용 (문안)</td><td><code>propagation[0].messageTemplate</code></td><td>행동카드의 「표준문안」 원문. 없으면 빈 칸 — 사용자가 써서 보냄</td></tr>
       <tr><td>발송 수단 (문자 / 이메일)</td><td><code>propagation[0].channelHint</code></td><td>구분 열 — <code>EMAIL</code>이면 이메일, 그 외 문자</td></tr>
       <tr><td>「추천 전파그룹 · 유관기관」</td><td><code>target</code>과 연락망 전파그룹 이름 비교</td><td>— (앱이 추천)</td></tr>
       <tr><td>전파 대상 선택 · 수신 n명</td><td>— (우리 연락망)</td><td>실제 수신자는 <b>항상 사람이 확정</b></td></tr>
       <tr><td>필요자원 「UMS · One-Click …」</td><td><code>resources[]</code></td><td>구분·전파방법에 나온 시스템</td></tr>
     </table>
   </div>
-
-  <h3 class="sub"><span class="part">E</span>상황일지로</h3>
-  <table>
-    <tr><th>상황일지 목차</th><th>SOP에서 가져오는 것</th></tr>
-    <tr><td>대응 조치</td><td>완료·진행 중 임무의 제목·세부항목·조치결과, 시각순 실행 표</td></tr>
-    <tr><td>상황 전파</td><td>보낸 전파의 시각·수신자·문안, 현장 응답(수신확인·임무완료)</td></tr>
-    <tr><td>복구 및 피해 조치</td><td><code>category=DAMAGE</code>·<code>phase=RECOVERY</code> 임무와 피해조치 내용</td></tr>
-    <tr><td>향후 계획</td><td>대기 중인 임무 (실행하지 않은 필요시 임무는 <b>빼고</b>)</td></tr>
-  </table>
 </section>
 
 <section id="ondemand">
@@ -397,10 +389,9 @@
         <tr><td>무엇이 필요시 임무인가</td><td>응답 <code>condition</code>에 값이 있는 조치 (R8). 제목 일부에만 조건이 붙은 조치는 아님 (R18)</td></tr>
         <tr><td>목록</td><td>각 대응단계 끝 주황 띠 「필요시 임무」 아래에 모음. 조건 문구를 제목 아래 주황 글씨로</td></tr>
         <tr><td>순서도</td><td>흐름선 밖 아래 칸에 <b>점선 주황</b>으로. 선으로 잇지 않음</td></tr>
-        <tr><td>실행</td><td>상황이 생기면 순서와 상관없이 눌러서 착수·완료. <b>실행 시각</b>이 칸에 붙고 기록·상황일지에는 그 시각 자리에 들어감 → 순서를 다시 짤 필요 없음</td></tr>
+        <tr><td>실행</td><td>상황이 생기면 순서와 상관없이 눌러서 착수·완료. <b>실행 시각</b>이 칸에 붙음 → 순서를 다시 짤 필요 없음</td></tr>
         <tr><td>「다음 임무」 자동 선택</td><td>필요시 임무는 건너뜀 (흐름이 멈추지 않게)</td></tr>
         <tr><td>완료 집계</td><td>실행했을 때만 셈. 실행 안 하면 「해당 없음」 — 미완료가 아님</td></tr>
-        <tr><td>상황일지 향후 계획</td><td>실행하지 않은 필요시 임무는 넣지 않음</td></tr>
       </table>
     </div>
   </div>

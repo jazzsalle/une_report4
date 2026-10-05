@@ -160,7 +160,7 @@ paths:
                       - target: 16개 구·군 재난안전과
                         targetType: ORG
                         channelHint: SMS
-                        messageTemplate: "[부산시] 호우경보 발효(7.16. 14:00). 비상 2단계 근무 돌입, 취약지역 예찰 강화 바랍니다."
+                        messageTemplate: "○월 ○일 ○시 (태풍, 호우) (예비특보, 주의보, 경보)가 발효됨에 따라, 시설물, 어선·선박 관리 등 안전사고가 없도록 주의하시기 바랍니다."
                     resources:
                       - { category: 인력, name: 비상근무 인원, quantity: 20, unit: 명 }
                     sources:
@@ -184,7 +184,6 @@ paths:
                       - target: 읍면동 주민
                         targetType: PUBLIC
                         channelHint: BROADCAST
-                        messageTemplate: 호우경보로 하천변 산책로 및 지하차도 출입을 통제합니다.
                     resources:
                       - { category: 장비, name: 통제선·차단기, quantity: 10, unit: 개소 }
                       - { category: 인력, name: 현장 안내요원, quantity: 8, unit: 명 }
@@ -395,7 +394,7 @@ components:
         disasterType: { $ref: "#/components/schemas/DisasterType" }
         alertLevel:
           $ref: "#/components/schemas/AlertLevelCode"
-          description: "(선택, v1.8) 위기경보 — 매뉴얼 단계가 위기경보로 나뉜 경우에만 단계 선택에 사용. 그 외에는 상황일지용 사실 정보"
+          description: "(선택, v1.8) 위기경보 — 매뉴얼 단계가 위기경보로 나뉜 경우에만 단계 선택에 사용. 그 외에는 쓰지 않음"
         responseStep: { $ref: "#/components/schemas/ResponseStepCode" }
         department: { type: string, example: 자연재난과, description: "(v1.9) 담당부서 원문 — 매뉴얼에서 이 부서의 행만 뽑는다(R19). 띄어쓰기 무시, 「시민안전실 자연재난과」처럼 상위 조직이 붙어도 같은 부서" }
         baseTime: { type: string, format: date-time, description: 기준시각 }
@@ -472,7 +471,7 @@ components:
         method: { type: string, description: "매뉴얼 전파 표의 구분·전파방법 원문 (예: UMS — 휴대전화 문자메시지(SMS) 발송)" }
         targetType: { type: string, enum: [ORG, ROLE, PUBLIC] }
         channelHint: { type: string, enum: [SMS, EMAIL, BROADCAST, PHONE] }
-        messageTemplate: { type: string, description: 전파 문안 초안 }
+        messageTemplate: { type: string, description: "매뉴얼 행동카드의 「표준문안」 원문 그대로. 매뉴얼에 문안이 없으면 비움 — 새로 만들지 않음" }
     ResourceNeed:
       type: object
       required: [category, name]
