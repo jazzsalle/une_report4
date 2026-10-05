@@ -8,8 +8,8 @@ export type Situation = typeof schema.situations.$inferSelect;
 export type EventRow = typeof schema.events.$inferSelect;
 export type Report = typeof schema.reports.$inferSelect;
 
-const orgScope = (u: SessionUser, col: typeof schema.situations.orgId | typeof schema.reports.orgId) =>
-  u.role === "admin" ? undefined : eq(col, u.orgId);
+/** 문서 범위: 모든 계정(운영관리자 포함)은 자기가 만든 상황·문서만. 다른 계정 문서는 그 계정으로 들어가서 본다 */
+const ownScope = (u: SessionUser, col: typeof schema.situations.ownerId | typeof schema.reports.ownerId) => eq(col, u.id);
 
 export async function listSituations(u: SessionUser, opts: { trashed?: boolean } = {}) {
   const db = await getDb();
@@ -17,7 +17,7 @@ export async function listSituations(u: SessionUser, opts: { trashed?: boolean }
   return db
     .select()
     .from(s)
-    .where(and(orgScope(u, s.orgId), opts.trashed ? isNotNull(s.deletedAt) : isNull(s.deletedAt)))
+    .where(and(ownScope(u, s.ownerId), opts.trashed ? isNotNull(s.deletedAt) : isNull(s.deletedAt)))
     .orderBy(desc(s.updatedAt));
 }
 
@@ -25,7 +25,7 @@ export async function getSituation(u: SessionUser, id: string): Promise<Situatio
   const db = await getDb();
   const [row] = await db.select().from(schema.situations).where(eq(schema.situations.id, id)).limit(1);
   if (!row) return null;
-  if (u.role !== "admin" && row.orgId !== u.orgId) return null;
+  if (row.ownerId !== u.id) return null;
   return row;
 }
 
@@ -72,7 +72,7 @@ export async function listReports(u: SessionUser, opts: { trashed?: boolean } = 
     })
     .from(r)
     .leftJoin(schema.users, eq(schema.users.id, r.ownerId))
-    .where(and(orgScope(u, r.orgId), opts.trashed ? isNotNull(r.deletedAt) : isNull(r.deletedAt)))
+    .where(and(ownScope(u, r.ownerId), opts.trashed ? isNotNull(r.deletedAt) : isNull(r.deletedAt)))
     .orderBy(desc(r.updatedAt));
 }
 
@@ -80,7 +80,7 @@ export async function getReport(u: SessionUser, id: string): Promise<Report | nu
   const db = await getDb();
   const [row] = await db.select().from(schema.reports).where(eq(schema.reports.id, id)).limit(1);
   if (!row) return null;
-  if (u.role !== "admin" && row.orgId !== u.orgId) return null;
+  if (row.ownerId !== u.id) return null;
   return row;
 }
 

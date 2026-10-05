@@ -3,7 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, Plus, Search } from "lucide-react";
 import { Badge, Button, Card, Modal } from "@/components/ui";
-import { createUser, resetPassword, updateUser } from "@/app/actions/admin";
+import { createUser, setPassword, updateUser } from "@/app/actions/admin";
 import { fmtDateTime } from "@/lib/format";
 
 type U = {
@@ -17,38 +17,29 @@ type U = {
   lastLoginAt: string | null;
 };
 
-const ROLE: Record<string, string> = { admin: "전체관리", manager: "기관관리", user: "일반" };
+const ROLE: Record<string, string> = { admin: "운영관리", manager: "기관관리", user: "일반", t3q: "T3Q" };
 
-export function AdminView({
-  users,
-  orgs,
-  meId,
-  isAdmin,
-  myOrg,
-}: {
-  users: U[];
-  orgs: { id: string; name: string }[];
-  meId: string;
-  isAdmin: boolean;
-  myOrg: string;
-}) {
+/** 계정관리 — 운영관리자 전용. 계정 발급과 비밀번호는 운영관리자가 직접 정한다 */
+export function AdminView({ users, orgs, meId }: { users: U[]; orgs: { id: string; name: string }[]; meId: string }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [org, setOrg] = useState("");
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [adding, setAdding] = useState<{ loginId: string; name: string; dept: string; orgId: string; role: string } | null>(null);
-  const [issued, setIssued] = useState<{ loginId: string; password: string } | null>(null);
+  const [adding, setAdding] = useState<{ loginId: string; name: string; dept: string; orgId: string; role: string; password: string } | null>(null);
+  const [pw, setPw] = useState<{ id: string; loginId: string; password: string } | null>(null);
+  const [done, setDone] = useState<string | null>(null);
   const orgName = new Map(orgs.map((o) => [o.id, o.name]));
   const list = users.filter(
     (u) => (!org || u.orgId === org) && (!q || u.loginId.includes(q) || u.name.includes(q) || u.dept.includes(q)),
   );
 
-  const run = (fn: () => Promise<unknown>) =>
+  const run = (fn: () => Promise<unknown>, after?: () => void) =>
     start(async () => {
       setError(null);
       try {
         await fn();
+        after?.();
         router.refresh();
       } catch (e) {
         setError(e instanceof Error ? e.message : "오류가 발생했습니다.");
@@ -75,8 +66,14 @@ export function AdminView({
         <h1 className="text-[28px] font-bold">계정관리</h1>
         <div className="ml-auto flex gap-2">
           <Button onClick={exportCsv}>목록 내려받기</Button>
-          <Button variant="primary" onClick={() => setAdding({ loginId: "", name: "", dept: "자연재난과", orgId: isAdmin ? "busan" : myOrg, role: "user" })}>
-            <Plus size={18} /> 계정 추가
+          <Button
+            variant="primary"
+            onClick={() => {
+              setError(null);
+              setAdding({ loginId: "", name: "", dept: "자연재난과", orgId: "busan", role: "user", password: "" });
+            }}
+          >
+            <Plus size={18} /> 계정 발급
           </Button>
         </div>
       </div>
@@ -86,17 +83,16 @@ export function AdminView({
             <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-mute" />
             <input className="input pl-11" placeholder="아이디·이름·부서" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
-          {isAdmin && (
-            <select className="input w-44" value={org} onChange={(e) => setOrg(e.target.value)}>
-              <option value="">전체 기관</option>
-              {orgs.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))}
-            </select>
-          )}
-          {error && <span className="text-danger">{error}</span>}
+          <select className="input w-44" value={org} onChange={(e) => setOrg(e.target.value)}>
+            <option value="">전체 기관</option>
+            {orgs.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name}
+              </option>
+            ))}
+          </select>
+          {error && !adding && !pw && <span className="text-danger">{error}</span>}
+          {done && <span className="font-semibold text-success">{done}</span>}
           <span className="ml-auto text-sub">{list.length}명</span>
         </div>
         <div className="overflow-x-auto">
@@ -124,20 +120,19 @@ export function AdminView({
                     <select
                       className="input h-10 w-32 text-[15px]"
                       value={u.role}
-                      disabled={u.id === meId || pending || (!isAdmin && u.role === "admin")}
+                      disabled={u.id === meId || pending}
                       onChange={(e) => run(() => updateUser(u.id, { role: e.target.value }))}
                     >
-                      {isAdmin && <option value="admin">전체관리</option>}
-                      <option value="manager">기관관리</option>
-                      <option value="user">일반</option>
+                      {Object.entries(ROLE).map(([k, v]) => (
+                        <option key={k} value={k}>
+                          {v}
+                        </option>
+                      ))}
                     </select>
                   </td>
                   <td className="px-4 py-3 text-sub">{u.lastLoginAt ? fmtDateTime(u.lastLoginAt) : "-"}</td>
                   <td className="px-4 py-3">
-                    <button
-                      disabled={u.id === meId || pending}
-                      onClick={() => run(() => updateUser(u.id, { active: !u.active }))}
-                    >
+                    <button disabled={u.id === meId || pending} onClick={() => run(() => updateUser(u.id, { active: !u.active }))}>
                       {u.active ? <Badge tone="green">사용</Badge> : <Badge tone="red">중지</Badge>}
                     </button>
                   </td>
@@ -146,14 +141,13 @@ export function AdminView({
                       size="sm"
                       variant="ghost"
                       disabled={pending}
-                      onClick={() =>
-                        run(async () => {
-                          const r = await resetPassword(u.id);
-                          setIssued({ loginId: u.loginId, password: r.password });
-                        })
-                      }
+                      onClick={() => {
+                        setError(null);
+                        setDone(null);
+                        setPw({ id: u.id, loginId: u.loginId, password: "" });
+                      }}
                     >
-                      <KeyRound size={16} /> 비밀번호 초기화
+                      <KeyRound size={16} /> 비밀번호 지정
                     </Button>
                   </td>
                 </tr>
@@ -166,7 +160,7 @@ export function AdminView({
       <Modal
         open={!!adding}
         onClose={() => setAdding(null)}
-        title="계정 추가"
+        title="계정 발급"
         width={520}
         footer={
           <>
@@ -175,61 +169,92 @@ export function AdminView({
               variant="primary"
               disabled={pending}
               onClick={() =>
-                run(async () => {
-                  const r = await createUser(adding!);
-                  setIssued({ loginId: adding!.loginId, password: r.password });
-                  setAdding(null);
-                })
+                run(
+                  () => createUser(adding!),
+                  () => {
+                    setDone(`${adding!.loginId} 계정을 발급했습니다.`);
+                    setAdding(null);
+                  },
+                )
               }
             >
-              만들기
+              발급
             </Button>
           </>
         }
       >
         {adding && (
           <div className="space-y-3">
-            {isAdmin && (
-              <select className="input" value={adding.orgId} onChange={(e) => setAdding({ ...adding, orgId: e.target.value })}>
-                {orgs.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name}
-                  </option>
-                ))}
-              </select>
-            )}
+            <select className="input" value={adding.orgId} onChange={(e) => setAdding({ ...adding, orgId: e.target.value })}>
+              {orgs.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </select>
             <input className="input" placeholder="아이디" value={adding.loginId} onChange={(e) => setAdding({ ...adding, loginId: e.target.value })} />
             <input className="input" placeholder="이름" value={adding.name} onChange={(e) => setAdding({ ...adding, name: e.target.value })} />
             <input className="input" placeholder="부서" value={adding.dept} onChange={(e) => setAdding({ ...adding, dept: e.target.value })} />
             <select className="input" value={adding.role} onChange={(e) => setAdding({ ...adding, role: e.target.value })}>
-              <option value="user">일반</option>
-              <option value="manager">기관관리</option>
-              {isAdmin && <option value="admin">전체관리</option>}
+              {Object.entries(ROLE).map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ))}
             </select>
+            <input
+              className="input"
+              placeholder="비밀번호 (영문·숫자 8자 이상)"
+              autoComplete="new-password"
+              value={adding.password}
+              onChange={(e) => setAdding({ ...adding, password: e.target.value })}
+            />
             {error && <p className="text-danger">{error}</p>}
           </div>
         )}
       </Modal>
 
       <Modal
-        open={!!issued}
-        onClose={() => setIssued(null)}
-        title="비밀번호 발급"
-        width={440}
+        open={!!pw}
+        onClose={() => setPw(null)}
+        title="비밀번호 지정"
+        width={480}
         footer={
-          <Button variant="primary" onClick={() => setIssued(null)}>
-            확인
-          </Button>
+          <>
+            <Button onClick={() => setPw(null)}>취소</Button>
+            <Button
+              variant="primary"
+              disabled={pending || !pw?.password}
+              onClick={() =>
+                run(
+                  () => setPassword(pw!.id, pw!.password),
+                  () => {
+                    setDone(`${pw!.loginId} 비밀번호를 지정했습니다.`);
+                    setPw(null);
+                  },
+                )
+              }
+            >
+              지정
+            </Button>
+          </>
         }
       >
-        <div className="space-y-2 text-[18px]">
-          <div>
-            아이디 <b>{issued?.loginId}</b>
+        {pw && (
+          <div className="space-y-3">
+            <div className="text-[18px]">
+              아이디 <b>{pw.loginId}</b>
+            </div>
+            <input
+              className="input"
+              placeholder="새 비밀번호 (영문·숫자 8자 이상)"
+              autoComplete="new-password"
+              value={pw.password}
+              onChange={(e) => setPw({ ...pw, password: e.target.value })}
+            />
+            {error && <p className="text-danger">{error}</p>}
           </div>
-          <div>
-            비밀번호 <b className="select-all tabular-nums text-primary-strong">{issued?.password}</b>
-          </div>
-        </div>
+        )}
       </Modal>
     </main>
   );

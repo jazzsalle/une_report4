@@ -54,13 +54,11 @@ export async function requireUser(): Promise<SessionUser> {
   return u;
 }
 
-/** 기관 문서 편집 권한: 본인 작성 또는 기관 관리자 이상 */
+/** 문서 편집·열람: 모든 계정은 자기가 만든 문서만 (운영관리자 포함) */
 export function canEdit(u: SessionUser, doc: { ownerId: string; orgId: string }) {
-  if (u.role === "admin") return true;
-  if (u.orgId !== doc.orgId) return false;
-  return doc.ownerId === u.id || u.role === "manager";
+  return doc.ownerId === u.id;
 }
 
-export function canView(u: SessionUser, doc: { orgId: string }) {
-  return u.role === "admin" || u.orgId === doc.orgId;
+export function canView(u: SessionUser, doc: { ownerId: string; orgId: string }) {
+  return canEdit(u, doc);
 }

@@ -24,12 +24,11 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
   const router = useRouter();
   const [q, setQ] = useState("");
   const [hazard, setHazard] = useState("");
-  const [mine, setMine] = useState(false);
   const [pending, start] = useTransition();
   // 삭제 확인: 휴지통 아이콘을 누르면 한 번 더 묻는다
   const [del, setDel] = useState<Row | null>(null);
   const list = rows.filter(
-    (r) => (!q || r.title.includes(q) || r.owner.includes(q)) && (!hazard || r.hazard === hazard) && (!mine || r.ownerId === me),
+    (r) => (!q || r.title.includes(q) || r.owner.includes(q)) && (!hazard || r.hazard === hazard)
   );
   return (
     <main className="mx-auto max-w-[1440px] px-6 py-8">
@@ -46,10 +45,6 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
               <option key={h}>{h}</option>
             ))}
           </select>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="h-5 w-5 accent-primary" checked={mine} onChange={(e) => setMine(e.target.checked)} />
-            내 문서
-          </label>
           <span className="ml-auto text-sub">{list.length}건</span>
         </div>
         {list.length === 0 ? (

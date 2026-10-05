@@ -1,4 +1,5 @@
-export type Role = "admin" | "manager" | "user";
+/** admin 운영관리(계정·매뉴얼 분석) · manager 기관관리(연락망 편집) · user 일반 · t3q T3Q 담당자(API 문서 열람). 상황·문서는 모두 자기 것만 */
+export type Role = "admin" | "manager" | "user" | "t3q";
 
 export interface SessionUser {
   id: string;

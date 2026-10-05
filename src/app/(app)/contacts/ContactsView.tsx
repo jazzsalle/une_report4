@@ -17,6 +17,7 @@ import {
 } from "@/app/actions/contacts";
 import { EmergencyTree } from "./EmergencyTree";
 import { ContactsExcel } from "./ContactsExcel";
+import { ManualContacts } from "./ManualContacts";
 
 type Tab = "people" | "groups" | "tree";
 type Unit = ContactsBundle["units"][number];
@@ -58,6 +59,7 @@ export function ContactsView({
           </select>
         )}
         <div className="ml-auto flex flex-wrap gap-2">
+          {canManage && <ManualContacts orgId={orgId} />}
           {canManage && <ContactsExcel orgId={orgId} orgName={orgName} bundle={bundle} />}
         <Button variant="ghost" size="sm" onClick={() => setShow((v) => !v)}>
           {show ? <EyeOff size={18} /> : <Eye size={18} />} {show ? "번호 가리기" : "번호 보기"}
@@ -120,9 +122,10 @@ function EmptyGuide({
             {error && <p className="mt-2 text-danger">{error}</p>}
           </div>
           <div className="rounded-lg border border-line p-6">
-            <div className="text-[19px] font-bold">2. 엑셀로 한 번에</div>
-            <p className="mt-2 text-[16px] text-sub">엑셀 양식을 내려받아 상위 조직·조직(부서)·이름·직위·휴대전화를 채운 뒤 올립니다.</p>
+            <div className="text-[19px] font-bold">2. 매뉴얼·엑셀로 한 번에</div>
+            <p className="mt-2 text-[16px] text-sub">재난 매뉴얼의 비상연락망(유관기관 등)을 가져오거나, 엑셀 양식을 채워 올립니다.</p>
             <div className="mt-4 flex flex-wrap gap-2">
+              <ManualContacts orgId={orgId} big />
               <ContactsExcel orgId={orgId} orgName={orgName} bundle={bundle} big />
             </div>
           </div>

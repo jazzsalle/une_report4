@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { ChevronDown, FileCode2, LogOut, UserRound } from "lucide-react";
+import { BookOpen, ChevronDown, FileCode2, LogOut, UserRound } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 import { logout } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/types";
@@ -29,9 +29,16 @@ export function Header({
     { href: "/docs", label: "문서함" },
     { href: "/contacts", label: "연락망" },
     { href: "/trash", label: "휴지통" },
-    ...(user.role !== "user" ? [{ href: "/admin", label: "계정관리" }] : []),
+    // 운영관리자만: 매뉴얼 분석 · 계정관리
+    ...(user.role === "admin"
+      ? [
+          { href: "/admin/manuals", label: "매뉴얼 분석" },
+          { href: "/admin", label: "계정관리" },
+        ]
+      : []),
   ];
-  const active = (h: string) => (h === "/" ? path === "/" || path.startsWith("/s/") || path === "/new" : path.startsWith(h));
+  const active = (h: string) =>
+    h === "/" ? path === "/" || path.startsWith("/s/") || path === "/new" : h === "/admin" ? path === "/admin" : path.startsWith(h);
 
   return (
     <header className="bg-white">
@@ -82,7 +89,7 @@ export function Header({
               >
                 <UserRound size={18} /> 내 정보
               </Link>
-              {user.role === "admin" && (
+              {(user.role === "admin" || user.role === "t3q") && (
                 <a
                   href="/api-docs"
                   target="_blank"
@@ -90,6 +97,16 @@ export function Header({
                   className="flex items-center gap-2 px-4 py-3 text-[16px] hover:bg-canvas"
                 >
                   <FileCode2 size={18} /> API 문서
+                </a>
+              )}
+              {(user.role === "admin" || user.role === "t3q") && (
+                <a
+                  href="/api-docs/mapping.html"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 px-4 py-3 text-[16px] hover:bg-canvas"
+                >
+                  <BookOpen size={18} /> 대응설명서
                 </a>
               )}
               <form action={logout}>

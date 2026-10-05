@@ -43,13 +43,14 @@ function password() {
   return `${s}!${crypto.randomInt(10, 99)}`;
 }
 
+/** 기본 계정: 운영관리자 1 · 부산 2 · 경북 2 · T3Q 1. 그 밖의 계정은 운영관리자가 계정관리에서 직접 발급 */
 const ACCOUNTS: { loginId: string; name: string; dept: string; orgId: string; role: string }[] = [
   { loginId: "admin", name: "운영관리자", dept: "운영", orgId: "une", role: "admin" },
-  { loginId: "admin2", name: "운영관리자2", dept: "운영", orgId: "une", role: "admin" },
   { loginId: "busan-admin", name: "부산 관리자", dept: "자연재난과", orgId: "busan", role: "manager" },
   { loginId: "busan01", name: "부산 사용자", dept: "자연재난과", orgId: "busan", role: "user" },
   { loginId: "gb-admin", name: "경북 관리자", dept: "자연재난과", orgId: "gyeongbuk", role: "manager" },
   { loginId: "gb01", name: "경북 사용자", dept: "자연재난과", orgId: "gyeongbuk", role: "user" },
+  { loginId: "t3q", name: "T3Q 담당자", dept: "T3Q", orgId: "t3q", role: "t3q" },
 ];
 
 async function main() {
@@ -81,7 +82,7 @@ async function main() {
       passwordHash: await bcrypt.hash(pw, 10),
     });
     const orgName = ORGS.find((o) => o.id === a.orgId)?.name ?? "";
-    created.push([orgName, a.loginId, pw, a.role === "admin" ? "전체관리" : a.role === "manager" ? "기관관리" : "일반"]);
+    created.push([orgName, a.loginId, pw, ({ admin: "운영관리", manager: "기관관리", user: "일반", t3q: "T3Q" } as Record<string, string>)[a.role] ?? a.role]);
   }
   if (created.length) {
     fs.mkdirSync("accounts", { recursive: true });

@@ -12,6 +12,7 @@ const DEMO_ACCOUNTS = [
   { loginId: "admin", label: "운영관리자 (전체)" },
   { loginId: "busan-admin", label: "부산광역시 관리자" },
   { loginId: "gb-admin", label: "경상북도 관리자" },
+  { loginId: "t3q", label: "T3Q 담당자" },
 ];
 
 /** 시험 기간: DEMO_LOGIN="아이디:비밀번호" 를 설정하면 계정을 목록에서 고르고 비밀번호를 안내한다. 배포 전 환경변수만 지우면 된다. */

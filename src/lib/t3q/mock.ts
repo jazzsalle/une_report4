@@ -1,8 +1,12 @@
 import "server-only";
 import { selectSeed, stepOf, stepLabelOf } from "@/lib/seed";
 import { STEP_CODE } from "@/lib/sop/convert";
+import { sidoShort } from "@/lib/regions";
 import type { ResponseStep } from "@/lib/types";
 import type {
+  ContactEntry,
+  ContactsRequest,
+  ContactsResponse,
   SopActionsRequest,
   SopActionsResponse,
   SopAction,
@@ -100,5 +104,43 @@ export async function mockSopActions(req: SopActionsRequest): Promise<SopActions
     },
     missions: [...missions.values()],
     actions: out,
+  };
+}
+
+/**
+ * API-04 모의: 매뉴얼 연락망 예시. 실제 번호는 넣지 않는다(공개 저장소) — 모두 자리표시.
+ * 실제 연계(live)에서는 T3Q가 매뉴얼 연락망 표(C1~C10)에서 뽑아 준다.
+ */
+export async function mockContacts(req: ContactsRequest): Promise<ContactsResponse> {
+  const short = sidoShort(req.region.name);
+  const doc = { docId: "seed-contacts", docTitle: `${req.region.name} 현장조치 행동매뉴얼 (예시)` };
+  const e = (category: ContactEntry["category"], org: string, dept: string, title: string, page: number, extra: Partial<ContactEntry> = {}): ContactEntry => ({
+    category,
+    org,
+    dept,
+    title,
+    phones: ["000-000-0000"],
+    asOf: "예시",
+    source: { ...doc, page },
+    ...extra,
+  });
+  await new Promise((r) => setTimeout(r, 400));
+  return {
+    meta: meta(),
+    manuals: [{ ...doc, scope: "SIDO", region: req.region, stepBasis: "RESPONSE_STEP" }],
+    entries: [
+      e("AGENCY", `${short}소방재난본부`, "119종합상황실", "상황실장", 28, { fax: ["000-000-0001"], night: ["000-000-0002"] }),
+      e("AGENCY", `${short}경찰청`, "경비교통과", "경비계장", 28),
+      e("AGENCY", `${short}지방기상청`, "예보과", "예보관", 28),
+      e("AGENCY", "육군 제OO사단", "작전과", "작전과장", 28),
+      e("AGENCY", `한국전력공사 ${short}본부`, "재난안전팀", "재난담당", 29),
+      e("AGENCY", `한국가스안전공사 ${short}지역본부`, "안전관리부", "담당", 29),
+      e("AGENCY", `대한적십자사 ${short}지사`, "재난안전팀", "담당", 29),
+      e("AGENCY", `KT ${short}본부`, "네트워크운용팀", "담당", 29),
+      e("HIGHER", "행정안전부", "중앙재난안전상황실", "상황실", 27),
+      e("INTERNAL", req.region.name, "자연재난과", "과장", 25, { name: "홍OO", mobile: "010-0000-0000" }),
+      e("INTERNAL", req.region.name, "재난안전상황실", "상황근무자", 25),
+    ],
+    warnings: [{ code: "IMAGE_PAGE", message: "유관기관 비상연락망 일부가 그림 쪽이라 뽑지 못했습니다.", docId: doc.docId, page: 30 }],
   };
 }

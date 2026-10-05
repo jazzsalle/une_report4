@@ -63,7 +63,7 @@
 <body>
 <header>
   <div class="in">
-    <h1>매뉴얼 ↔ JSON ↔ 화면 대응 설명서 · API-02 SOP 콘텐츠</h1>
+    <h1>매뉴얼 ↔ JSON ↔ 화면 대응 설명서 · API-02 SOP · API-04 연락망</h1>
     <a href="/api-docs">API 요청서로</a>
   </div>
 </header>
@@ -92,10 +92,10 @@
   </div>
   <div class="toc">
     <span class="k">매뉴얼 → JSON</span><a href="#s1">① 재난대응 프로세스</a><a href="#s2">② 행동카드</a><a href="#s3">③ 전파 표</a><a href="#s4">④ 수습·복구</a>
-    <a href="#rules">추출 규칙 R1~R19</a><a href="#edge">애매한 경우</a><a href="#other">다른 매뉴얼 적용</a><a href="#checked">검증한 매뉴얼</a><a href="#json">JSON 예시</a>
+    <a href="#rules">추출 규칙 R1~R25</a><a href="#edge">애매한 경우</a><a href="#other">다른 매뉴얼 적용</a><a href="#checked">검증한 매뉴얼</a><a href="#json">JSON 예시</a>
   </div>
   <div class="toc">
-    <span class="k">JSON → 화면</span><a href="#screen">⑤ 우리 화면 적용</a><a href="#ondemand">⑥ 필요시 임무</a><a href="#reuse">⑦ 다른 프로젝트에 쓸 때</a>
+    <span class="k">JSON → 화면</span><a href="#screen">⑤ 우리 화면 적용</a><a href="#ondemand">⑥ 필요시 임무</a><a href="#reuse">⑦ 다른 프로젝트에 쓸 때</a><a href="#contacts">⑧ 연락망 추출</a>
   </div>
 </section>
 
@@ -208,7 +208,7 @@
 </section>
 
 <section id="rules">
-  <h2>추출 규칙 R1~R19</h2>
+  <h2>추출 규칙 R1~R25</h2>
   <p class="lead">같은 매뉴얼이면 누가 뽑아도 같은 JSON이 나오도록 정한 규칙입니다.</p>
   <table>
     <tr><th>규칙</th><th>매뉴얼 표기</th><th>JSON 처리</th><th>예</th></tr>
@@ -233,6 +233,13 @@
     <tr><th colspan="4">화면 적용 검토 후 추가 (R18, v1.8)</th></tr>
     <tr><td>R18</td><td>제목 <b>일부</b>에만 붙은 조건</td><td>제목 그대로 두고 <code>condition</code>은 비움 — 조치 자체는 꼭 할 일이라 흐름선에 둠</td><td>영천 <code>⑪-2-2 교통통제 및 (필요시) 교통통제소 운영</code></td></tr>
     <tr><td>R19</td><td>프로세스 표의 <b>부서 칸</b> (초기대응부서 / 협업부서 / 유관기관)</td><td>요청 <code>department</code>가 든 행 묶음만. 협업기능형은 주관부서가 그 부서인 조치만. 띄어쓰기 무시, 「시민안전실 자연재난과」처럼 상위 조직이 붙어도 같은 부서. 없으면 초기대응 행 + <code>departmentMatched: false</code></td><td>부산 p.34 「재난상황실 자연재난과」 행, p.35 「복지정책과」 행 → <code>[3-11]</code> 이재민 임시주거시설</td></tr>
+    <tr><th colspan="4">약 80개 매뉴얼 검증 후 추가 — 일반 규칙과 예외 원칙 (R20~R25, v2.0)</th></tr>
+    <tr><td>R20</td><td>(공통 전처리) 세로쓰기·줄바꿈으로 끊긴 글자, 띄어쓰기 빠진 PDF, 가운뎃점 6종(· ․ ‧ ㆍ ･ ・), 쪽 머리글·쪽번호</td><td colspan="2">이어 붙이고 띄어쓰기 무시로 비교, 가운뎃점 통일, 머리글 지움. 같은 문서 중복은 하나만, 한 파일에 매뉴얼이 여럿이면 나눔</td></tr>
+    <tr><td>R21</td><td>코드 오타·반복 (<code>[45--2]</code>, <code>[[7]</code>, 목차·개요·사례에 같은 <code>[n-m]</code> 반복), 번호 없는 <code>[징후접수 및 파악]</code></td><td colspan="2">오타 바로잡기. 반복 코드는 「주관부서」 등 카드 머리가 뒤따르는 <b>첫 등장만</b> 조치. 번호 없는 대괄호 소제목도 임무(R7 확장)</td></tr>
+    <tr><td>R22</td><td>단계 표기가 프로세스 표와 카드에 다름, 비표준 단계명(「비상저감 1~3단계」), 「(계속)」·●○ 표</td><td colspan="2">행동카드 머리의 단계 표기가 우선. 비표준 단계명은 <b>열 위치</b>로 4단계에. 「(계속)」·○는 앞 조치가 이어지는 것(새 조치 아님)</td></tr>
+    <tr><td>R23</td><td><code>[필요시]</code>만 있는 줄, 카드 안 ①②③ 조건 목록</td><td colspan="2">그 아래 항목들의 <code>condition</code>. 조건 목록의 원문자는 협업기능 번호(R10)가 아님</td></tr>
+    <tr><td>R24</td><td>실무·표준·기관 매뉴얼의 경보단계별 「기관별 임무·역할」 표, 3열 조치목록(조치사항/세부내용/비고)</td><td colspan="2"><b>지자체 별칭 행만</b> 조치로(지자체·지방자치단체(소방관서 포함)·시도 및 시군구·지자체(지대본)·비고 「(지자체)」), 단계 = 경보단계. <code>(가)</code>=임무, <code>(가-1)</code>=조치. 오인 제외: 위기유형별 주관기관 표, 시·도교육청, 시·도 119, 부처 내부 대응 프로세스·협업기능 표, 「주요 조치내용(주관기관)」</td></tr>
+    <tr><td>R25</td><td><b>예외 원칙</b> — 위 규칙으로 정할 수 없는 곳</td><td colspan="2">만들지 않습니다. 원문을 그대로 두고 <code>warnings[]</code>에 이유·쪽(지자체 조치 없음, 단계·코드 판단 불가, 그림 쪽, 표 짝 안 맞음). <b>문서 하나에 맞춘 규칙은 추가하지 않고</b>, 여러 문서 유형에 반복될 때만 규칙을 늘립니다</td></tr>
   </table>
 </section>
 
@@ -279,7 +286,16 @@
 
 <section id="checked">
   <h2>검증한 매뉴얼</h2>
-  <p class="lead">부산 풍수해 외 매뉴얼 4종을 같은 규칙으로 뽑아 보고 확인했습니다.</p>
+  <p class="lead">처음 부산 풍수해 외 4종으로 규칙을 만들고(아래 표), v2.0에서 <b>약 80개 매뉴얼</b>(중복 빼고 77종: 표준 14 · 실무 31 · 지자체 현장조치 행동 18 · 공공기관 행동 5 · 교육시설 6 등)로 다시 검증해 일반 규칙 R20~R25를 더했습니다.</p>
+  <table style="margin-bottom:16px">
+    <tr><th>순위</th><th>매뉴얼 유형</th><th>SOP 규칙</th><th>쓰임</th></tr>
+    <tr><td class="n">1</td><td>지자체 현장조치 행동매뉴얼 — 부산형(부산·인제·부산 북구), 행안부 표준 협업기능형(영천)</td><td>그대로 적용</td><td rowspan="2"><b>SOP 뼈대</b></td></tr>
+    <tr><td class="n">2</td><td>지자체 현장조치 — 울주형(울주군 10종·대전·의성)</td><td>R20~R23 보완</td></tr>
+    <tr><td class="n">3</td><td>교육청·교육부 행동카드형, 공공기관 행동매뉴얼(항공청·항만공사 등)</td><td>구조는 맞음</td><td>자체 기관 조치라 지자체 조치는 적음</td></tr>
+    <tr><td class="n">4</td><td>위기대응 실무매뉴얼 — 지자체 행이 따로 있는 것(지진 환경부·산림청 산불·다중밀집시설), 비고 칸형</td><td>R24</td><td rowspan="2">근거 · 위기경보형 단계 고르기</td></tr>
+    <tr><td class="n">5</td><td>위기관리 표준매뉴얼(신양식 > 구양식)</td><td>R24</td></tr>
+    <tr><td class="n">6</td><td>감염병·가축질병 실무, 방사능(그림 쪽), 학교 감염병, 미세먼지(녹취록)</td><td>R25 경고</td><td>부적합</td></tr>
+  </table>
   <table>
     <tr><th>매뉴얼</th><th>모양</th><th>결과</th></tr>
     <tr><td>영천시 풍수해 현장조치 행동매뉴얼 (2026.7.)</td><td>행안부 표준 협업기능 코드, 흐름표 + 행동카드</td><td><b>잘 맞음.</b> 흐름표 조치 142건 = 행동카드 142장. 세부행동은 카드 본문에서 (R10·R11·R13)</td></tr>
@@ -428,9 +444,10 @@
   <table>
     <tr><th style="width:90px">구분</th><th>항목</th><th>내용</th></tr>
     <tr><td class="fix">고정</td><td>계층</td><td>대응단계 → 임무 <code>[n]</code> → 조치 <code>[n-m]</code> (= 행동카드 1장) → 세부행동. 번호 모양이 아니라 <b>깊이</b>로 맞춤</td></tr>
-    <tr><td class="fix">고정</td><td>추출 규칙</td><td>R1~R18. 같은 매뉴얼이면 누가 뽑아도 같은 JSON, 같은 문서 판이면 같은 <code>actionCode</code></td></tr>
+    <tr><td class="fix">고정</td><td>추출 규칙</td><td>R1~R25(R25 예외 원칙), 연락망 C1~C10. 같은 매뉴얼이면 누가 뽑아도 같은 JSON, 같은 문서 판이면 같은 <code>actionCode</code></td></tr>
     <tr><td class="fix">고정</td><td>매뉴얼에 없는 내용은 만들지 않음</td><td>빈 칸은 비워 두고 사람이 채움. AI가 그럴듯하게 채우면 공문서 근거가 흐려짐</td></tr>
     <tr><td class="fix">고정</td><td>매뉴얼 고르기</td><td>재난유형 → 시군구 → 시도 → 중앙, 고른 매뉴얼 이름을 화면에 표시 (<a href="#select">⓪</a>)</td></tr>
+    <tr><td class="fix">고정</td><td>예외 원칙</td><td>규칙으로 정할 수 없으면 만들지 않고 <code>warnings</code>로 남김(R25). 문서 하나에 맞춘 규칙은 늘리지 않음 — 여러 문서 유형에 반복될 때만 규칙 추가</td></tr>
     <tr><td class="fix">고정</td><td>부서 범위</td><td>요청한 부서의 행만 (R19). 다른 부서 조치가 필요하면 담당부서를 바꿔 다시 생성하거나 「임무 추가」로 직접 넣음</td></tr>
     <tr><td class="fix">고정</td><td>조건 처리</td><td>조치 전체 조건 = 필요시 임무로 흐름 밖, 일부 조건 = 제목 그대로 (<a href="#ondemand">⑥</a>)</td></tr>
     <tr><td class="fix">고정</td><td>전파 수신자</td><td>매뉴얼 전파대상은 <b>추천</b>일 뿐, 실제 수신자는 사람이 연락망에서 확정</td></tr>
@@ -449,6 +466,35 @@
     <li>모의 응답으로 화면을 띄워 <a href="#screen">⑤</a>의 표대로 칸이 채워지는지, 필요시 임무가 흐름 밖에 놓이는지 본다.</li>
     <li>결정·함정은 <code>docs/개발_인계노트.md</code>에 한 줄씩 남긴다.</li>
   </ol>
+</section>
+
+<section id="contacts">
+  <h2><span class="no">⑧</span>연락망 추출 — API-04</h2>
+  <p class="lead">상황전파에서 가장 중요한 대상은 <b>유관기관</b>입니다. 지자체 현장조치 행동매뉴얼에는 「기관명·관련 부서·전화·비고(FAX)」 비상연락망 표가 따로 있고, 문서마다 유관기관이 10~12종 나옵니다.
+    T3Q가 이 표를 뽑아 주면, 연락망 화면의 <b>매뉴얼에서 가져오기</b>에서 분류별로 미리 보고 고른 줄만 넣습니다(지우지 않음). 내부 연락망이라 성명·직위·휴대전화도 문서에 있으면 그대로 받습니다.</p>
+  <div class="grid">
+    <figure><img src="/api-docs/img/app-manual-contacts.png" alt="매뉴얼에서 연락망 가져오기 창" /><figcaption>우리 화면 · 매뉴얼에서 연락망 가져오기 (예시 응답)</figcaption></figure>
+    <table>
+      <tr><th>규칙</th><th>내용</th></tr>
+      <tr><td>C1 찾기</td><td>「비상연락망·유관기관 연락처·연락처·작성기관」 제목 + (기관|부서|연락처) 열 머리 + 쪽마다 일반전화 6개 이상</td></tr>
+      <tr><td>C2 열 머리</td><td>기관(명)·주관기관·관련부서·부서·직위·성명·연락처·전화·휴대(H.P·CP)·팩스·비고를 같은 뜻끼리. 성명·휴대전화도 그대로</td></tr>
+      <tr><td>C3 번호 나누기</td><td>(전)·(팩)·[Fax]·(사)·야)·당직·(CP)·010 → <code>phones</code>·<code>fax</code>·<code>night</code>·<code>mobile</code></td></tr>
+      <tr><td>C4 번호 정리</td><td>짧은 번호에 지역번호 보충, 「~5」 범위는 원문, 「0010-」 같은 오타 거름</td></tr>
+      <tr><td>C5 칸 짝짓기</td><td>흩어진 칸은 순서대로 짝짓고 번호 개수로 확인. 안 맞으면 기관명만 + 경고</td></tr>
+      <tr><td>C6 이름 정리</td><td>세로쓰기·줄바꿈 이음, 「중부/온산소방서」는 두 기관</td></tr>
+      <tr><td>C7 분류</td><td><code>AGENCY</code> 유관기관 · <code>INTERNAL</code> 자기 기관 부서 · <code>HIGHER</code> 중앙부처 상황실 · <code>LOCAL_GOV</code> 시·도·시군구 → 화면 묶음 「유관기관」「우리 기관 부서」「상급 보고처」「시·군·구 재난부서」</td></tr>
+      <tr><td>C8 카드 안 연락처</td><td>행동카드 협업기관 칸·「기관(☎ …)」은 API-02 <code>OrgRef.phones</code>에도</td></tr>
+      <tr><td>C9 연락망 아님</td><td>학교 주소록, 병원·응급실, 구급차 현황</td></tr>
+      <tr><td>C10 기준일·출처</td><td><code>asOf</code>·<code>source.page</code>. 그림 쪽은 <code>IMAGE_PAGE</code> 경고</td></tr>
+    </table>
+  </div>
+  <table style="margin-top:16px">
+    <tr><th>매뉴얼 유형</th><th>연락망 추출</th><th>근거</th></tr>
+    <tr><td>지자체 현장조치 행동매뉴얼</td><td><b>높음</b></td><td>기관 단위 표가 따로 있음, 유관기관 10~12종. 담당자 표에 성명·휴대전화가 함께 있음</td></tr>
+    <tr><td>표준매뉴얼(신양식)·교육부 대응매뉴얼</td><td>높음</td><td>기관/부서/연락처 표</td></tr>
+    <tr><td>위기대응 실무매뉴얼</td><td>보통</td><td>대부분 중앙부처 상황실·당직실 → 「상급 보고처」로. 지방청·유역환경청·시·도 표는 쓸모 큼</td></tr>
+    <tr><td>그림 쪽·연락망 없는 문서</td><td>낮음</td><td>방사능(그림), 학교 감염병(없음) → 경고만</td></tr>
+  </table>
 </section>
 
 </main>

@@ -65,6 +65,8 @@ export interface OrgRef {
   name: string;
   role: "LEAD" | "SUPPORT" | "COOPERATE";
   orgCode?: string;
+  /** (v2.0) 행동카드·프로세스 표에 붙은 기관·부서 번호 (예: 「울산기상대(☎ …)」) — C8 */
+  phones?: string[];
 }
 
 export interface DetailTask {
@@ -149,13 +151,65 @@ export interface ManualRef {
   departmentMatched?: boolean;
 }
 
+/** (v2.0) 예외 원칙 — 규칙으로 정할 수 없는 곳은 만들지 않고 원문을 두고 여기에 알린다 */
+export interface ExtractionWarning {
+  code: "NO_LOCAL_ACTIONS" | "AMBIGUOUS_STEP" | "AMBIGUOUS_CODE" | "IMAGE_PAGE" | "UNMATCHED_TABLE" | "OTHER";
+  message: string;
+  docId?: string;
+  page?: number;
+  actionCode?: string;
+}
+
 export interface SopActionsResponse {
   meta: T3QMeta;
   disasterType: DisasterType;
   manual?: ManualRef;
+  warnings?: ExtractionWarning[];
   missions: SopMission[];
   actions: SopAction[];
   organizationSummary?: { name: string; roles: OrgRef["role"][]; actionCodes: string[] }[];
+}
+
+/* ---------- API-04 매뉴얼 연락망 (v2.0) ---------- */
+
+/** 연락망 분류 — 유관기관 / 우리 기관 내부 부서 / 상급 보고처(중앙부처 상황실 등) / 시·도·시군구 */
+export type ContactCategory = "AGENCY" | "INTERNAL" | "HIGHER" | "LOCAL_GOV";
+
+export interface ContactsRequest {
+  /** 매뉴얼 고르기는 API-02 와 같은 규칙 (재난유형 → 시군구 → 시도 → 중앙). 재난유형이 없으면 그 지역의 모든 매뉴얼 */
+  region: Region;
+  affectedRegions?: Region[];
+  disasterType?: DisasterType;
+  documents?: { docId: string }[];
+}
+
+/** 연락처 1줄 — 문서에 있으면 성명·직위·휴대전화도 그대로 (내부용) */
+export interface ContactEntry {
+  category: ContactCategory;
+  /** 기관명 (예: 부산경찰청) */
+  org: string;
+  /** 부서 (예: 경비교통과) */
+  dept?: string;
+  title?: string;
+  name?: string;
+  /** 사무실·대표 번호 (지역번호 붙여서, 범위 「~5」는 그대로) */
+  phones: string[];
+  mobile?: string;
+  fax?: string[];
+  /** 야간·당직 번호 */
+  night?: string[];
+  email?: string;
+  note?: string;
+  /** 표의 기준일 원문 (예: 2026. 2월 기준) */
+  asOf?: string;
+  source: SourceRef;
+}
+
+export interface ContactsResponse {
+  meta: T3QMeta;
+  manuals: ManualRef[];
+  entries: ContactEntry[];
+  warnings?: ExtractionWarning[];
 }
 
 /* ---------- API-03 사용자 인증 (T3Q 플랫폼 링크 로그인) ---------- */

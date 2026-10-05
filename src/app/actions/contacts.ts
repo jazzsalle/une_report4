@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
 import { ensureExampleContacts } from "@/lib/contacts-seed";
+import { manualContacts } from "@/lib/t3q/client";
+import { ORG_SIDO, sidoNode } from "@/lib/regions";
 
 async function manager(orgId: string) {
   const u = await requireUser();
@@ -104,6 +106,8 @@ export async function deleteGroup(orgId: string, id: string) {
 
 export interface ImportRow {
   upper: string;
+  /** 상위 조직을 새로 만들 때 종류 (유관기관 묶음은 agency) */
+  upperKind?: "agency";
   unit: string;
   /** 비어 있으면 「조직만」 줄 — 담당자 없는 조직을 남긴다 */
   name: string;
@@ -154,22 +158,23 @@ export async function importContacts(
   // 1) 계획 — 메모리에서만 계산
   const newUnits: (typeof units)[number][] = [];
   const nameOf = (id: string | null) => (id ? units.find((u) => u.id === id)?.name : undefined);
-  const makeUnit = (name: string, parentId: string | null) => {
+  const makeUnit = (name: string, parentId: string | null, kind?: string) => {
     const sort = units.filter((u) => (u.parentId ?? null) === parentId).length;
-    const nu = { id: nanoid(10), orgId, parentId, name, kind: parentId ? "dept" : "hq", sort };
+    const nu = { id: nanoid(10), orgId, parentId, name, kind: kind ?? (parentId ? "dept" : "hq"), sort };
     units.push(nu);
     newUnits.push(nu);
     stat.units++;
     return nu;
   };
   /** 이름으로 조직 찾기 (어느 깊이든). 없으면 맨 위에 만든다 */
-  const byName = (name: string) => units.find((u) => u.name === name) ?? makeUnit(name, null);
-  const resolveUnit = (upper: string, name: string) => {
+  const byName = (name: string, kind?: string) => units.find((u) => u.name === name) ?? makeUnit(name, null, kind);
+  const resolveUnit = (upper: string, name: string, upperKind?: string) => {
     const same = units.filter((u) => u.name === name);
     if (upper) {
       const hit = same.find((u) => nameOf(u.parentId) === upper);
       if (hit) return hit;
-      return makeUnit(name, byName(upper).id);
+      const parent = byName(upper, upperKind);
+      return makeUnit(name, parent.id, parent.kind === "agency" ? "agency" : undefined);
     }
     return same.find((u) => !u.parentId) ?? same[0] ?? makeUnit(name, null);
   };
@@ -184,7 +189,7 @@ export async function importContacts(
   for (const r of rows) {
     const unitName = r.unit.trim();
     if (!unitName) continue;
-    const u = resolveUnit(r.upper.trim(), unitName);
+    const u = resolveUnit(r.upper.trim(), unitName, r.upperKind);
     touchedUnits.add(u.id);
     if (u.parentId) touchedUnits.add(u.parentId);
     const name = r.name.trim();
@@ -268,4 +273,17 @@ export async function seedExampleContacts(orgId: string) {
   await manager(orgId);
   if (!(await ensureExampleContacts(orgId))) throw new Error("이미 연락망이 있습니다.");
   revalidatePath("/contacts");
+}
+
+/**
+ * 매뉴얼 연락망 가져오기 (API-04) — 기관의 시도 매뉴얼에서 연락망을 뽑아 미리 보여 준다. 바꾸지 않음.
+ * 고른 줄은 화면에서 entryToRow → importContacts(추가·수정만) 로 넣는다.
+ */
+export async function fetchManualContacts(orgId: string) {
+  await manager(orgId);
+  const sido = ORG_SIDO[orgId];
+  const node = sido ? sidoNode(sido) : undefined;
+  if (!node) throw new Error("기관의 시도를 알 수 없습니다.");
+  const { data, fallback } = await manualContacts({ region: { code: node.c.padEnd(10, "0"), name: node.n, level: "SIDO" } });
+  return { ...data, fallback };
 }
