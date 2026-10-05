@@ -3,15 +3,19 @@ import { ChevronRight, Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { listSituations, userNames } from "@/lib/data";
 import { fmtDateTime, fmtTime } from "@/lib/format";
-import { Badge, Empty } from "@/components/ui";
+import { Badge, Empty, Pager } from "@/components/ui";
+import { PAGE_SIZE } from "@/lib/paging";
 import { StatusBadge, LevelBadge } from "@/components/badges";
 import { TourStart } from "@/components/TourStart";
 
-export default async function Home() {
+export default async function Home({ searchParams }: PageProps<"/">) {
   const u = await requireUser();
   const list = await listSituations(u);
   const names = await userNames(list.map((s) => s.ownerId));
   const recent = list.slice(0, 3);
+  const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  const page = Math.min(pages, Math.max(1, Number((await searchParams).page) || 1));
+  const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <main>
@@ -89,7 +93,7 @@ export default async function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {list.map((s) => {
+                  {shown.map((s) => {
                     const ms = s.sop?.missions ?? [];
                     const done = ms.filter((m) => m.status === "done").length;
                     return (
@@ -122,6 +126,7 @@ export default async function Home() {
                   })}
                 </tbody>
               </table>
+              <Pager page={page} total={list.length} base="/?page=" />
             </div>
           )}
         </div>

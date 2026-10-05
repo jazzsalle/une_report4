@@ -2,7 +2,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { RotateCcw, Trash2 } from "lucide-react";
-import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
+import { Badge, Button, Card, Empty, Modal, Pager } from "@/components/ui";
+import { PAGE_SIZE } from "@/lib/paging";
 import { purgeReport, purgeSituation, restoreReport, restoreSituation } from "@/app/actions/report";
 import { fmtDateTime } from "@/lib/format";
 
@@ -13,6 +14,9 @@ export function TrashView({ rows }: { rows: Row[] }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [target, setTarget] = useState<Row | null>(null);
+  const [page, setPage] = useState(1);
+  const cur = Math.min(page, Math.max(1, Math.ceil(rows.length / PAGE_SIZE)));
+  const shown = rows.slice((cur - 1) * PAGE_SIZE, cur * PAGE_SIZE);
   const run = (fn: () => Promise<unknown>) => start(async () => (await fn(), router.refresh()));
 
   return (
@@ -34,7 +38,7 @@ export function TrashView({ rows }: { rows: Row[] }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => {
+              {shown.map((r) => {
                 const left = r.left;
                 return (
                   <tr key={r.kind + r.id} className="border-b border-line-weak">
@@ -64,6 +68,7 @@ export function TrashView({ rows }: { rows: Row[] }) {
             </tbody>
           </table>
         )}
+        <Pager page={cur} total={rows.length} onChange={setPage} />
       </Card>
       <Modal
         open={!!target}

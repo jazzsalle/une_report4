@@ -3,7 +3,8 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Search, Trash2 } from "lucide-react";
-import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
+import { Badge, Button, Card, Empty, Modal, Pager } from "@/components/ui";
+import { PAGE_SIZE } from "@/lib/paging";
 import { LevelBadge } from "@/components/badges";
 import { trashReport } from "@/app/actions/report";
 import { fmtDateTime } from "@/lib/format";
@@ -25,12 +26,16 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
   const router = useRouter();
   const [q, setQ] = useState("");
   const [hazard, setHazard] = useState("");
+  const [page, setPage] = useState(1);
   const [pending, start] = useTransition();
   // 삭제 확인: 휴지통 아이콘을 누르면 한 번 더 묻는다
   const [del, setDel] = useState<Row | null>(null);
   const list = rows.filter(
     (r) => (!q || r.title.includes(q) || r.owner.includes(q)) && (!hazard || r.hazard === hazard)
   );
+  // 지운 뒤 마지막 쪽이 비면 앞 쪽으로
+  const cur = Math.min(page, Math.max(1, Math.ceil(list.length / PAGE_SIZE)));
+  const shown = list.slice((cur - 1) * PAGE_SIZE, cur * PAGE_SIZE);
   return (
     <main className="mx-auto max-w-[1440px] px-6 py-8">
       <h1 className="mb-6 text-[28px] font-bold">문서함</h1>
@@ -38,9 +43,9 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
         <div className="mb-5 flex flex-wrap items-center gap-3">
           <div className="relative w-full max-w-[420px]">
             <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-mute" />
-            <input className="input pl-11" placeholder="제목·작성자 검색" value={q} onChange={(e) => setQ(e.target.value)} />
+            <input className="input pl-11" placeholder="제목·작성자 검색" value={q} onChange={(e) => (setQ(e.target.value), setPage(1))} />
           </div>
-          <select className="input w-40" value={hazard} onChange={(e) => setHazard(e.target.value)}>
+          <select className="input w-40" value={hazard} onChange={(e) => (setHazard(e.target.value), setPage(1))}>
             <option value="">전체 재난</option>
             {HAZARDS.map((h) => (
               <option key={h}>{h}</option>
@@ -65,7 +70,7 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
                 </tr>
               </thead>
               <tbody>
-                {list.map((r) => (
+                {shown.map((r) => (
                   <tr key={r.id} className="border-b border-line-weak hover:bg-canvas/60">
                     <td className="px-4 py-4">
                       <Link href={`/reports/${r.id}`} className="inline-flex items-center gap-1 font-medium hover:text-primary">
@@ -101,6 +106,7 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
                 ))}
               </tbody>
             </table>
+            <Pager page={cur} total={list.length} onChange={setPage} />
           </div>
         )}
       </Card>

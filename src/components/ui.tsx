@@ -1,5 +1,7 @@
 "use client";
 import clsx from "clsx";
+import Link from "next/link";
+import { PAGE_SIZE } from "@/lib/paging";
 import { X } from "lucide-react";
 import { useEffect, type ButtonHTMLAttributes, type ReactNode } from "react";
 
@@ -167,4 +169,40 @@ export function Tabs<T extends string>({
 
 export function Empty({ children }: { children: ReactNode }) {
   return <div className="py-16 text-center text-[17px] text-mute">{children}</div>;
+}
+
+/** 쪽 넘김. 링크로 넘길 때는 base(예: "/?page="), 화면 안에서 넘길 때는 onChange. 한 쪽이면 숨김 */
+export function Pager({
+  page,
+  total,
+  base,
+  onChange,
+}: {
+  page: number;
+  total: number;
+  base?: string;
+  onChange?: (p: number) => void;
+}) {
+  const pages = Math.ceil(total / PAGE_SIZE);
+  if (pages <= 1) return null;
+  const cls = (on: boolean) =>
+    clsx(
+      "inline-flex h-12 min-w-12 items-center justify-center rounded-md px-3 text-[17px] font-medium transition",
+      on ? "bg-primary text-white" : "border border-line bg-white text-ink hover:border-primary hover:text-primary",
+    );
+  return (
+    <nav className="mt-6 flex flex-wrap justify-center gap-2" aria-label="쪽">
+      {Array.from({ length: pages }, (_, i) => i + 1).map((p) =>
+        base ? (
+          <Link key={p} href={`${base}${p}`} className={cls(p === page)} aria-current={p === page ? "page" : undefined}>
+            {p}
+          </Link>
+        ) : (
+          <button key={p} type="button" className={cls(p === page)} onClick={() => onChange?.(p)}>
+            {p}
+          </button>
+        ),
+      )}
+    </nav>
+  );
 }
