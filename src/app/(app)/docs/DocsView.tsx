@@ -3,7 +3,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Search, Trash2 } from "lucide-react";
-import { Badge, Button, Card, Empty } from "@/components/ui";
+import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
 import { LevelBadge } from "@/components/badges";
 import { trashReport } from "@/app/actions/report";
 import { fmtDateTime } from "@/lib/format";
@@ -26,6 +26,8 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
   const [hazard, setHazard] = useState("");
   const [mine, setMine] = useState(false);
   const [pending, start] = useTransition();
+  // 삭제 확인: 휴지통 아이콘을 누르면 한 번 더 묻는다
+  const [del, setDel] = useState<Row | null>(null);
   const list = rows.filter(
     (r) => (!q || r.title.includes(q) || r.owner.includes(q)) && (!hazard || r.hazard === hazard) && (!mine || r.ownerId === me),
   );
@@ -88,7 +90,7 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
                           variant="ghost"
                           aria-label="휴지통으로"
                           disabled={pending}
-                          onClick={() => start(async () => (await trashReport(r.id), router.refresh()))}
+                          onClick={() => setDel(r)}
                         >
                           <Trash2 size={18} />
                         </Button>
@@ -101,6 +103,34 @@ export function DocsView({ rows, me, canManage }: { rows: Row[]; me: string; can
           </div>
         )}
       </Card>
+
+      <Modal
+        open={del !== null}
+        onClose={() => setDel(null)}
+        title="상황일지 삭제"
+        width={480}
+        footer={
+          <>
+            <Button onClick={() => setDel(null)}>취소</Button>
+            <Button
+              variant="danger"
+              disabled={pending}
+              onClick={() =>
+                start(async () => {
+                  await trashReport(del!.id);
+                  setDel(null);
+                  router.refresh();
+                })
+              }
+            >
+              삭제
+            </Button>
+          </>
+        }
+      >
+        <p className="text-[18px] font-semibold leading-relaxed">「{del?.title}」을(를) 삭제하시겠습니까?</p>
+        <p className="mt-2 text-[17px] text-sub">휴지통에서 7일간 보관 후 삭제됩니다.</p>
+      </Modal>
     </main>
   );
 }

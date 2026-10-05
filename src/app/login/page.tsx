@@ -7,12 +7,19 @@ const SSO_ERROR: Record<string, string> = {
   inactive: "사용이 중지된 계정입니다. 운영자에게 문의해 주세요.",
 };
 
-/** 시험 기간: DEMO_LOGIN="아이디:비밀번호" 를 설정하면 아이디를 채우고 비밀번호를 안내한다. 배포 전 환경변수만 지우면 된다. */
+/** 시험 기간 계정 고르기 — 기관별 화면(연락망 등)을 바로 볼 수 있게 기관마다 관리자 1개 */
+const DEMO_ACCOUNTS = [
+  { loginId: "admin", label: "운영관리자 (전체)" },
+  { loginId: "busan-admin", label: "부산광역시 관리자" },
+  { loginId: "gb-admin", label: "경상북도 관리자" },
+];
+
+/** 시험 기간: DEMO_LOGIN="아이디:비밀번호" 를 설정하면 계정을 목록에서 고르고 비밀번호를 안내한다. 배포 전 환경변수만 지우면 된다. */
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const sp = await searchParams;
   const raw = process.env.DEMO_LOGIN ?? "";
   const i = raw.indexOf(":");
-  const demo = i > 0 ? { loginId: raw.slice(0, i), password: raw.slice(i + 1) } : null;
+  const demo = i > 0 ? { loginId: raw.slice(0, i), password: raw.slice(i + 1), accounts: DEMO_ACCOUNTS } : null;
   const sso = typeof sp.sso === "string" ? (SSO_ERROR[sp.sso] ?? null) : null;
   return <LoginForm demo={demo} notice={sso} />;
 }
