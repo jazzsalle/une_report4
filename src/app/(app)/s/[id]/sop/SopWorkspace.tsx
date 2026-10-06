@@ -188,9 +188,13 @@ export function SopWorkspace({
     win.current = null;
     setDetached(false);
   };
-  // 조치 완료 → SOP 흐름도(목록)로 돌아간다. 분리 창이면 그 창을 앞으로.
+  // 조치 완료 → 다음 현재 임무(흐름도 분홍과 같은 기준)를 선택하고 SOP 흐름도(목록)로 돌아간다. 분리 창이면 그 창을 앞으로.
   const topRef = useRef<HTMLDivElement | null>(null);
   const backToFlow = () => {
+    // 완료 처리가 아직 상태에 반영되기 전이라 방금 완료한 임무(선택 중인 임무)는 뺀다
+    const rest = missions.filter((m) => m.id !== sel && !isOnDemand(m));
+    const next = rest.find((m) => m.status === "doing") ?? rest.find((m) => m.status === "todo");
+    if (next) select(next.id);
     if (detached) {
       const w = win.current && !win.current.closed ? win.current : window.open("", `sop-board-${id}`);
       w?.focus();
