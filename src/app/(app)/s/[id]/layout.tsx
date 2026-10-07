@@ -6,7 +6,6 @@ import { STEP_LABEL, type ResponseStep } from "@/lib/types";
 import { ORG_SIDO } from "@/lib/regions";
 import { readLocation } from "@/lib/location";
 import { Badge } from "@/components/ui";
-import { LevelBadge } from "@/components/badges";
 import { SituationTabs } from "./SituationTabs";
 import { BackButton } from "@/components/BackButton";
 
@@ -27,11 +26,8 @@ export default async function SituationLayout({ children, params }: LayoutProps<
             <h1 className="mr-1 text-[24px] font-bold">{s.title}</h1>
             {s.tutorial && <Badge tone="orange">따라하기</Badge>}
             {s.locked && <Badge tone="blue">예시</Badge>}
-            <Badge tone="blue">{s.kind === "drill" ? "안전한국훈련" : "실제재난"}</Badge>
-            <Badge tone="gray">{s.hazard}</Badge>
-            <LevelBadge level={s.alertLevel} />
+            {/* 제목 옆에는 대응단계·발생지역만 (재난구분·유형·위기경보·담당부서는 상황정보에서) */}
             <Badge tone="blue">{STEP_LABEL[s.responseStep as ResponseStep] ?? s.responseStep}</Badge>
-            <Badge tone="gray">{s.dept}</Badge>
             <Badge tone={loc && loc.sido !== sido ? "orange" : "gray"}>발생 {sido}</Badge>
             {loc && loc.sido !== sido && <span className="text-[15px] text-warning">상단 특보는 현재 위치 {loc.sido} 기준</span>}
             <span className="ml-2 text-[16px] text-sub">{fmtPeriod(s.periodStart, s.periodEnd)}</span>

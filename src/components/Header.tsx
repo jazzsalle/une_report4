@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { BookOpen, ChevronDown, FileCode2, LogOut, UserRound } from "lucide-react";
-import { BrandMark } from "./BrandMark";
+import { AppIcon } from "./BrandMark";
 import { logout } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/types";
 import { LocationChip } from "./LocationChip";
@@ -42,15 +42,15 @@ export function Header({
 
   return (
     <header className="bg-white">
-      <div className="flex h-8 items-center gap-2 bg-utility px-6 text-[14px] text-sub">
-        <BrandMark size={16} />
+      <div className="flex h-8 items-center gap-2 bg-utility px-6 text-[15px] text-ink">
+        <AppIcon size={24} />
         재난상황일지 생성도구
         <span className="ml-auto">{orgName}</span>
       </div>
       <div className="flex h-[76px] items-center border-b border-line-weak px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <BrandMark size={34} />
-          <span className="text-[22px] font-bold tracking-tight">{orgName || "상황일지"}</span>
+        <Link href="/" className="flex items-center" aria-label="홈">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/mois-logo.svg" alt="행정안전부" width={177} height={48} />
         </Link>
         <nav className="ml-12 flex h-full items-stretch gap-1">
           {nav.map((n) => (
