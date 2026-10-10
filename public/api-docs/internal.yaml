@@ -136,6 +136,33 @@ paths:
       summary: trashSituation — 상황 휴지통으로
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
       responses: { "303": { description: "/ 이동" } }
+  /action/situation/renameSituation:
+    post:
+      tags: [상황·기상]
+      summary: renameSituation — 상황 이름 변경 (홈 목록)
+      description: 「상황 제목 변경」 이벤트 기록. 연결된 상황일지 제목은 바꾸지 않습니다.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, required: [id, title], properties: { id: { type: string }, title: { type: string, description: "새 제목 (앞뒤 공백 제거, 빈 값 불가)" } } }
+      responses:
+        "200": { $ref: "#/components/responses/ErrorOnly" }
+  /action/situation/copySituation:
+    post:
+      tags: [상황·기상]
+      summary: copySituation — 상황 복사 (홈 목록)
+      description: |
+        상황정보·기상특보·그림, SOP(진행 상태·조치결과), 수행 이력, 상황전파·현장 응답, 상황일지(한글 저장본 포함)를 통째로 복사해 새 상황을 만듭니다.
+        - DB 안에서 한 문장으로 복사합니다 (그림·한글 파일을 서버로 옮기지 않음, 중간 실패 시 반쪽 사본 없음).
+        - 현장 응답 링크 토큰은 새로 만듭니다. 예시·따라하기 표시는 떼어 냅니다. 휴지통의 상황일지는 복사하지 않습니다.
+        - 상황일지 제목이 원래 상황 제목으로 시작하면 그 부분을 새 제목으로 바꿉니다.
+        - 사본에 「문서 복사」 이벤트(원본 제목)를 기록합니다.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, required: [id, title], properties: { id: { type: string, description: 원본 상황 ID }, title: { type: string, description: "사본 제목 (빈 값 불가)" } } }
+      responses:
+        "200": { $ref: "#/components/responses/ErrorOnly" }
 
   # ───────── SOP ─────────
   /action/situation/generateSop:

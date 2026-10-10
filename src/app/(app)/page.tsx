@@ -7,6 +7,7 @@ import { Badge, Empty, Pager } from "@/components/ui";
 import { PAGE_SIZE } from "@/lib/paging";
 import { StatusBadge, LevelBadge } from "@/components/badges";
 import { TourStart } from "@/components/TourStart";
+import { SituationActions } from "./SituationActions";
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   const u = await requireUser();
@@ -81,7 +82,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <Empty>등록된 상황이 없습니다.</Empty>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] text-left text-[16px]">
+              <table className="w-full min-w-[1100px] text-left text-[16px]">
                 <thead className="bg-canvas text-[15px] font-semibold text-sub">
                   <tr>
                     <th className="px-4 py-4">상황명</th>
@@ -90,6 +91,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                     <th className="px-4 py-4">위기경보</th>
                     <th className="px-4 py-4">작성자</th>
                     <th className="px-4 py-4">수정 일시</th>
+                    <th className="px-4 py-4" />
                   </tr>
                 </thead>
                 <tbody>
@@ -121,6 +123,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                         </td>
                         <td className="px-4 py-4">{names.get(s.ownerId) ?? "-"}</td>
                         <td className="px-4 py-4 text-sub">{fmtDateTime(s.updatedAt)}</td>
+                        <td className="px-2 py-2">
+                          <SituationActions id={s.id} title={s.title} />
+                        </td>
                       </tr>
                     );
                   })}
