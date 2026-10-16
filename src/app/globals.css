@@ -27,6 +27,11 @@
   --color-warning-weak: #fff3db;
   --color-success: #267337;
   --color-success-weak: #eaf6ec;
+  /* 위기경보 색 (관심 파랑 · 주의 노랑 · 경계 주황 · 심각 빨강) — 노랑·주황은 경고 계열에서 나눔 */
+  --color-level-yellow: #7a5d00;
+  --color-level-yellow-weak: #fff6c7;
+  --color-level-orange: #b34700;
+  --color-level-orange-weak: #ffe9d9;
 
   --radius-card: 12px;
 }

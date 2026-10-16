@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { getSituation } from "@/lib/data";
 import { fmtPeriod } from "@/lib/format";
@@ -7,13 +7,14 @@ import { ORG_SIDO } from "@/lib/regions";
 import { readLocation } from "@/lib/location";
 import { Badge } from "@/components/ui";
 import { SituationTabs } from "./SituationTabs";
-import { BackButton } from "@/components/BackButton";
 
 export default async function SituationLayout({ children, params }: LayoutProps<"/s/[id]">) {
   const { id } = await params;
   const u = await requireUser();
   const s = await getSituation(u, id);
   if (!s) notFound();
+  // SOP가 없는 상황은 상황 화면 대신 상황정보 등록(이어서 작성)으로 (N-05)
+  if (!s.sop) redirect(`/new?resume=${s.id}`);
   const sido = s.sido || ORG_SIDO[s.orgId] || "부산광역시";
   const loc = await readLocation();
   return (
@@ -21,8 +22,6 @@ export default async function SituationLayout({ children, params }: LayoutProps<
       <div className="no-print bg-white px-6 pt-6">
         <div className="mx-auto max-w-[1680px]">
           <div className="flex flex-wrap items-center gap-2">
-            {/* 같은 상황의 탭끼리는 건너뛰고, 상황을 열기 전 화면으로 */}
-            <BackButton fallback="/" skip={[`/s/${id}`]} />
             <h1 className="mr-1 text-[24px] font-bold">{s.title}</h1>
             {s.tutorial && <Badge tone="orange">따라하기</Badge>}
             {s.locked && <Badge tone="blue">예시</Badge>}

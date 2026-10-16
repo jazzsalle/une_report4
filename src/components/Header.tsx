@@ -28,7 +28,7 @@ export function Header({
   useEffect(() => recordPath(path), [path]);
   const nav = [
     { href: "/", label: "홈" },
-    { href: "/docs", label: "문서함" },
+    { href: "/docs", label: "상황일지 관리" },
     { href: "/contacts", label: "연락망" },
     { href: "/trash", label: "휴지통" },
     // 운영관리자만: 계정관리 (매뉴얼 분석은 사용자 메뉴 대응설명서 아래)
@@ -85,6 +85,10 @@ export function Header({
               >
                 <UserRound size={18} /> 내 정보
               </button>
+              {/* 개발 자료 (U-06) — 운영관리자·T3Q 담당자만, 운영 시 제거 대상 */}
+              {(user.role === "admin" || user.role === "t3q") && (
+                <div className="mt-1 border-t border-line-weak px-4 pb-1 pt-3 text-[15px] font-semibold text-sub">개발 자료</div>
+              )}
               {(user.role === "admin" || user.role === "t3q") && (
                 <a
                   href="/api-docs"
@@ -115,7 +119,7 @@ export function Header({
                   <FileSearch size={18} /> 매뉴얼 분석
                 </a>
               )}
-              <form action={logout}>
+              <form action={logout} className="mt-1 border-t border-line-weak pt-1">
                 <button className="flex w-full items-center gap-2 px-4 py-3 text-left text-[16px] hover:bg-canvas">
                   <LogOut size={18} /> 로그아웃
                 </button>

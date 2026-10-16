@@ -74,7 +74,7 @@ export function SituationActions({ id, title, locked }: { id: string; title: str
         }
       >
         <p className="text-[18px] font-semibold leading-relaxed">「{title}」을(를) 휴지통으로 보낼까요?</p>
-        <p className="mt-2 text-[17px] text-sub">휴지통에서 7일간 보관 후 삭제됩니다. 상황일지는 문서함에 그대로 남습니다.</p>
+        <p className="mt-2 text-[17px] text-sub">휴지통에서 7일간 보관 후 삭제됩니다. 상황일지는 상황일지 관리에 그대로 남습니다.</p>
         {error && <p className="mt-2 text-[15px] text-danger">{error}</p>}
       </Modal>
       <Modal

@@ -3,18 +3,25 @@ import { ChevronRight, Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { listSituations, userNames } from "@/lib/data";
 import { fmtDateTime, fmtTime } from "@/lib/format";
+import clsx from "clsx";
 import { Badge, Empty, Pager } from "@/components/ui";
 import { PAGE_SIZE } from "@/lib/paging";
-import { StatusBadge, LevelBadge } from "@/components/badges";
+import { LevelBadge, SopStateLabel, situationHref } from "@/components/badges";
 import { TourStart } from "@/components/TourStart";
 import { SituationActions } from "./SituationActions";
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   const u = await requireUser();
-  const list = await listSituations(u);
-  const names = await userNames(list.map((s) => s.ownerId));
+  const all = await listSituations(u);
+  const names = await userNames(all.map((s) => s.ownerId));
+  const sp = await searchParams;
+  // 내 상황 / 예시 (M-07) — 예시는 locked. 따라하기 상황은 내 상황
+  const tab = sp.tab === "example" ? "example" : "mine";
+  const mine = all.filter((s) => !s.locked);
+  const examples = all.filter((s) => s.locked);
+  const list = tab === "example" ? examples : mine;
   const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
-  const page = Math.min(pages, Math.max(1, Number((await searchParams).page) || 1));
+  const page = Math.min(pages, Math.max(1, Number(sp.page) || 1));
   const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
@@ -40,20 +47,19 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             </div>
           </div>
           {/* 최근 상황 카드 (최근 수정 순) */}
-          {list.length > 0 && (
+          {all.length > 0 && (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {list.slice(0, 4).map((s) => {
+              {all.slice(0, 4).map((s) => {
                 const ms = s.sop?.missions ?? [];
                 const done = ms.filter((m) => m.status === "done").length;
                 return (
                   <Link
                     key={s.id}
-                    href={`/s/${s.id}`}
+                    href={situationHref(s)}
                     className="card flex h-[200px] flex-col border-2 border-transparent p-6 transition hover:border-primary"
                   >
                     <div className="flex gap-2">
                       {s.tutorial && <Badge tone="orange">따라하기</Badge>}
-                      {s.locked && <Badge tone="blue">예시</Badge>}
                       <Badge tone="blue">{s.hazard}</Badge>
                       <LevelBadge level={s.alertLevel} />
                     </div>
@@ -62,7 +68,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                       <ChevronRight size={20} className="shrink-0" />
                     </div>
                     <div className="mt-auto flex items-center justify-between text-[16px] text-sub">
-                      <StatusBadge status={s.status} />
+                      <SopStateLabel sop={s.sop} />
                       {ms.length > 0 && (
                         <span>
                           임무 {done}/{ms.length}
@@ -80,16 +86,37 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
       <section className="relative -mt-6 rounded-t-[24px] bg-white px-6 pb-16 pt-8">
         <div className="mx-auto max-w-[1440px]">
-          <h2 className="mb-4 text-[20px] font-bold">상황 목록</h2>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-[20px] font-bold">상황 목록</h2>
+            <div className="flex rounded-lg bg-canvas p-1">
+              {(
+                [
+                  ["mine", "내 상황", mine.length],
+                  ["example", "예시", examples.length],
+                ] as const
+              ).map(([k, label, n]) => (
+                <Link
+                  key={k}
+                  href={k === "mine" ? "/" : "/?tab=example"}
+                  className={clsx(
+                    "flex h-10 items-center rounded-md px-4 text-[16px] font-semibold transition",
+                    tab === k ? "bg-white text-tab shadow-sm" : "text-sub hover:text-ink",
+                  )}
+                >
+                  {label} {n}
+                </Link>
+              ))}
+            </div>
+          </div>
           {list.length === 0 ? (
-            <Empty>등록된 상황이 없습니다.</Empty>
+            <Empty>{tab === "example" ? "예시 상황이 없습니다." : "등록된 상황이 없습니다."}</Empty>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1100px] text-left text-[16px]">
                 <thead className="bg-canvas text-[15px] font-semibold text-sub">
                   <tr>
                     <th className="px-4 py-4">상황명</th>
-                    <th className="px-4 py-4">진행</th>
+                    <th className="px-4 py-4">SOP 상태</th>
                     <th className="px-4 py-4">재난유형</th>
                     <th className="px-4 py-4">위기경보</th>
                     <th className="px-4 py-4">작성자</th>
@@ -99,26 +126,21 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 </thead>
                 <tbody>
                   {shown.map((s) => {
-                    const ms = s.sop?.missions ?? [];
-                    const done = ms.filter((m) => m.status === "done").length;
                     return (
                       <tr key={s.id} className="border-b border-line-weak hover:bg-canvas/60">
                         <td className="px-4 py-4">
-                          <Link href={`/s/${s.id}`} className="inline-flex items-center gap-1 font-medium hover:text-primary">
+                          <Link href={situationHref(s)} className="inline-flex items-center gap-1 font-medium hover:text-primary">
                             {s.title}
                             <ChevronRight size={18} />
                           </Link>
-                          {(s.tutorial || s.locked) && (
+                          {s.tutorial && (
                             <span className="ml-2 align-middle">
-                              <Badge tone={s.locked ? "blue" : "orange"}>{s.locked ? "예시" : "따라하기"}</Badge>
+                              <Badge tone="orange">따라하기</Badge>
                             </span>
                           )}
                         </td>
                         <td className="px-4 py-4">
-                          <div className="flex items-center gap-2">
-                            <StatusBadge status={s.status} />
-                            {ms.length > 0 && <span className="text-sub">{done}/{ms.length}</span>}
-                          </div>
+                          <SopStateLabel sop={s.sop} />
                         </td>
                         <td className="px-4 py-4">{s.hazard}</td>
                         <td className="px-4 py-4">
@@ -134,7 +156,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                   })}
                 </tbody>
               </table>
-              <Pager page={page} total={list.length} base="/?page=" />
+              <Pager page={page} total={list.length} base={tab === "example" ? "/?tab=example&page=" : "/?page="} />
             </div>
           )}
         </div>

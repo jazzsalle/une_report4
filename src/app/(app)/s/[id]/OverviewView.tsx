@@ -1,11 +1,10 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Download, Pencil, RefreshCw, Sparkles } from "lucide-react";
+import { ArrowRight, Download, Pencil, RefreshCw } from "lucide-react";
 import { Button, Card, CardHead, Modal } from "@/components/ui";
 import { SituationFields, useSubmit } from "@/components/SituationForm";
 import {
-  generateSop,
   refreshWeather,
   saveWeatherImage,
   updateSituation,
@@ -167,22 +166,11 @@ export function OverviewView({
 
       <div className="flex justify-end gap-3 lg:col-span-2">
         {runError && <span className="mr-auto self-center text-[16px] text-danger">{runError}</span>}
-        {hasSop ? (
+        {/* SOP 생성은 상황정보 등록(이어서 작성)에서만 (N-05) — SOP가 없는 상황은 이 화면에 오지 않는다 */}
+        {hasSop && (
           <Button size="lg" variant="primary" onClick={() => router.push(`/s/${id}/sop`)}>
             SOP 실행으로 <ArrowRight size={20} />
           </Button>
-        ) : (
-          editable && (
-            <Button
-              size="lg"
-              variant="primary"
-              disabled={busy}
-              onClick={() => run("sop", () => generateSop(id), () => router.push(`/s/${id}/sop`))}
-            >
-              <Sparkles size={20} />
-              {busyKey === "sop" ? "SOP 생성 중" : "SOP 생성하기"}
-            </Button>
-          )
         )}
       </div>
 
