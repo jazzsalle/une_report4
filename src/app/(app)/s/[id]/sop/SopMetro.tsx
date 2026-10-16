@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { Check, CircleCheck, Megaphone, Split, Users, Zap } from "lucide-react";
 import type { Mission } from "@/lib/types";
-import { KIND_LABEL, isOnDemand, missionKind, progress } from "@/lib/sop/kind";
+import { KIND_LABEL, currentMission, isOnDemand, missionKind, progress } from "@/lib/sop/kind";
 import { fmtTime } from "@/lib/format";
 
 /**
@@ -74,7 +74,7 @@ export function SopMetro({
     const lanes = Array.from(new Set(missions.map(laneOf))).sort();
     return lanes.flatMap((l) => missions.filter((m) => isOnDemand(m) && laneOf(m) === l));
   }, [missions]);
-  const current = started && !ended ? (main.find((m) => m.status === "doing") ?? main.find((m) => m.status === "todo")) : undefined;
+  const current = started && !ended ? currentMission(missions) : undefined;
 
   const { stations, height, segs } = useMemo(() => {
     const lanes = Array.from(new Set(main.map(laneOf))).sort((a, b) =>

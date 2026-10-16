@@ -42,7 +42,7 @@ import {
   reorderMissions,
 } from "@/app/actions/situation";
 import { KindIcon } from "./KindIcon";
-import { counted, isOnDemand, missionKind } from "@/lib/sop/kind";
+import { counted, currentMission, isOnDemand, missionKind } from "@/lib/sop/kind";
 import { missionFromLibrary, missionsFromLibrary } from "@/app/actions/library";
 import { emptyMission } from "@/lib/sop/convert";
 import { fmtDateTime, fmtTime } from "@/lib/format";
@@ -122,7 +122,10 @@ export function SopWorkspace({
   useEffect(() => {
     missionsRef.current = missions;
   }, [missions]);
-  const [sel, setSel] = useState<string | null>(sop?.missions[0]?.id ?? null);
+  // 처음 고를 임무: 실행 중이면 흐름도 분홍(현재 임무)과 같은 임무, 아니면 첫 임무
+  const pickFirst = (list: Mission[]) =>
+    (sop?.startedAt && !sop?.endedAt ? currentMission(list)?.id : undefined) ?? list[0]?.id ?? null;
+  const [sel, setSel] = useState<string | null>(() => pickFirst(sop?.missions ?? []));
   const [busy, start] = useTransition();
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -192,8 +195,7 @@ export function SopWorkspace({
   const topRef = useRef<HTMLDivElement | null>(null);
   const backToFlow = () => {
     // 완료 처리가 아직 상태에 반영되기 전이라 방금 완료한 임무(선택 중인 임무)는 뺀다
-    const rest = missions.filter((m) => m.id !== sel && !isOnDemand(m));
-    const next = rest.find((m) => m.status === "doing") ?? rest.find((m) => m.status === "todo");
+    const next = currentMission(missions, sel);
     if (next) select(next.id);
     if (detached) {
       const w = win.current && !win.current.closed ? win.current : window.open("", `sop-board-${id}`);
@@ -222,7 +224,7 @@ export function SopWorkspace({
       ),
     );
     setSel(
-      fresh.some((m) => m.id === sel) ? sel : (fresh[0]?.id ?? null),
+      fresh.some((m) => m.id === sel) ? sel : pickFirst(fresh),
     );
   }
 
