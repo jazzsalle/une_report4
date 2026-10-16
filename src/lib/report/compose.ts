@@ -1,7 +1,7 @@
 import { STEP_LABEL, type ResponseStep, type Mission, type ReportContent, type ReportSection, type Sop, type WeatherSnapshot, type WeatherImages } from "@/lib/types";
 import { weatherSection } from "./weather";
 import { fmtTime, fmtPeriod } from "@/lib/format";
-import { isOnDemand } from "@/lib/sop/kind";
+import { counted } from "@/lib/sop/kind";
 
 export interface ComposeInput {
   situation: {
@@ -57,14 +57,27 @@ function recordsOf(input: ComposeInput, kinds: string[]) {
   return input.events.filter((e) => e.type === "record" && kinds.includes(String(e.meta?.kind ?? "")));
 }
 
+/** 임무 시각 기준: 착수 시각(없으면 완료 시각) — 본문·표가 같은 시각을 쓴다 */
+const at = (m: Mission) => m.startedAt ?? m.doneAt;
+
+/** 시각순 (시각 없는 임무는 뒤로, 같으면 원래 순서) */
+function byTime(list: Mission[]) {
+  const t = (m: Mission) => {
+    const v = at(m);
+    return v ? new Date(v).getTime() : Infinity;
+  };
+  return list
+    .map((m, i) => ({ m, i }))
+    .sort((a, b) => t(a.m) - t(b.m) || a.i - b.i)
+    .map((x) => x.m);
+}
+
 function missionLines(m: Mission): string[] {
   const lines: string[] = [];
   // 실행이력: 시각 → 실행내역
-  const head = m.doneAt
-    ? `${fmtTime(m.doneAt)} **${m.title}** 완료`
-    : m.startedAt
-      ? `${fmtTime(m.startedAt)} **${m.title}** 착수`
-      : `**${m.title}**`;
+  const time = at(m);
+  const state = m.status === "done" ? " 완료" : m.status === "doing" ? " 착수" : "";
+  const head = time ? `${fmtTime(time)} **${m.title}**${state}` : `**${m.title}**${state}`;
   lines.push(`□ ${head}`);
   if (m.result.trim()) {
     m.result
@@ -125,11 +138,12 @@ export function composeReport(input: ComposeInput): ReportContent {
   sec("피해 현황", dmgLines);
 
   // 4. 대응 조치 — SOP 실행이력
-  const resp = missions.filter((m) => m.phase === "대응" && (m.status === "done" || m.status === "doing"));
+  const resp = byTime(missions.filter((m) => m.phase === "대응" && (m.status === "done" || m.status === "doing")));
   const respLines = resp.length ? resp.flatMap(missionLines) : ["□ 수행한 대응 조치 없음"];
-  const history = missions
-    .filter((m) => m.status !== "todo")
-    .map((m) => [m.startedAt ? fmtTime(m.startedAt) : "-", m.title, STATUS_LABEL[m.status], m.lead || "-"]);
+  const history = byTime(missions.filter((m) => m.status !== "todo")).map((m) => {
+    const t = at(m);
+    return [t ? fmtTime(t) : "-", m.title, STATUS_LABEL[m.status], m.lead || "-"];
+  });
   sec(
     "대응 조치",
     respLines,
@@ -175,9 +189,7 @@ export function composeReport(input: ComposeInput): ReportContent {
 
   // 6. 복구 및 피해 조치
   const rec: string[] = [];
-  missions
-    .filter((m) => m.phase === "복구" && m.status !== "todo")
-    .forEach((m) => rec.push(...missionLines(m)));
+  byTime(missions.filter((m) => m.phase === "복구" && m.status !== "todo")).forEach((m) => rec.push(...missionLines(m)));
   const dmgActs = missions.filter((m) => m.damage.trim());
   if (dmgActs.length) {
     rec.push("□ 피해 조치");
@@ -197,12 +209,12 @@ export function composeReport(input: ComposeInput): ReportContent {
   sec("복구 및 피해 조치", rec);
 
   // 7. 향후 계획
-  // 실행하지 않은 필요시 임무는 해당 없음 — 미완료로 넣지 않는다
-  const remain = missions.filter((m) => m.status === "todo" && !isOnDemand(m));
+  // 진행 중·대기 임무 모두. 실행하지 않은 필요시 임무는 해당 없음 — 미완료로 넣지 않는다
+  const remain = missions.filter((m) => (m.status === "todo" || m.status === "doing") && counted(m));
   const plan: string[] = [];
   if (remain.length) {
     plan.push("□ 미완료 임무 지속 추진");
-    remain.slice(0, 8).forEach((m) => plan.push(`○ ${m.title}`));
+    remain.forEach((m) => plan.push(`○ ${m.title}`));
   }
   plan.push("□ 기상특보 해제 시까지 상황관리 체계 유지 및 피해 발생 시 즉시 보고");
   sec("향후 계획", plan);
