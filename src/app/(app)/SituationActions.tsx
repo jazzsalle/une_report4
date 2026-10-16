@@ -5,7 +5,7 @@ import { Copy, Pencil, Trash2 } from "lucide-react";
 import { Button, Modal, MoreMenu } from "@/components/ui";
 import { copySituation, renameSituation, trashSituation } from "@/app/actions/situation";
 
-/** 홈 상황 목록 줄 끝 「⋯」: 이름 변경 · 복사 · 휴지통으로 (예시는 휴지통 없음) */
+/** 홈 상황 목록 줄 끝 「⋯」: 이름 변경 · 복사 · 휴지통으로 (예시·따라하기는 휴지통 없음 — locked) */
 export function SituationActions({ id, title, locked }: { id: string; title: string; locked?: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<null | "rename" | "copy">(null);

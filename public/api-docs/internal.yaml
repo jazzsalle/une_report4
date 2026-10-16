@@ -133,6 +133,7 @@ paths:
     post:
       tags: [상황·기상]
       summary: trashSituation — 상황 휴지통으로
+      description: 예시(locked)·따라하기(tutorial) 상황은 거부합니다. 상황일지는 남습니다.
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
       responses: { "303": { description: "/ 이동" } }
   /action/situation/renameSituation:
