@@ -114,6 +114,8 @@ export async function createSituation(
 
 export async function updateSituation(id: string, v: SituationInput): Promise<{ error?: string }> {
   const { u, s } = await editable(id);
+  // 상황 정보는 SOP 추출 기준 — SOP를 한 번 만들면 조회만
+  if (s.sop) return { error: "SOP를 만든 뒤에는 상황 정보를 바꿀 수 없습니다." };
   const err = validate(v);
   if (err) return { error: err };
   const levelChanged = s.alertLevel !== v.alertLevel;

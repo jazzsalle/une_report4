@@ -85,8 +85,8 @@ paths:
   /action/situation/updateSituation:
     post:
       tags: [상황·기상]
-      summary: updateSituation — 상황 정보 수정
-      description: 위기경보가 바뀌면 「위기경보 변경」 이벤트 기록
+      summary: updateSituation — 상황 정보 수정 (SOP 생성 전만)
+      description: 위기경보가 바뀌면 「위기경보 변경」 이벤트 기록. 상황 정보는 SOP 추출 기준이라 SOP를 한 번 만들면 `{ error }`로 거부합니다(조회만).
       requestBody:
         content:
           application/json:
