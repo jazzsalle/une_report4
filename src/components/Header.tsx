@@ -106,13 +106,14 @@ export function Header({
                 </a>
               )}
               {user.role === "admin" && (
-                <Link
+                <a
                   href="/admin/manuals"
-                  onClick={() => setOpen(false)}
+                  target="_blank"
+                  rel="noreferrer"
                   className="flex items-center gap-2 px-4 py-3 text-[16px] hover:bg-canvas"
                 >
                   <FileSearch size={18} /> 매뉴얼 분석
-                </Link>
+                </a>
               )}
               <form action={logout}>
                 <button className="flex w-full items-center gap-2 px-4 py-3 text-left text-[16px] hover:bg-canvas">
