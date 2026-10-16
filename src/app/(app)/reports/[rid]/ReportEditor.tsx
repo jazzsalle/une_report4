@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
 import {
@@ -8,6 +9,7 @@ import {
   ArrowUp,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   Download,
   FilePenLine,
   Pencil,
@@ -32,6 +34,7 @@ const HwpEditor = dynamic(() => import("./HwpEditor").then((m) => m.HwpEditor), 
 export function ReportEditor({
   id,
   situationId,
+  situationTitle,
   initial,
   status,
   hasHwpx: hasHwpxInit,
@@ -41,6 +44,8 @@ export function ReportEditor({
 }: {
   id: string;
   situationId: string | null;
+  /** 상위 상황 이름 — 경로 「상황명 › 상황일지」 */
+  situationTitle: string | null;
   initial: ReportContent;
   status: string;
   hasHwpx: boolean;
@@ -132,28 +137,48 @@ export function ReportEditor({
     <div>
       {/* 도구 영역 */}
       <div className="no-print border-b border-line bg-white px-6">
-        <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 py-3">
+        <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 pt-3">
           {/* 떠나기 전에 저장 대기 중인 수정 내용을 저장한다 (1초 자동저장 전에 나가면 사라짐) */}
           <BackButton fallback={situationId ? `/s/${situationId}/report` : "/docs"} before={flush} />
+          {/* 상위 상황 경로: 상황명을 누르면 그 상황의 상황일지 탭 */}
+          {situationId && situationTitle && (
+            <>
+              <Link
+                href={`/s/${situationId}/report`}
+                onClick={() => void flush()}
+                className="max-w-[40ch] truncate text-[17px] text-sub hover:text-primary hover:underline"
+              >
+                {situationTitle}
+              </Link>
+              <ChevronRight size={18} className="shrink-0 text-mute" />
+            </>
+          )}
           <span className="mr-2 text-[19px] font-bold">{c.title}</span>
           {final ? <Badge tone="green">확정</Badge> : <Badge tone="gray">작성 중</Badge>}
-          <span className="ml-1 text-[15px] text-mute">
-            {dirty ? "저장 중" : savedAt ? `${fmtTime(savedAt).split(" ")[1]} 저장됨` : ""}
-          </span>
+        </div>
+        <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 py-3">
+          {/* 왼쪽: 본문을 새로 만드는 동작 */}
+          {!ro && situationId && (
+            <Button size="sm" variant="ghost" onClick={() => setConfirm("recompose")}>
+              <RefreshCw size={17} /> 다시 구성
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" data-tour="report-hwp" onClick={async () => (await flush(), setHwp(true))}>
+            <FilePenLine size={17} /> 한글 편집
+            {hwpx.has && <span className="ml-1 whitespace-nowrap rounded bg-primary-weak px-1.5 text-[13px] text-primary">저장본</span>}
+          </Button>
+          {/* 오른쪽: 저장·인쇄·내보내기 (편집 화면이라 주 버튼 없음) */}
           <div className="ml-auto flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[15px] text-mute">
+              {dirty ? "저장 중" : savedAt ? `${fmtTime(savedAt).split(" ")[1]} 저장됨` : ""}
+            </span>
             {!ro && (
               <Button size="sm" variant="ghost" onClick={() => flush()}>
                 <Save size={17} /> 저장
               </Button>
             )}
-            {!ro && situationId && (
-              <Button size="sm" variant="ghost" onClick={() => setConfirm("recompose")}>
-                <RefreshCw size={17} /> 다시 구성
-              </Button>
-            )}
-            <Button size="sm" variant="ghost" data-tour="report-hwp" onClick={async () => (await flush(), setHwp(true))}>
-              <FilePenLine size={17} /> 한글 편집
-              {hwpx.has && <span className="ml-1 whitespace-nowrap rounded bg-primary-weak px-1.5 text-[13px] text-primary">저장본</span>}
+            <Button size="sm" variant="ghost" onClick={() => window.print()}>
+              <Printer size={17} /> 인쇄
             </Button>
             <div className="relative">
               <Button size="sm" variant="ghost" data-tour="report-export" onClick={() => setExportOpen((v) => !v)}>
@@ -178,9 +203,6 @@ export function ReportEditor({
                 </div>
               )}
             </div>
-            <Button size="sm" variant="ghost" onClick={() => window.print()}>
-              <Printer size={17} /> 인쇄
-            </Button>
             {editable && !final && !locked && (
               <Button size="sm" variant="ghost" onClick={() => setConfirm("trash")}>
                 <Trash2 size={17} /> 삭제
@@ -241,6 +263,11 @@ export function ReportEditor({
 
         {/* 문서 */}
         <div>
+          {hwpx.has && (
+            <p className="no-print mx-auto mb-4 max-w-[900px] rounded-md border border-line bg-canvas px-5 py-3 text-[17px]">
+              여기서 고친 내용은 한글(HWPX) 파일에 들어가지 않습니다
+            </p>
+          )}
           <article className="print-area card mx-auto max-w-[900px] px-[72px] py-[64px] font-[serif]">
             <DocHeader c={c} ro={ro} onChange={update} />
             {c.sections.map((s, i) => (
@@ -360,13 +387,14 @@ function DocHeader({ c, ro, onChange }: { c: ReportContent; ro: boolean; onChang
           <span>{subtitleOf(c)}</span>
         ) : (
           <>
-            <span>{subtitleOf({ ...c, dept: "", reporter: "" }).replace(/ \/ $/, "")} /</span>
+            <span>{subtitleOf({ ...c, dept: "", reporter: "" })} ·</span>
             <input
               className="w-40 rounded border border-transparent text-center outline-none hover:border-line focus:border-primary"
               value={c.dept}
               placeholder="부서"
               onChange={(e) => onChange({ ...c, dept: e.target.value })}
             />
+            <span>·</span>
             <input
               className="w-28 rounded border border-transparent text-center outline-none hover:border-line focus:border-primary"
               value={c.reporter}
@@ -395,6 +423,8 @@ function SectionEdit({
   onChange: (p: Partial<ReportSection>) => void;
   onDone: () => void;
 }) {
+  // 편집을 시작할 때의 내용 — 「취소」로 되돌린다
+  const [orig] = useState(s);
   const insert = (sym: string) => onChange({ body: s.body.replace(/\s*$/, "") + `\n${sym} ` });
   return (
     <div className="no-print rounded-lg border-2 border-primary bg-white p-4 font-sans">
@@ -434,9 +464,20 @@ function SectionEdit({
             <Trash2 size={16} /> 표 삭제
           </Button>
         )}
-        <Button size="sm" variant="primary" onClick={onDone}>
-          완료
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => {
+              onChange({ title: orig.title, body: orig.body, table: orig.table });
+              onDone();
+            }}
+          >
+            취소
+          </Button>
+          <Button size="sm" variant="primary" onClick={onDone}>
+            완료
+          </Button>
+        </div>
       </div>
     </div>
   );

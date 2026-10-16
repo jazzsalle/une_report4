@@ -93,7 +93,8 @@ export function subtitleOf(c: ReportContent) {
       .map((x) => [x.type, x.value]),
   );
   const ds = `${p.year}. ${p.month}. ${p.day}.(${p.weekday}) ${p.hour}:${p.minute}`;
-  return ["상황 보고", ds, [c.dept, c.reporter].filter(Boolean).join(" ")].filter(Boolean).join(" / ");
+  // 「상황 보고 · 날짜 · 부서 · 작성자」 — 빈 칸은 구분자 없이 뺀다
+  return ["상황 보고", ds, c.dept?.trim(), c.reporter?.trim()].filter(Boolean).join(" · ");
 }
 
 export function safeFilename(s: string) {
