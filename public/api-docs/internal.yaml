@@ -16,7 +16,7 @@ info:
     |---|---|
     | `src/app/actions/auth.ts` | 로그인·로그아웃·내 정보 |
     | `src/app/actions/situation.ts` | 상황·기상·SOP 생성/실행·상황전파·상황 기록·상황일지 생성 |
-    | `src/app/actions/report.ts` | 상황일지 저장·다시 구성·한글 편집 저장본·확정·휴지통 |
+    | `src/app/actions/report.ts` | 상황일지 저장·한글 편집 저장본·확정·휴지통 |
     | `src/app/actions/contacts.ts` | 연락망 (조직·담당자·전파그룹) |
     | `src/app/actions/admin.ts` | 계정관리 |
 servers:
@@ -284,13 +284,6 @@ paths:
       requestBody:
         content: { application/json: { schema: { type: object, properties: { rid: { type: string }, content: { $ref: "#/components/schemas/ReportContent" } } } } }
       responses: { "200": { description: "{ savedAt }" } }
-  /action/report/recomposeReport:
-    post:
-      tags: [상황일지]
-      summary: recomposeReport — 최신 이력으로 다시 구성
-      description: 제목은 유지, 본문은 새로 만듭니다. 한글 편집 저장본은 지워집니다.
-      requestBody: { $ref: "#/components/requestBodies/ReportId" }
-      responses: { "200": { description: 새 본문, content: { application/json: { schema: { $ref: "#/components/schemas/ReportContent" } } } } }
   /action/report/saveHwpx:
     post:
       tags: [상황일지]

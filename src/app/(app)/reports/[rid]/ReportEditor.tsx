@@ -15,14 +15,13 @@ import {
   Pencil,
   Plus,
   Printer,
-  RefreshCw,
   Save,
   Trash2,
 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { Badge, Button, Modal } from "@/components/ui";
 import type { ReportContent, ReportSection } from "@/lib/types";
-import { recomposeReport, saveReport, setReportStatus, trashReport, getHwpx } from "@/app/actions/report";
+import { saveReport, setReportStatus, trashReport, getHwpx } from "@/app/actions/report";
 import { subtitleOf, safeFilename } from "@/lib/export/blocks";
 import { BackButton } from "@/components/BackButton";
 import { DocBlocks } from "@/components/DocView";
@@ -62,7 +61,7 @@ export function ReportEditor({
   const [hwp, setHwp] = useState(false);
   const [hwpx, setHwpx] = useState({ has: hasHwpxInit, at: hwpxSavedInit });
   const [exportOpen, setExportOpen] = useState(false);
-  const [confirm, setConfirm] = useState<null | "recompose" | "trash" | "final">(null);
+  const [confirm, setConfirm] = useState<null | "trash" | "final">(null);
   const [busy, start] = useTransition();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const final = status === "final";
@@ -157,12 +156,6 @@ export function ReportEditor({
           {final ? <Badge tone="green">확정</Badge> : <Badge tone="gray">작성 중</Badge>}
         </div>
         <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 py-3">
-          {/* 왼쪽: 본문을 새로 만드는 동작 */}
-          {!ro && situationId && (
-            <Button size="sm" variant="ghost" onClick={() => setConfirm("recompose")}>
-              <RefreshCw size={17} /> 다시 구성
-            </Button>
-          )}
           <Button size="sm" variant="ghost" data-tour="report-hwp" onClick={async () => (await flush(), setHwp(true))}>
             <FilePenLine size={17} /> 한글 편집
             {hwpx.has && <span className="ml-1 whitespace-nowrap rounded bg-primary-weak px-1.5 text-[13px] text-primary">저장본</span>}
@@ -314,7 +307,7 @@ export function ReportEditor({
       <Modal
         open={confirm !== null}
         onClose={() => setConfirm(null)}
-        title={confirm === "recompose" ? "다시 구성" : confirm === "trash" ? "상황일지 삭제" : "상황일지 확정"}
+        title={confirm === "trash" ? "상황일지 삭제" : "상황일지 확정"}
         width={480}
         footer={
           <>
@@ -324,13 +317,7 @@ export function ReportEditor({
               disabled={busy}
               onClick={() =>
                 start(async () => {
-                  if (confirm === "recompose") {
-                    if (timer.current) clearTimeout(timer.current);
-                    const next = await recomposeReport(id);
-                    setC(next);
-                    setDirty(false);
-                    setHwpx({ has: false, at: null });
-                  } else if (confirm === "trash") {
+                  if (confirm === "trash") {
                     await trashReport(id);
                     router.push(situationId ? `/s/${situationId}/report` : "/docs");
                   } else if (confirm === "final") {
@@ -348,11 +335,7 @@ export function ReportEditor({
         }
       >
         <p className="text-[18px] leading-relaxed">
-          {confirm === "recompose"
-            ? "최신 SOP 실행이력과 상황 기록으로 본문을 다시 만듭니다. 직접 고친 내용은 사라집니다."
-            : confirm === "trash"
-              ? "휴지통에서 7일간 보관 후 삭제됩니다."
-              : "확정하면 수정할 수 없습니다."}
+          {confirm === "trash" ? "휴지통에서 7일간 보관 후 삭제됩니다." : "확정하면 수정할 수 없습니다."}
         </p>
       </Modal>
     </div>

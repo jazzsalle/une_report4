@@ -3,8 +3,7 @@ import { and, eq, isNotNull, lt } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { canEdit, requireUser } from "@/lib/auth/session";
-import { getReport, getSituation, listDispatches, listEvents } from "@/lib/data";
-import { composeReport } from "@/lib/report/compose";
+import { getReport, getSituation } from "@/lib/data";
 import type { ReportContent } from "@/lib/types";
 
 async function editable(rid: string, opts: { trashed?: boolean } = {}) {
@@ -27,27 +26,6 @@ export async function saveReport(rid: string, content: ReportContent) {
   await editable(rid);
   await patch(rid, { content, title: content.title });
   return { savedAt: new Date().toISOString() };
-}
-
-/** 최신 SOP 실행이력·상황기록으로 다시 구성 (보고자·제목은 유지) */
-export async function recomposeReport(rid: string): Promise<ReportContent> {
-  const { u, r } = await editable(rid);
-  if (!r.situationId) return r.content;
-  const s = await getSituation(u, r.situationId);
-  if (!s) return r.content;
-  const db = await getDb();
-  const [org] = await db.select().from(schema.orgs).where(eq(schema.orgs.id, s.orgId)).limit(1);
-  const fresh = composeReport({
-    situation: s,
-    events: await listEvents(s.id),
-    dispatches: await listDispatches(s.id),
-    reporter: r.content.reporter,
-    dept: r.content.dept,
-    orgName: org?.name ?? "",
-  });
-  const content = { ...fresh, title: r.content.title };
-  await patch(rid, { content, hwpxData: null, hwpxSavedAt: null });
-  return content;
 }
 
 /** 서버 액션 한도(4MB) 안쪽 — base64 기준 */
