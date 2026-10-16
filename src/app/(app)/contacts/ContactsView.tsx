@@ -3,7 +3,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { ChevronRight, Eye, EyeOff, Pencil, Plus, Sparkles, Trash2, UsersRound } from "lucide-react";
-import { Button, Card, Empty, Modal, Tabs } from "@/components/ui";
+import { Button, Card, Empty, Modal, MoreMenu, Tabs } from "@/components/ui";
 import type { ContactsBundle } from "@/lib/data";
 import {
   deleteContact,
@@ -53,6 +53,52 @@ export function mask(phone: string, show: boolean) {
   return show ? phone : phone.replace(/^(\d{3})-(\d{3,4})-(\d{4})$/, "$1-****-$3");
 }
 
+/** 「번호 보기 / 가리기」 — 번호가 있는 탭의 오른쪽 영역 제목 줄에 둔다 (T-04) */
+export function ShowNumbers({ show, onToggle }: { show: boolean; onToggle: () => void }) {
+  return (
+    <Button size="sm" onClick={onToggle}>
+      {show ? <EyeOff size={18} /> : <Eye size={18} />} {show ? "번호 가리기" : "번호 보기"}
+    </Button>
+  );
+}
+
+/** 삭제 확인 창 */
+type Confirm = { title: string; message: string; action: () => Promise<unknown> } | null;
+
+function ConfirmDelete({
+  confirm,
+  onClose,
+  pending,
+  error,
+  run,
+}: {
+  confirm: Confirm;
+  onClose: () => void;
+  pending: boolean;
+  error: string | null;
+  run: (fn: () => Promise<unknown>, after?: () => void) => void;
+}) {
+  return (
+    <Modal
+      open={!!confirm}
+      onClose={onClose}
+      title={confirm?.title ?? ""}
+      width={460}
+      footer={
+        <>
+          {error && <span className="mr-auto self-center text-danger">{error}</span>}
+          <Button onClick={onClose}>취소</Button>
+          <Button variant="danger" disabled={pending} onClick={() => confirm && run(confirm.action, onClose)}>
+            삭제
+          </Button>
+        </>
+      }
+    >
+      <p className="text-[18px] leading-relaxed">{confirm?.message}</p>
+    </Modal>
+  );
+}
+
 export function ContactsView({
   orgId,
   orgName,
@@ -86,12 +132,6 @@ export function ContactsView({
         <div className="ml-auto flex flex-wrap gap-2">
           {canManage && SHOW_MANUAL_IMPORT && <ManualContacts orgId={orgId} />}
           {canManage && <ContactsExcel orgId={orgId} orgName={orgName} bundle={bundle} />}
-          {/* 번호가 있는 탭(비상연락망·조직·담당자)에만 */}
-          {tab !== "groups" && (
-            <Button size="sm" onClick={() => setShow((v) => !v)}>
-              {show ? <EyeOff size={18} /> : <Eye size={18} />} {show ? "번호 가리기" : "번호 보기"}
-            </Button>
-          )}
         </div>
       </div>
       <Tabs
@@ -108,9 +148,11 @@ export function ContactsView({
           (bundle.units.length === 0 ? (
             <EmptyGuide orgId={orgId} orgName={orgName} bundle={bundle} canManage={canManage} onDirect={() => setTab("people")} />
           ) : (
-            <EmergencyTree bundle={bundle} show={show} />
+            <EmergencyTree bundle={bundle} show={show} onToggleShow={() => setShow((v) => !v)} />
           ))}
-        {tab === "people" && <People orgId={orgId} bundle={bundle} canManage={canManage} show={show} />}
+        {tab === "people" && (
+          <People orgId={orgId} bundle={bundle} canManage={canManage} show={show} onToggleShow={() => setShow((v) => !v)} />
+        )}
         {tab === "groups" && <Groups orgId={orgId} bundle={bundle} canManage={canManage} />}
       </div>
     </main>
@@ -192,12 +234,25 @@ function useRun() {
   return { pending, error, run, setError };
 }
 
-function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: ContactsBundle; canManage: boolean; show: boolean }) {
+function People({
+  orgId,
+  bundle,
+  canManage,
+  show,
+  onToggleShow,
+}: {
+  orgId: string;
+  bundle: ContactsBundle;
+  canManage: boolean;
+  show: boolean;
+  onToggleShow: () => void;
+}) {
   const { units, contacts } = bundle;
   const roots = units.filter((u) => !u.parentId);
   const [sel, setSel] = useState<string>(roots[0]?.id ?? "");
   const [editC, setEditC] = useState<ContactInput | null>(null);
   const [editU, setEditU] = useState<{ id?: string; parentId: string | null; name: string; kind: string } | null>(null);
+  const [confirm, setConfirm] = useState<Confirm>(null);
   const { pending, error, run, setError } = useRun();
 
   const childrenOf = useMemo(() => {
@@ -223,13 +278,23 @@ function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: Con
         {(childrenOf.get(u.id) ?? []).length > 0 ? <ChevronRight size={16} className="rotate-90 text-mute" /> : <span className="w-4" />}
         <span className="flex-1 truncate">{u.name}</span>
         {canManage && (
-          <span className="invisible flex gap-0.5 group-hover:visible">
-            <button className="rounded p-1 hover:bg-white" aria-label="하위 조직 추가" onClick={(e) => (e.stopPropagation(), setEditU({ parentId: u.id, name: "", kind: "dept" }))}>
-              <Plus size={15} />
-            </button>
-            <button className="rounded p-1 hover:bg-white" aria-label="이름 수정" onClick={(e) => (e.stopPropagation(), setEditU({ id: u.id, parentId: u.parentId, name: u.name, kind: u.kind }))}>
-              <Pencil size={15} />
-            </button>
+          <span onClick={(e) => e.stopPropagation()}>
+            <MoreMenu
+              label={`${u.name} 더보기`}
+              items={[
+                { label: "하위 조직 추가", icon: <Plus size={18} />, onClick: () => setEditU({ parentId: u.id, name: "", kind: "dept" }) },
+                { label: "수정", icon: <Pencil size={18} />, onClick: () => setEditU({ id: u.id, parentId: u.parentId, name: u.name, kind: u.kind }) },
+                {
+                  label: "삭제",
+                  icon: <Trash2 size={18} />,
+                  danger: true,
+                  onClick: () => {
+                    setError(null);
+                    setConfirm({ title: "조직 삭제", message: `「${u.name}」 조직을 삭제할까요?`, action: () => deleteUnit(orgId, u.id) });
+                  },
+                },
+              ]}
+            />
           </span>
         )}
       </div>
@@ -245,8 +310,8 @@ function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: Con
         <div className="flex items-center justify-between px-2 pb-2 pt-1">
           <h2 className="text-[19px] font-bold">조직</h2>
           {canManage && (
-            <Button size="sm" variant="ghost" onClick={() => setEditU({ parentId: null, name: "", kind: "hq" })}>
-              <Plus size={16} /> 추가
+            <Button size="sm" onClick={() => setEditU({ parentId: null, name: "", kind: "hq" })}>
+              <Plus size={16} /> 조직 추가
             </Button>
           )}
         </div>
@@ -255,10 +320,11 @@ function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: Con
         ))}
       </Card>
       <Card className="p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[19px] font-bold">
+        <div className="mb-4 flex items-center gap-2">
+          <h2 className="mr-auto text-[19px] font-bold">
             {unitName.get(sel) ?? "전체"} <span className="ml-1 font-normal text-sub">{list.length}명</span>
           </h2>
+          <ShowNumbers show={show} onToggle={onToggleShow} />
           {canManage && sel && (
             <Button
               size="sm"
@@ -279,7 +345,7 @@ function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: Con
                 <th className="px-4 py-3">소속</th>
                 <th className="px-4 py-3">임무</th>
                 <th className="px-4 py-3">휴대전화</th>
-                <th className="w-24 px-4 py-3" />
+                <th className="w-14 px-2 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -290,16 +356,23 @@ function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: Con
                   <td className="px-4 py-3.5 text-sub">{unitName.get(c.unitId)}</td>
                   <td className="px-4 py-3.5 text-sub">{c.duty}</td>
                   <td className="px-4 py-3.5 tabular-nums">{mask(c.phone, show)}</td>
-                  <td className="px-4 py-3.5">
+                  <td className="px-2 py-2 text-right">
                     {canManage && (
-                      <div className="flex justify-end gap-1">
-                        <Button size="sm" variant="ghost" aria-label="수정" onClick={() => setEditC({ ...c })}>
-                          <Pencil size={16} />
-                        </Button>
-                        <Button size="sm" variant="ghost" aria-label="삭제" disabled={pending} onClick={() => run(() => deleteContact(orgId, c.id))}>
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
+                      <MoreMenu
+                        label={`${c.name} 더보기`}
+                        items={[
+                          { label: "수정", icon: <Pencil size={18} />, onClick: () => setEditC({ ...c }) },
+                          {
+                            label: "삭제",
+                            icon: <Trash2 size={18} />,
+                            danger: true,
+                            onClick: () => {
+                              setError(null);
+                              setConfirm({ title: "담당자 삭제", message: `「${c.name}」 담당자를 삭제할까요?`, action: () => deleteContact(orgId, c.id) });
+                            },
+                          },
+                        ]}
+                      />
                     )}
                   </td>
                 </tr>
@@ -355,11 +428,6 @@ function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: Con
         footer={
           <>
             {error && <span className="mr-auto self-center text-danger">{error}</span>}
-            {editU?.id && (
-              <Button variant="danger" disabled={pending} onClick={() => run(() => deleteUnit(orgId, editU.id!), () => setEditU(null))}>
-                삭제
-              </Button>
-            )}
             <Button onClick={() => setEditU(null)}>취소</Button>
             <Button variant="primary" disabled={pending} onClick={() => run(() => saveUnit({ ...editU!, orgId }), () => setEditU(null))}>
               저장
@@ -379,6 +447,7 @@ function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: Con
           </div>
         )}
       </Modal>
+      <ConfirmDelete confirm={confirm} onClose={() => setConfirm(null)} pending={pending} error={error} run={run} />
     </div>
   );
 }
@@ -393,46 +462,91 @@ function Groups({ orgId, bundle, canManage }: { orgId: string; bundle: ContactsB
   const treeUnits = [...units].sort((a, b) => (rank.get(a.id) ?? 1e9) - (rank.get(b.id) ?? 1e9));
   const membersOf = (g: Group) => byTree(g.memberIds.map((id) => byId.get(id)).filter((c): c is Contact => !!c), rank);
 
+  const [selId, setSel] = useState(groups[0]?.id ?? "");
+  const [confirm, setConfirm] = useState<Confirm>(null);
+  const g = groups.find((x) => x.id === selId) ?? groups[0];
+  const members = g ? membersOf(g) : [];
+
+  // 전파그룹: 왼쪽 그룹 목록 + 오른쪽 고른 그룹 구성원 (T-01)
   return (
-    <div>
-      {canManage && (
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => setEdit({ name: "", memberIds: [] })}>
-            <Plus size={18} /> 그룹 추가
-          </Button>
+    <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+      <Card className="h-fit p-3">
+        <div className="flex items-center justify-between px-2 pb-2 pt-1">
+          <h2 className="text-[19px] font-bold">전파그룹</h2>
+          {canManage && (
+            <Button size="sm" onClick={() => setEdit({ name: "", memberIds: [] })}>
+              <Plus size={16} /> 그룹 추가
+            </Button>
+          )}
         </div>
-      )}
-      {!groups.length && <Empty>등록된 전파그룹이 없습니다.</Empty>}
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {groups.map((g: Group) => (
-          <Card key={g.id} className="p-6">
-            <div className="mb-3 flex items-center gap-2">
-              <h3 className="text-[19px] font-bold">{g.name}</h3>
-              <span className="text-sub">{g.memberIds.length}명</span>
-              {canManage && (
-                <div className="ml-auto flex gap-1">
-                  <Button size="sm" variant="ghost" aria-label="수정" onClick={() => setEdit({ id: g.id, name: g.name, memberIds: g.memberIds })}>
-                    <Pencil size={16} />
-                  </Button>
-                  <Button size="sm" variant="ghost" aria-label="삭제" disabled={pending} onClick={() => run(() => deleteGroup(orgId, g.id))}>
-                    <Trash2 size={16} />
-                  </Button>
-                </div>
-              )}
-            </div>
-            <ul className="space-y-1.5">
-              {membersOf(g).slice(0, 8).map((c) => (
-                <li key={c.id} className="flex gap-2">
-                  <span className="font-medium">{c.name}</span>
-                  <span className="text-sub">{c.title}</span>
-                  <span className="ml-auto truncate text-[15px] text-mute">{unitName.get(c.unitId)}</span>
-                </li>
-              ))}
-              {g.memberIds.length > 8 && <li className="text-sub">외 {g.memberIds.length - 8}명</li>}
-            </ul>
-          </Card>
+        {!groups.length && <Empty>등록된 전파그룹이 없습니다.</Empty>}
+        {groups.map((x: Group) => (
+          <button
+            key={x.id}
+            onClick={() => setSel(x.id)}
+            className={clsx(
+              "flex w-full items-center gap-2 rounded-md px-3 py-3 text-left",
+              g?.id === x.id ? "bg-primary-weak font-semibold text-primary-strong" : "hover:bg-canvas",
+            )}
+          >
+            <span className="flex-1 truncate">{x.name}</span>
+            <span className="text-sub">{x.memberIds.length}명</span>
+          </button>
         ))}
-      </div>
+      </Card>
+      {g && (
+        <Card className="p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <h2 className="mr-auto text-[19px] font-bold">
+              {g.name} <span className="ml-1 font-normal text-sub">{g.memberIds.length}명</span>
+            </h2>
+            {canManage && (
+              <>
+                <Button size="sm" onClick={() => setEdit({ id: g.id, name: g.name, memberIds: g.memberIds })}>
+                  <Pencil size={16} /> 수정
+                </Button>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onClick={() => {
+                    setError(null);
+                    setConfirm({
+                      title: "전파그룹 삭제",
+                      message: `「${g.name}」 그룹을 삭제할까요? 담당자는 연락망에 그대로 남습니다.`,
+                      action: () => deleteGroup(orgId, g.id),
+                    });
+                  }}
+                >
+                  <Trash2 size={16} /> 삭제
+                </Button>
+              </>
+            )}
+          </div>
+          {members.length === 0 ? (
+            <Empty>구성원이 없습니다.</Empty>
+          ) : (
+            <table className="w-full text-left">
+              <thead className="bg-canvas text-[15px] font-semibold text-sub">
+                <tr>
+                  <th className="px-4 py-3">이름</th>
+                  <th className="px-4 py-3">직위</th>
+                  <th className="px-4 py-3">소속</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((c) => (
+                  <tr key={c.id} className="border-b border-line-weak">
+                    <td className="px-4 py-3.5 font-medium">{c.name}</td>
+                    <td className="px-4 py-3.5">{c.title}</td>
+                    <td className="px-4 py-3.5 text-sub">{unitName.get(c.unitId)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      )}
+      <ConfirmDelete confirm={confirm} onClose={() => setConfirm(null)} pending={pending} error={error} run={run} />
       <Modal
         open={!!edit}
         onClose={() => (setEdit(null), setError(null))}
