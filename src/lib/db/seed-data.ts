@@ -6,7 +6,7 @@
 export const ORGS = [
   { id: "busan", name: "부산광역시", short: "부산", stnId: "159", defaultHazard: "태풍/호우" },
   { id: "gyeongbuk", name: "경상북도", short: "경북", stnId: "143", defaultHazard: "산불" },
-  { id: "une", name: "운영관리", short: "운영", stnId: "159", defaultHazard: "태풍/호우" },
+  { id: "une", name: "운영관리", short: "운영", stnId: "109", defaultHazard: "태풍/호우" },
   { id: "t3q", name: "T3Q", short: "T3Q", stnId: "159", defaultHazard: "태풍/호우" },
 ];
 

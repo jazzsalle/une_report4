@@ -24,7 +24,7 @@ export function sidoNode(name: string) {
 export const ORG_SIDO: Record<string, string> = {
   busan: "부산광역시",
   gyeongbuk: "경상북도",
-  une: "부산광역시",
+  une: "서울특별시",
 };
 
 /**
