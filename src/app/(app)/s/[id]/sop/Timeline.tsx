@@ -41,7 +41,7 @@ const PLACEHOLDER: Record<string, string> = {
 
 export function Timeline({ id, events, editable }: { id: string; events: EventItem[]; editable: boolean }) {
   const router = useRouter();
-  const [kind, setKind] = useState<string>("피해");
+  const [kind, setKind] = useState<string>("상황");
   const [text, setText] = useState("");
   const [at, setAt] = useState("");
   const [pending, start] = useTransition();

@@ -2,9 +2,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
-import { Check, CircleCheck, Megaphone, Split, Users, Zap } from "lucide-react";
+import { Check, CircleCheck, Megaphone, Users, Zap } from "lucide-react";
 import type { Mission } from "@/lib/types";
-import { KIND_LABEL, currentMission, isOnDemand, missionKind, progress } from "@/lib/sop/kind";
+import { KIND_LABEL, currentMission, isOnDemand, missionKind } from "@/lib/sop/kind";
 import { fmtTime } from "@/lib/format";
 
 /**
@@ -135,7 +135,6 @@ export function SopMetro({
     (hoveredOnDemand
       ? { kind: "mission" as const, id: hoveredOnDemand.id, m: hoveredOnDemand, no: 0, lane: laneOf(hoveredOnDemand), laneStart: false, x: 0, y: 0 }
       : undefined);
-  const { done, total } = progress(missions);
 
   return (
     <div
@@ -149,16 +148,14 @@ export function SopMetro({
       {/* 범례 */}
       <div className="sticky left-0 top-0 z-20 flex flex-wrap items-center gap-x-5 gap-y-1 bg-gradient-to-b from-[#141a52] to-transparent px-6 pb-3 pt-4 text-[15px]">
         <b className="text-[17px]">SOP 흐름도</b>
-        <span className="text-white/70">
-          완료 {done} / {total}
+        <span className="flex items-center gap-1.5 text-white/80">
+          <span className="h-5 w-5 rounded-full border-[3px] border-white bg-[#4f8cff]" /> 완료
         </span>
         <span className="flex items-center gap-1.5 text-white/80">
-          <span className="flex h-5 w-5 rotate-45 items-center justify-center rounded-[4px] bg-[#fbbf24]" /> 상황판단
+          <span className="flex h-5 w-5 rotate-45 items-center justify-center rounded-[4px] border-[3px] border-[#fbbf24]" /> 상황판단
         </span>
         <span className="flex items-center gap-1.5 text-white/80">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#22d3ee] text-[#0e1240]">
-            <Megaphone size={12} />
-          </span>
+          <span className="h-5 w-5 rounded-full border-[3px] border-[#22d3ee]" />
           상황전파
         </span>
         {onDemand.length > 0 && (
@@ -362,7 +359,7 @@ function StationView({
             current
               ? "border-white bg-[#ff3d8b]"
               : st === "done"
-                ? "border-white bg-[#4f8cff]"
+                ? clsx("bg-[#4f8cff]", kind === "decision" ? "border-[#fbbf24]" : kind === "propagation" ? "border-[#22d3ee]" : "border-white")
                 : st === "skipped"
                   ? "border-white/40 bg-white/20"
                   : kind === "decision"
@@ -373,17 +370,8 @@ function StationView({
             selected && "ring-4 ring-white/60",
           )}
         >
-          <span className={clsx("flex", kind === "decision" && "-rotate-45")}>
-            {st === "done" ? (
-              <Check size={16} strokeWidth={3} />
-            ) : kind === "decision" ? (
-              <Split size={14} className={current ? "" : "text-[#fbbf24]"} />
-            ) : kind === "propagation" ? (
-              <Megaphone size={14} className={current ? "" : "text-[#22d3ee]"} />
-            ) : (
-              <span className="text-[12px] font-bold">{s.no}</span>
-            )}
-          </span>
+          {/* 번호는 항상 표시, 상태는 색으로 (P-03) */}
+          <span className={clsx("flex text-[13px] font-bold", kind === "decision" && "-rotate-45")}>{s.no}</span>
         </span>
       </span>
       {/* 역 이름 */}
