@@ -1,14 +1,13 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Download, Pencil, RefreshCw, Sparkles, Trash2 } from "lucide-react";
+import { ArrowRight, Download, Pencil, RefreshCw, Sparkles } from "lucide-react";
 import { Button, Card, CardHead, Modal } from "@/components/ui";
 import { SituationFields, useSubmit } from "@/components/SituationForm";
 import {
   generateSop,
   refreshWeather,
   saveWeatherImage,
-  trashSituation,
   updateSituation,
   type SituationInput,
 } from "@/app/actions/situation";
@@ -28,7 +27,6 @@ export function OverviewView({
   weather,
   images,
   me,
-  locked,
 }: {
   id: string;
   editable: boolean;
@@ -37,13 +35,10 @@ export function OverviewView({
   input: SituationInput;
   weather: WeatherSnapshot | null;
   images: WeatherImages | null;
-  /** 예시 문서 — 삭제 버튼 없음 */
-  locked?: boolean;
   me: { name: string; dept: string };
 }) {
   const router = useRouter();
   const [edit, setEdit] = useState(false);
-  const [confirmTrash, setConfirmTrash] = useState(false);
   const [draft, setDraft] = useState(input);
   const save = useSubmit(async (v: SituationInput) => {
     const r = await updateSituation(id, v);
@@ -93,11 +88,6 @@ export function OverviewView({
                 {!hasSop && (
                   <Button variant="ghost" size="sm" onClick={() => (setDraft(input), setEdit(true))}>
                     <Pencil size={17} /> 수정
-                  </Button>
-                )}
-                {!locked && (
-                  <Button variant="ghost" size="sm" onClick={() => setConfirmTrash(true)}>
-                    <Trash2 size={17} /> 삭제
                   </Button>
                 )}
               </>
@@ -195,23 +185,6 @@ export function OverviewView({
           )
         )}
       </div>
-
-      <Modal
-        open={confirmTrash}
-        onClose={() => setConfirmTrash(false)}
-        title="상황 삭제"
-        width={460}
-        footer={
-          <>
-            <Button onClick={() => setConfirmTrash(false)}>취소</Button>
-            <Button variant="danger" disabled={busy} onClick={() => start(() => trashSituation(id))}>
-              휴지통으로
-            </Button>
-          </>
-        }
-      >
-        <p className="text-[18px]">휴지통에서 7일간 보관 후 삭제됩니다.</p>
-      </Modal>
 
       <Modal
         open={edit}

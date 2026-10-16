@@ -111,12 +111,11 @@ export async function purgeSituation(id: string) {
   revalidatePath("/trash");
 }
 
-/** 상황 영구 삭제: 그 상황의 이벤트·상황일지·전파도 함께 (남기면 문서함에 「-」로 다시 나타남) */
+/** 상황 영구 삭제: 그 상황의 이벤트·전파도 함께. 상황일지는 남긴다(문서함에서 따로 지움) */
 async function purgeSituationRows(id: string) {
   const db = await getDb();
   await db.delete(schema.events).where(eq(schema.events.situationId, id));
   await db.delete(schema.dispatches).where(eq(schema.dispatches.situationId, id));
-  await db.delete(schema.reports).where(eq(schema.reports.situationId, id));
   await db.delete(schema.situations).where(eq(schema.situations.id, id));
 }
 

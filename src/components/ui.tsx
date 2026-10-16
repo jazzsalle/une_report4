@@ -2,8 +2,8 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { PAGE_SIZE } from "@/lib/paging";
-import { X } from "lucide-react";
-import { useEffect, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { MoreHorizontal, X } from "lucide-react";
+import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "md" | "lg" | "sm";
@@ -234,5 +234,80 @@ export function Switch({
     >
       <span className={clsx("inline-block size-5 rounded-full bg-white shadow transition", checked ? "translate-x-6" : "translate-x-1")} />
     </button>
+  );
+}
+
+export type MoreItem = { label: string; icon?: ReactNode; onClick: () => void; danger?: boolean };
+
+/**
+ * 줄 끝 「⋯」 더보기 메뉴. danger 항목은 구분선 아래 빨간 글씨.
+ * 표가 가로 스크롤 영역 안에 있어도 잘리지 않게 화면 기준(fixed)으로 띄운다.
+ */
+export function MoreMenu({ items, label = "더보기" }: { items: MoreItem[]; label?: string }) {
+  const btn = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+  useEffect(() => {
+    if (!pos) return;
+    const close = () => setPos(null);
+    const key = (e: KeyboardEvent) => e.key === "Escape" && close();
+    window.addEventListener("mousedown", close);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    window.addEventListener("keydown", key);
+    return () => {
+      window.removeEventListener("mousedown", close);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("keydown", key);
+    };
+  }, [pos]);
+  const toggle = () => {
+    if (pos) return setPos(null);
+    const r = btn.current!.getBoundingClientRect();
+    setPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
+  };
+  const normal = items.filter((i) => !i.danger);
+  const danger = items.filter((i) => i.danger);
+  const row = (i: MoreItem) => (
+    <button
+      key={i.label}
+      role="menuitem"
+      onClick={() => (setPos(null), i.onClick())}
+      className={clsx(
+        "flex h-12 w-full items-center gap-2 px-4 text-left text-[17px] hover:bg-canvas",
+        i.danger && "text-danger",
+      )}
+    >
+      {i.icon}
+      {i.label}
+    </button>
+  );
+  return (
+    <>
+      <button
+        ref={btn}
+        type="button"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={!!pos}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={toggle}
+        className="inline-flex size-10 items-center justify-center rounded-md text-sub hover:bg-canvas hover:text-ink"
+      >
+        <MoreHorizontal size={22} />
+      </button>
+      {pos && (
+        <div
+          role="menu"
+          onMouseDown={(e) => e.stopPropagation()}
+          className="card fixed z-40 min-w-44 overflow-hidden border border-line-weak py-1"
+          style={{ top: pos.top, right: pos.right }}
+        >
+          {normal.map(row)}
+          {normal.length > 0 && danger.length > 0 && <div className="my-1 border-t border-line-weak" />}
+          {danger.map(row)}
+        </div>
+      )}
+    </>
   );
 }

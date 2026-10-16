@@ -90,8 +90,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                         </td>
                         <td className="px-4 py-4">{names.get(s.ownerId) ?? "-"}</td>
                         <td className="px-4 py-4 text-sub">{fmtDateTime(s.updatedAt)}</td>
-                        <td className="px-2 py-2">
-                          <SituationActions id={s.id} title={s.title} />
+                        <td className="w-14 px-2 py-2">
+                          <SituationActions id={s.id} title={s.title} locked={s.locked} />
                         </td>
                       </tr>
                     );

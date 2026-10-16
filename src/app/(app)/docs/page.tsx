@@ -5,22 +5,22 @@ import { DocsView } from "./DocsView";
 export default async function DocsPage() {
   const u = await requireUser();
   const [reports, situations, trashed] = await Promise.all([listReports(u), listSituations(u), listSituations(u, { trashed: true })]);
-  const sit = new Map(situations.map((s) => [s.id, s]));
-  // 휴지통에 있는 상황의 상황일지는 상황과 함께 숨긴다 (복원하면 다시 보임)
-  const hidden = new Set(trashed.map((s) => s.id));
+  // 상황을 지워도 상황일지는 남는다 — 휴지통 상황도 찾고, 완전히 지워졌으면 상황일지 「상황 개요」에서 읽는다
+  const sit = new Map([...situations, ...trashed].map((s) => [s.id, s]));
+  const fromOverview = (body: string | null, re: RegExp) => body?.match(re)?.[1];
   return (
     <DocsView
       me={u.id}
       canManage={u.role !== "user"}
-      rows={reports.filter((r) => !r.situationId || !hidden.has(r.situationId)).map((r) => {
+      rows={reports.map((r) => {
         const s = r.situationId ? sit.get(r.situationId) : undefined;
         return {
           id: r.id,
           title: r.title,
           status: r.status,
           locked: r.locked,
-          hazard: s?.hazard ?? "-",
-          level: s?.alertLevel ?? "-",
+          hazard: s?.hazard ?? fromOverview(r.overview, /재난유형: ([^\s(]+)/) ?? "-",
+          level: s?.alertLevel ?? fromOverview(r.overview, /위기경보: ([^\s(]+)/) ?? "-",
           owner: r.ownerName ?? "-",
           ownerId: r.ownerId,
           updatedAt: r.updatedAt.toISOString(),

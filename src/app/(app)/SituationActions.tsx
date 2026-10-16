@@ -1,14 +1,15 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, Pencil } from "lucide-react";
-import { Button, Modal } from "@/components/ui";
-import { copySituation, renameSituation } from "@/app/actions/situation";
+import { Copy, Pencil, Trash2 } from "lucide-react";
+import { Button, Modal, MoreMenu } from "@/components/ui";
+import { copySituation, renameSituation, trashSituation } from "@/app/actions/situation";
 
-/** 홈 상황 목록의 이름 변경 · 복사 */
-export function SituationActions({ id, title }: { id: string; title: string }) {
+/** 홈 상황 목록 줄 끝 「⋯」: 이름 변경 · 복사 · 휴지통으로 (예시는 휴지통 없음) */
+export function SituationActions({ id, title, locked }: { id: string; title: string; locked?: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<null | "rename" | "copy">(null);
+  const [trash, setTrash] = useState(false);
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
@@ -33,14 +34,49 @@ export function SituationActions({ id, title }: { id: string; title: string }) {
 
   return (
     <>
-      <div className="flex justify-end gap-1">
-        <Button size="sm" variant="ghost" onClick={() => open("rename")}>
-          <Pencil size={17} /> 이름 변경
-        </Button>
-        <Button size="sm" variant="ghost" onClick={() => open("copy")}>
-          <Copy size={17} /> 복사
-        </Button>
+      <div className="flex justify-end">
+        <MoreMenu
+          items={[
+            { label: "이름 변경", icon: <Pencil size={18} />, onClick: () => open("rename") },
+            { label: "복사", icon: <Copy size={18} />, onClick: () => open("copy") },
+            ...(locked
+              ? []
+              : [{ label: "휴지통으로", icon: <Trash2 size={18} />, danger: true, onClick: () => (setError(""), setTrash(true)) }]),
+          ]}
+        />
       </div>
+      <Modal
+        open={trash}
+        onClose={() => !pending && setTrash(false)}
+        title="상황 삭제"
+        width={460}
+        footer={
+          <>
+            <Button onClick={() => setTrash(false)} disabled={pending}>
+              취소
+            </Button>
+            <Button
+              variant="danger"
+              disabled={pending}
+              onClick={() =>
+                start(async () => {
+                  try {
+                    await trashSituation(id);
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : "삭제하지 못했습니다.");
+                  }
+                })
+              }
+            >
+              휴지통으로
+            </Button>
+          </>
+        }
+      >
+        <p className="text-[18px] font-semibold leading-relaxed">「{title}」을(를) 휴지통으로 보낼까요?</p>
+        <p className="mt-2 text-[17px] text-sub">휴지통에서 7일간 보관 후 삭제됩니다. 상황일지는 문서함에 그대로 남습니다.</p>
+        {error && <p className="mt-2 text-[15px] text-danger">{error}</p>}
+      </Modal>
       <Modal
         open={mode !== null}
         onClose={close}

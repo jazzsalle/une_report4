@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, desc, eq, isNull, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, isNotNull, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { getDb, schema } from "@/lib/db";
 import type { SessionUser } from "@/lib/types";
@@ -72,6 +72,8 @@ export async function listReports(u: SessionUser, opts: { trashed?: boolean } = 
       createdAt: r.createdAt,
       deletedAt: r.deletedAt,
       ownerName: schema.users.name,
+      /** 「1. 상황 개요」 본문 — 상황이 지워진 상황일지의 재난유형·위기경보를 읽는 데 쓴다 */
+      overview: sql<string | null>`${r.content}->'sections'->0->>'body'`,
     })
     .from(r)
     .leftJoin(schema.users, eq(schema.users.id, r.ownerId))
@@ -79,22 +81,13 @@ export async function listReports(u: SessionUser, opts: { trashed?: boolean } = 
     .orderBy(desc(r.updatedAt));
 }
 
-/** 휴지통에 있는 문서, 휴지통에 있는 상황의 문서는 없는 것으로 본다. 복원·영구 삭제만 { trashed: true } */
+/** 휴지통에 있는 문서는 없는 것으로 본다(복원·영구 삭제만 { trashed: true }). 상황을 지워도 상황일지는 남는다 */
 export async function getReport(u: SessionUser, id: string, opts: { trashed?: boolean } = {}): Promise<Report | null> {
   const db = await getDb();
   const [row] = await db.select().from(schema.reports).where(eq(schema.reports.id, id)).limit(1);
   if (!row) return null;
   if (row.ownerId !== u.id) return null;
-  if (opts.trashed) return row;
-  if (row.deletedAt) return null;
-  if (row.situationId) {
-    const [s] = await db
-      .select({ deletedAt: schema.situations.deletedAt })
-      .from(schema.situations)
-      .where(eq(schema.situations.id, row.situationId))
-      .limit(1);
-    if (s?.deletedAt) return null;
-  }
+  if (row.deletedAt && !opts.trashed) return null;
   return row;
 }
 
