@@ -46,22 +46,7 @@ export const TOUR_STEPS: Step[] = [
     path: /^\/new$/,
     target: "new-sop",
     title: "SOP 만들기",
-    body: "「SOP 생성하기」를 누르세요. 상황이 저장되고 매뉴얼의 조치들이 SOP로 만들어집니다.",
-    advance: { path: /^\/s\/[^/]+$/ },
-  },
-  {
-    path: /^\/s\/[^/]+$/,
-    href: (c) => (c.sid ? `/s/${c.sid}` : undefined),
-    target: "weather",
-    title: "기상특보 보고",
-    body: "발효 중인 특보, 강수 현황과 전망이 자동으로 들어갑니다. 아래 세 칸에는 방재기상정보시스템의 특보·레이더·위성 그림을 끌어다 놓거나 Ctrl+V로 붙입니다.",
-    advance: "next",
-  },
-  {
-    path: /^\/s\/[^/]+$/,
-    target: "tab-sop",
-    title: "SOP 실행으로",
-    body: "「② SOP 실행」 탭을 누르세요.",
+    body: "「SOP 생성하기」를 누르세요. 상황이 저장되고 매뉴얼의 조치들이 SOP로 만들어진 뒤 SOP 화면으로 넘어갑니다.",
     advance: { path: /^\/s\/[^/]+\/sop$/ },
   },
   {
@@ -162,6 +147,14 @@ export const TOUR_STEPS: Step[] = [
     target: "report-hwp",
     title: "한글 편집",
     body: "웹 한글 편집기로 열어 한글과 같은 모양으로 고치고 저장합니다. 저장본은 내보내기 때 그대로 쓰입니다.",
+    advance: "next",
+  },
+  {
+    path: /^\/s\/[^/]+$/,
+    href: (c) => (c.sid ? `/s/${c.sid}` : undefined),
+    target: "weather",
+    title: "기상특보 보고",
+    body: "발효 중인 특보, 강수 현황과 전망이 자동으로 들어갑니다. 아래 세 칸에는 방재기상정보시스템의 특보·레이더·위성 그림을 끌어다 놓거나 Ctrl+V로 붙입니다.",
     advance: "next",
   },
 ];

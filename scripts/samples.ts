@@ -1,7 +1,7 @@
 /**
  * 예시 문서 만들기 (평가·시연용) — 재난유형별 SOP·상황전파·상황일지가 다 들어간 예시 문서. 지울 수 없음(locked).
- *   운영관리자(admin): 재난유형 10종 1건씩 「1. (폭염) …」
- *   부산 담당자 2계정: 「(예시) …」 풍수해 1건씩 · 경북 담당자 2계정: 「(예시) …」 산불 1건씩
+ *   이름은 「지역 재난유형 대응」 — 예시인지는 이름이 아니라 locked 로 구분한다 (M-04)
+ *   운영관리자(admin): 재난유형 10종 1건씩 · 부산 담당자 2계정: 풍수해 1건씩 · 경북 담당자 2계정: 산불 1건씩
  *
  *   로컬:  npx tsx scripts/samples.ts --wipe --approve "운영 문서 초기화 승인"
  *   운영:  DATABASE_URL=... npx tsx scripts/samples.ts --wipe --approve "운영 문서 초기화 승인"
@@ -456,13 +456,13 @@ async function main() {
   if (admin) {
     for (const [n, key] of ADMIN_ORDER.entries()) {
       const s = samples[key];
-      const r = await makeSample(db, s, admin, `${n + 1}. (${SHORT[s.hazard] ?? s.hazard}) ${s.scenario.titleCore}`, 30 - n * 2, new Date(Date.now() - n * 60_000));
+      const r = await makeSample(db, s, admin, s.scenario.titleCore, 30 - n * 2, new Date(Date.now() - n * 60_000));
       out.push(`admin · ${r.title} · 임무 ${r.missions} · 전파 ${r.dispatched}명`);
     }
   }
   for (const [ids, key, title] of [
-    [["busan-admin", "busan01"], "flood", "(예시) 부산 태풍·호우 대응"],
-    [["gb-admin", "gb01"], "wildfire", "(예시) 경북 대형산불 대응"],
+    [["busan-admin", "busan01"], "flood", "부산 태풍·호우 대응"],
+    [["gb-admin", "gb01"], "wildfire", "경북 대형산불 대응"],
   ] as const) {
     for (const loginId of ids) {
       const u = by(loginId);

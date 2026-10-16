@@ -111,8 +111,6 @@ export function SituationFields({
       <FieldRow label="담당부서" required>
         <input className="input max-w-[360px]" value={value.dept} onChange={(e) => set("dept", e.target.value)} />
       </FieldRow>
-
-      <h3 className="mb-2 mt-10 text-[18px] font-bold">기간</h3>
       <FieldRow label="대응 기간" required>
         <div className="flex flex-wrap items-center gap-3">
           <input
@@ -140,8 +138,6 @@ export function SituationFields({
           </label>
         </div>
       </FieldRow>
-
-      <h3 className="mb-2 mt-10 text-[18px] font-bold">현재 상황</h3>
       <FieldRow label="현재 상황" top>
         <textarea
           rows={5}

@@ -9,6 +9,7 @@ import { logout } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/types";
 import { LocationChip } from "./LocationChip";
 import { recordPath } from "./BackButton";
+import { MeDialog } from "./MeDialog";
 
 export function Header({
   user,
@@ -23,6 +24,7 @@ export function Header({
 }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [me, setMe] = useState(false);
   useEffect(() => recordPath(path), [path]);
   const nav = [
     { href: "/", label: "홈" },
@@ -82,13 +84,12 @@ export function Header({
               className="card absolute right-0 top-10 z-40 w-48 overflow-hidden border border-line-weak py-1"
               onMouseLeave={() => setOpen(false)}
             >
-              <Link
-                href="/me"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2 px-4 py-3 text-[16px] hover:bg-canvas"
+              <button
+                onClick={() => (setOpen(false), setMe(true))}
+                className="flex w-full items-center gap-2 px-4 py-3 text-left text-[16px] hover:bg-canvas"
               >
                 <UserRound size={18} /> 내 정보
-              </Link>
+              </button>
               {(user.role === "admin" || user.role === "t3q") && (
                 <a
                   href="/api-docs"
@@ -118,6 +119,7 @@ export function Header({
           )}
         </div>
       </div>
+      {me && <MeDialog name={user.name} dept={user.dept} loginId={user.loginId} onClose={() => setMe(false)} />}
     </header>
   );
 }

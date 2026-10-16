@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { listSituations, userNames } from "@/lib/data";
-import { fmtDateTime, fmtTime } from "@/lib/format";
+import { fmtDateTime } from "@/lib/format";
 import { Badge, Empty, Pager } from "@/components/ui";
 import { PAGE_SIZE } from "@/lib/paging";
 import { StatusBadge, LevelBadge } from "@/components/badges";
@@ -13,7 +13,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const u = await requireUser();
   const list = await listSituations(u);
   const names = await userNames(list.map((s) => s.ownerId));
-  const recent = list.slice(0, 3);
   const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
   const page = Math.min(pages, Math.max(1, Number((await searchParams).page) || 1));
   const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -24,53 +23,21 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/40 blur-2xl" />
         <div className="pointer-events-none absolute left-1/3 top-24 h-72 w-72 rounded-full bg-[#9fd4ff]/40 blur-3xl" />
         <div className="relative mx-auto max-w-[1440px]">
-          <h1 className="text-[32px] font-bold leading-snug">
-            <span className="text-primary">{u.name}</span>님,
-            <br />
-            재난 상황을 기록하고 상황일지를 만들어보세요!
-          </h1>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <Link
-              href="/new"
-              className="card flex h-[200px] flex-col items-center justify-center gap-3 border-2 border-transparent text-[18px] font-semibold transition hover:border-primary"
-            >
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white">
-                <Plus size={30} />
-              </span>
-              새 상황 시작
-            </Link>
-            <TourStart />
-            {recent.slice(0, 2).map((s) => {
-              const ms = s.sop?.missions ?? [];
-              const done = ms.filter((m) => m.status === "done").length;
-              return (
-                <Link
-                  key={s.id}
-                  href={`/s/${s.id}`}
-                  className="card flex h-[200px] flex-col border-2 border-transparent p-6 transition hover:border-primary"
-                >
-                  <div className="flex gap-2">
-                    {s.tutorial && <Badge tone="orange">따라하기</Badge>}
-                    {s.locked && <Badge tone="blue">예시</Badge>}
-                    <Badge tone="blue">{s.hazard}</Badge>
-                    <LevelBadge level={s.alertLevel} />
-                  </div>
-                  <div className="mt-4 flex items-center gap-1 text-[19px] font-bold">
-                    <span className="line-clamp-1">{s.title}</span>
-                    <ChevronRight size={20} className="shrink-0" />
-                  </div>
-                  <div className="mt-auto flex items-center justify-between text-[16px] text-sub">
-                    <StatusBadge status={s.status} />
-                    {ms.length > 0 && (
-                      <span>
-                        임무 {done}/{ms.length}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-2 text-[15px] text-mute">{fmtTime(s.updatedAt)} 수정</div>
-                </Link>
-              );
-            })}
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <h1 className="text-[32px] font-bold leading-snug">
+              <span className="text-primary">{u.name}</span>님,
+              <br />
+              재난 상황을 기록하고 상황일지를 만들어보세요!
+            </h1>
+            <div className="flex gap-3">
+              <Link
+                href="/new"
+                className="inline-flex h-14 items-center gap-1.5 rounded-md bg-primary px-7 text-[18px] font-medium text-white transition hover:bg-primary-strong"
+              >
+                <Plus size={22} /> 새 상황 시작
+              </Link>
+              <TourStart />
+            </div>
           </div>
         </div>
       </section>

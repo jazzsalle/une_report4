@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb, schema } from "@/lib/db";
 import { createSession, destroySession, requireUser } from "@/lib/auth/session";
+import { passwordError } from "@/lib/auth/password";
 import type { Role } from "@/lib/types";
 
 export async function login(_: unknown, form: FormData): Promise<{ error?: string }> {
@@ -47,7 +48,8 @@ export async function updateMe(_: unknown, form: FormData): Promise<{ error?: st
   if (!u) return { error: "사용자를 찾을 수 없습니다." };
   const patch: Partial<typeof schema.users.$inferInsert> = { name, dept };
   if (next) {
-    if (next.length < 6) return { error: "새 비밀번호는 6자 이상이어야 합니다." };
+    const bad = passwordError(next);
+    if (bad) return { error: bad };
     if (!(await bcrypt.compare(current, u.passwordHash))) return { error: "현재 비밀번호가 맞지 않습니다." };
     patch.passwordHash = await bcrypt.hash(next, 10);
   }

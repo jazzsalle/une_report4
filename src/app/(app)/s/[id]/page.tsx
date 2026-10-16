@@ -15,6 +15,7 @@ export default async function OverviewPage({ params }: PageProps<"/s/[id]">) {
       id={s.id}
       editable={canEdit(u, s)}
       hasSop={!!s.sop}
+      sopState={!s.sop ? "none" : s.sop.endedAt ? "ended" : s.sop.startedAt ? "running" : "ready"}
       input={{
         title: s.title,
         kind: s.kind as "real" | "drill",

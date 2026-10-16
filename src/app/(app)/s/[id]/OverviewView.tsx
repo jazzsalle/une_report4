@@ -24,6 +24,7 @@ export function OverviewView({
   id,
   editable,
   hasSop,
+  sopState,
   input,
   weather,
   images,
@@ -33,6 +34,8 @@ export function OverviewView({
   id: string;
   editable: boolean;
   hasSop: boolean;
+  /** SOP 상태 — 대응단계·위기경보를 바꿀 때 SOP 반영 방법 안내 (P-08) */
+  sopState: "none" | "ready" | "running" | "ended";
   input: SituationInput;
   weather: WeatherSnapshot | null;
   images: WeatherImages | null;
@@ -60,6 +63,18 @@ export function OverviewView({
       else router.refresh();
     });
   };
+
+  // 대응단계·위기경보를 바꾸면 SOP는 그대로이므로 반영 방법을 알린다
+  const changed = draft.step !== input.step || draft.alertLevel !== input.alertLevel;
+  const sopHint = !changed
+    ? null
+    : sopState === "ready"
+      ? "SOP에 반영하려면 저장 후 SOP 화면에서 「SOP 편집」 → 「다시 생성」을 누르세요."
+      : sopState === "running"
+        ? `${STEP_LABEL[draft.step as ResponseStep] ?? draft.step} 임무는 저장 후 SOP 화면에서 「SOP 편집」 → 「임무 추가」로 더하세요.`
+        : sopState === "ended"
+          ? "SOP에 반영하려면 저장 후 SOP 화면에서 「실행 재개」를 누르고 「SOP 편집」 → 「임무 추가」로 더하세요."
+          : null;
 
   const section = weatherSection({ weather, weatherImages: images });
   const report = weatherReportContent({ weather, weatherImages: images }, me.name, me.dept);
@@ -212,7 +227,11 @@ export function OverviewView({
         width={1000}
         footer={
           <>
-            {save.error && <span className="mr-auto self-center text-danger">{save.error}</span>}
+            {save.error ? (
+              <span className="mr-auto self-center text-danger">{save.error}</span>
+            ) : (
+              sopHint && <span className="mr-auto self-center text-primary-strong">{sopHint}</span>
+            )}
             <Button onClick={() => setEdit(false)}>취소</Button>
             <Button variant="primary" disabled={save.pending} onClick={() => save.submit(draft)}>
               저장
