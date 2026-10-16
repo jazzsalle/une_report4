@@ -348,9 +348,9 @@ paths:
   /action/report/restoreSituation:
     post: { tags: [휴지통], summary: restoreSituation — 상황 복원, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: 완료 } } }
   /action/report/purgeSituation:
-    post: { tags: [휴지통], summary: purgeSituation — 상황 영구 삭제 (이벤트 포함), requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: 완료 } } }
+    post: { tags: [휴지통], summary: purgeSituation — 상황 영구 삭제 (이벤트·상황일지·전파 포함), requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: 완료 } } }
   /action/report/purgeExpired:
-    post: { tags: [휴지통], summary: purgeExpired — 7일 지난 휴지통 정리, responses: { "200": { description: "{ situations, reports } 삭제 건수" } } }
+    post: { tags: [휴지통], summary: purgeExpired — 7일 지난 휴지통 정리 (상황은 이벤트·상황일지·전파 포함), responses: { "200": { description: "{ situations, reports } 삭제 건수" } } }
 
   # ───────── 연락망 ─────────
   /action/contacts/saveContact:

@@ -7,9 +7,9 @@ import { getReport, getSituation, listDispatches, listEvents } from "@/lib/data"
 import { composeReport } from "@/lib/report/compose";
 import type { ReportContent } from "@/lib/types";
 
-async function editable(rid: string) {
+async function editable(rid: string, opts: { trashed?: boolean } = {}) {
   const u = await requireUser();
-  const r = await getReport(u, rid);
+  const r = await getReport(u, rid, opts);
   if (!r) throw new Error("문서를 찾을 수 없습니다.");
   if (!canEdit(u, r)) throw new Error("편집 권한이 없습니다.");
   return { u, r };
@@ -81,13 +81,13 @@ export async function trashReport(rid: string) {
 }
 
 export async function restoreReport(rid: string) {
-  await editable(rid);
+  await editable(rid, { trashed: true });
   await patch(rid, { deletedAt: null });
   revalidatePath("/trash");
 }
 
 export async function purgeReport(rid: string) {
-  const { r } = await editable(rid);
+  const { r } = await editable(rid, { trashed: true });
   if (!r.deletedAt || r.locked) return;
   const db = await getDb();
   await db.delete(schema.reports).where(eq(schema.reports.id, rid));
@@ -96,7 +96,7 @@ export async function purgeReport(rid: string) {
 
 export async function restoreSituation(id: string) {
   const u = await requireUser();
-  const s = await getSituation(u, id);
+  const s = await getSituation(u, id, { trashed: true });
   if (!s || !canEdit(u, s)) throw new Error("권한이 없습니다.");
   const db = await getDb();
   await db.update(schema.situations).set({ deletedAt: null }).where(eq(schema.situations.id, id));
@@ -105,12 +105,19 @@ export async function restoreSituation(id: string) {
 
 export async function purgeSituation(id: string) {
   const u = await requireUser();
-  const s = await getSituation(u, id);
+  const s = await getSituation(u, id, { trashed: true });
   if (!s || !canEdit(u, s) || !s.deletedAt) throw new Error("권한이 없습니다.");
+  await purgeSituationRows(id);
+  revalidatePath("/trash");
+}
+
+/** 상황 영구 삭제: 그 상황의 이벤트·상황일지·전파도 함께 (남기면 문서함에 「-」로 다시 나타남) */
+async function purgeSituationRows(id: string) {
   const db = await getDb();
   await db.delete(schema.events).where(eq(schema.events.situationId, id));
+  await db.delete(schema.dispatches).where(eq(schema.dispatches.situationId, id));
+  await db.delete(schema.reports).where(eq(schema.reports.situationId, id));
   await db.delete(schema.situations).where(eq(schema.situations.id, id));
-  revalidatePath("/trash");
 }
 
 /** 7일 지난 휴지통 비우기 (크론 + 휴지통 화면 진입 시) */
@@ -121,10 +128,7 @@ export async function purgeExpired() {
     .select({ id: schema.situations.id })
     .from(schema.situations)
     .where(and(isNotNull(schema.situations.deletedAt), lt(schema.situations.deletedAt, cutoff)));
-  for (const s of old) {
-    await db.delete(schema.events).where(eq(schema.events.situationId, s.id));
-    await db.delete(schema.situations).where(eq(schema.situations.id, s.id));
-  }
+  for (const s of old) await purgeSituationRows(s.id);
   const r = await db
     .delete(schema.reports)
     .where(and(isNotNull(schema.reports.deletedAt), lt(schema.reports.deletedAt, cutoff)))

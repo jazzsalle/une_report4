@@ -21,11 +21,13 @@ export async function listSituations(u: SessionUser, opts: { trashed?: boolean }
     .orderBy(desc(s.updatedAt));
 }
 
-export async function getSituation(u: SessionUser, id: string): Promise<Situation | null> {
+/** 휴지통에 있는 상황은 없는 것으로 본다. 복원·영구 삭제만 { trashed: true } */
+export async function getSituation(u: SessionUser, id: string, opts: { trashed?: boolean } = {}): Promise<Situation | null> {
   const db = await getDb();
   const [row] = await db.select().from(schema.situations).where(eq(schema.situations.id, id)).limit(1);
   if (!row) return null;
   if (row.ownerId !== u.id) return null;
+  if (row.deletedAt && !opts.trashed) return null;
   return row;
 }
 
@@ -77,11 +79,22 @@ export async function listReports(u: SessionUser, opts: { trashed?: boolean } = 
     .orderBy(desc(r.updatedAt));
 }
 
-export async function getReport(u: SessionUser, id: string): Promise<Report | null> {
+/** 휴지통에 있는 문서, 휴지통에 있는 상황의 문서는 없는 것으로 본다. 복원·영구 삭제만 { trashed: true } */
+export async function getReport(u: SessionUser, id: string, opts: { trashed?: boolean } = {}): Promise<Report | null> {
   const db = await getDb();
   const [row] = await db.select().from(schema.reports).where(eq(schema.reports.id, id)).limit(1);
   if (!row) return null;
   if (row.ownerId !== u.id) return null;
+  if (opts.trashed) return row;
+  if (row.deletedAt) return null;
+  if (row.situationId) {
+    const [s] = await db
+      .select({ deletedAt: schema.situations.deletedAt })
+      .from(schema.situations)
+      .where(eq(schema.situations.id, row.situationId))
+      .limit(1);
+    if (s?.deletedAt) return null;
+  }
   return row;
 }
 
