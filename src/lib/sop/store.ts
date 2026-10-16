@@ -39,11 +39,6 @@ export async function patchMission(id: string, missionId: string, patch: Partial
   );
 }
 
-export async function appendMissions(id: string, add: Mission[]) {
-  if (!add.length) return;
-  await run(id, sql`${missionsOf} || ${JSON.stringify(add)}::jsonb`);
-}
-
 export async function removeMission(id: string, missionId: string) {
   await run(
     id,

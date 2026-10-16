@@ -54,11 +54,15 @@ export function OverviewView({
   });
   const [busy, start] = useTransition();
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
   const run = (key: string, fn: () => Promise<unknown>, after?: () => void) => {
     setBusyKey(key);
+    setRunError(null);
     start(async () => {
-      await fn();
+      const r = await fn();
       setBusyKey(null);
+      const err = (r as { error?: string } | undefined)?.error;
+      if (err) return setRunError(err);
       if (after) after();
       else router.refresh();
     });
@@ -184,6 +188,7 @@ export function OverviewView({
       </Card>
 
       <div className="flex justify-end gap-3 lg:col-span-2">
+        {runError && <span className="mr-auto self-center text-[16px] text-danger">{runError}</span>}
         {hasSop ? (
           <Button size="lg" variant="primary" onClick={() => router.push(`/s/${id}/sop`)}>
             SOP 실행으로 <ArrowRight size={20} />

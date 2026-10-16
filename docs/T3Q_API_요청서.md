@@ -654,12 +654,12 @@ data: [DONE]
 | 401 | `INVALID_TOKEN` | (API-03) 링크 토큰 만료·재사용 | 로그인 화면에 재접속 안내 |
 | 400 | `INVALID_REQUEST` | 필수값 누락·형식 오류 | 입력 확인 안내 |
 | 401 | `UNAUTHORIZED` | 토큰 없음·만료 | 토큰 재발급 후 1회 재시도 |
-| 404 | `NO_DOCUMENT` | 재난유형·지역에 맞는 매뉴얼 없음 | 매뉴얼 조치 수동 선택 |
+| 404 | `NO_DOCUMENT` | 재난유형·지역에 맞는 매뉴얼 없음 | 호출 실패 안내, 임무는 「SOP 편집 → 임무 추가」로 직접 입력 |
 | 422 | `NO_ALERT_CONTEXT` | 요약할 특보·Context 부족 | 공식 특보만 표시 |
 | 429 | `RATE_LIMITED` | 호출 한도 초과 | `Retry-After` 준수 |
-| 500 | `INTERNAL_ERROR` | T3Q 내부 오류 | 모의/대체 경로 전환 + 사용자 알림 |
-| 503 | `MODEL_UNAVAILABLE` | 상류 모델 부재 | 대체 경로 전환 |
-| 504 | `TIMEOUT` | 처리 시간 초과 | 대체 경로 전환 |
+| 500 | `INTERNAL_ERROR` | T3Q 내부 오류 | 호출 실패 안내(시드로 대체하지 않음), 다시 시도 |
+| 503 | `MODEL_UNAVAILABLE` | 상류 모델 부재 | 호출 실패 안내, 다시 시도 |
+| 504 | `TIMEOUT` | 처리 시간 초과 | 호출 실패 안내, 다시 시도 |
 
 오류 본문은 §2.4 `T3QError` 형식, SSE 중 오류는 `{"__error__":"<code>: <message>"}` 후 `{"__status__":"end"}`, `[DONE]`.
 

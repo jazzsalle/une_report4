@@ -8,7 +8,7 @@ import { fetchManualContacts, importContacts } from "@/app/actions/contacts";
 import { CATEGORY_LABEL, entryToRow } from "@/lib/manual-contacts";
 import type { ContactCategory, ContactsResponse } from "@/lib/t3q/types";
 
-type Data = ContactsResponse & { fallback: boolean };
+type Data = ContactsResponse;
 const ORDER: ContactCategory[] = ["AGENCY", "LOCAL_GOV", "INTERNAL", "HIGHER"];
 
 /** 매뉴얼에서 연락망 가져오기 (API-04) — 미리 보고 고른 줄만 추가·수정 (지우지 않음) */
@@ -28,7 +28,11 @@ export function ManualContacts({ orgId, big }: { orgId: string; big?: boolean })
     setError(null);
     start(async () => {
       try {
-        const d = await fetchManualContacts(orgId);
+        const { data: d, error: err } = await fetchManualContacts(orgId);
+        if (!d) {
+          setError(err ?? "연락망을 가져오지 못했습니다.");
+          return;
+        }
         setData(d);
         // 기본: 유관기관·시군구·내부 부서 선택, 상급 보고처는 직접 고름
         setPick(new Set(d.entries.map((e, i) => (e.category === "HIGHER" ? -1 : i)).filter((i) => i >= 0)));
@@ -87,7 +91,6 @@ export function ManualContacts({ orgId, big }: { orgId: string; big?: boolean })
           <>
             <div className="mb-3 text-[16px]">
               {data.manuals.map((m) => m.docTitle).join(", ")}
-              {data.fallback && <span className="ml-2 font-semibold text-warning">연계 실패 — 예시 연락망</span>}
             </div>
             {data.warnings?.map((w, i) => (
               <div key={i} className="mb-2 rounded-md bg-warning-weak px-4 py-2.5 text-[16px] text-warning">

@@ -3,9 +3,7 @@ import { requireUser, canEdit } from "@/lib/auth/session";
 import { getContactsBundle, getSituation, listDispatches, listEvents } from "@/lib/data";
 import { getDb, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { seedLibrary, stepOf } from "@/lib/seed";
-import { ORG_SIDO, orgForSituation } from "@/lib/regions";
-import { STEP_LABEL } from "@/lib/types";
+import { orgForSituation } from "@/lib/regions";
 import { SopWorkspace } from "./SopWorkspace";
 
 export default async function SopPage({ params }: PageProps<"/s/[id]/sop">) {
@@ -21,17 +19,6 @@ export default async function SopPage({ params }: PageProps<"/s/[id]/sop">) {
     listDispatches(id),
     db.select().from(schema.orgs).where(eq(schema.orgs.id, orgId)).limit(1),
   ]);
-  // SOP 생성과 같은 기준: 자연재난과 관련 행동카드
-  const library = seedLibrary(s.hazard, s.sido || ORG_SIDO[s.orgId] || "")
-    .actions.filter((a) => a.nd !== false)
-    .map((a) => ({
-    code: a.code,
-    stage: STEP_LABEL[stepOf(a)],
-    step: stepOf(a),
-    phase: a.phase,
-    title: a.title,
-    lead: a.lead,
-  }));
   return (
     <SopWorkspace
       id={id}
@@ -40,9 +27,6 @@ export default async function SopPage({ params }: PageProps<"/s/[id]/sop">) {
       me={u.name}
       events={events.map((e) => ({ ...e, at: e.at.toISOString() }))}
       contacts={contacts}
-      library={library}
-      hazard={s.hazard}
-      sido={s.sido || ORG_SIDO[s.orgId] || ""}
       title={s.title}
       orgName={org?.name ?? ""}
       dispatches={dispatches.map((d) => ({
@@ -59,7 +43,6 @@ export default async function SopPage({ params }: PageProps<"/s/[id]/sop">) {
         noteAt: d.noteAt?.toISOString() ?? null,
         ackAt: d.ackAt?.toISOString() ?? null,
       }))}
-      step={s.responseStep}
     />
   );
 }

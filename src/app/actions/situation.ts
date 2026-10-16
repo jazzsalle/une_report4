@@ -8,17 +8,17 @@ import { canEdit, requireUser } from "@/lib/auth/session";
 import { addEvent, getContactsBundle, getSituation, listDispatches, listEvents } from "@/lib/data";
 import { getWeatherSnapshot } from "@/lib/weather/kma";
 import { ORG_SIDO, orgForSituation } from "@/lib/regions";
-import { sopActions } from "@/lib/t3q/client";
+import { sopActions, T3Q_FAILED } from "@/lib/t3q/client";
 import { buildContext, responseToSop } from "@/lib/sop/convert";
 import { recipientIds } from "@/lib/sop/recipients";
-import { appendMissions, orderMissions, patchMission, patchSopHead, putMission, removeMission } from "@/lib/sop/store";
+import { orderMissions, patchMission, patchSopHead, putMission, removeMission } from "@/lib/sop/store";
 import { composeReport } from "@/lib/report/compose";
 import { progress } from "@/lib/sop/kind";
 import { ensureExampleContacts } from "@/lib/contacts-seed";
 import { getTutorialSeed, tutorialWeather } from "@/lib/tutorial";
 import { WEATHER_SLOTS, type WeatherSlot } from "@/lib/report/weather";
 import { fromLocalInput } from "@/lib/format";
-import type { Mission, WeatherImage } from "@/lib/types";
+import type { Mission, Sop, WeatherImage } from "@/lib/types";
 
 async function editable(id: string) {
   const u = await requireUser();
@@ -77,7 +77,7 @@ export async function createSituation(
   // 따라하기: 시드 기상특보 (기상청 조회 없음)
   const weather = opts.tutorial ? tutorialWeather(await getTutorialSeed()) : await getWeatherSnapshot(v.sido);
   const id = nanoid(10);
-  await db.insert(schema.situations).values({
+  const row = {
     id,
     orgId: orgForSituation(u.orgId, v.sido),
     ownerId: u.id,
@@ -95,7 +95,11 @@ export async function createSituation(
     weather,
     tutorial: !!opts.tutorial,
     status: "setup",
-  });
+  };
+  // SOP를 먼저 만든다 — T3Q 호출이 실패하면 상황도 만들지 않고 오류를 보여 준다
+  const sop = generate ? await buildSop(row) : null;
+  if (typeof sop === "string") return { error: sop };
+  await db.insert(schema.situations).values(row);
   await addEvent(id, { type: "start", title: "상황 등록", body: `${v.hazard} · 위기경보 ${v.alertLevel} · ${v.step}`, userName: u.name });
   await addEvent(id, {
     type: "weather",
@@ -103,7 +107,7 @@ export async function createSituation(
     body: weather.active.length ? weather.active.map((a) => a.name).join(", ") : "발효 중인 특보 없음",
     userName: u.name,
   });
-  if (generate) await runSopGeneration(id, u.name);
+  if (sop) await saveSop(id, row.orgId, sop, u.name);
   // SOP 생성하기 → 만든 SOP 바로 보기, 저장만 → 홈 상황 목록
   redirect(generate ? `/s/${id}/sop` : "/");
 }
@@ -166,14 +170,20 @@ export async function refreshWeather(id: string) {
   revalidatePath(`/s/${id}`);
 }
 
-async function runSopGeneration(id: string, userName: string) {
-  const db = await getDb();
-  const [s] = await db.select().from(schema.situations).where(eq(schema.situations.id, id)).limit(1);
-  const { data, fallback } = await sopActions({ context: buildContext(s), filter: { maxActions: 40 } }, { seedOnly: s.tutorial });
-  const sop = responseToSop(data, fallback);
+/** T3Q(모의 모드·따라하기는 매뉴얼 시드)로 SOP를 만든다. 실패하면 화면에 보일 오류 문구 */
+async function buildSop(s: Parameters<typeof buildContext>[0] & { tutorial: boolean }): Promise<Sop | string> {
+  try {
+    return responseToSop(await sopActions({ context: buildContext(s), filter: { maxActions: 40 } }, { seedOnly: s.tutorial }));
+  } catch (e) {
+    console.error("[sop] generation failed", e);
+    return e instanceof Error && e.message === T3Q_FAILED ? T3Q_FAILED : "SOP를 만들지 못했습니다. 잠시 후 다시 시도하세요.";
+  }
+}
+
+async function saveSop(id: string, orgId: string, sop: Sop, userName: string) {
   await touch(id, { sop, status: "sop" });
   // 기본 세팅: 기관 연락망이 비어 있으면 예시 조직(자연재난과)을 넣어 상황전파 대상을 바로 고를 수 있게 한다
-  if (await ensureExampleContacts(s.orgId)) {
+  if (await ensureExampleContacts(orgId)) {
     await addEvent(id, { type: "sop", title: "연락망 기본 세팅", body: "예시 조직(자연재난과·유관기관 등 11명)을 넣었습니다. 연락망에서 실제 담당자로 고쳐 쓰세요.", userName });
   }
   await addEvent(id, {
@@ -184,11 +194,14 @@ async function runSopGeneration(id: string, userName: string) {
   });
 }
 
-export async function generateSop(id: string) {
+export async function generateSop(id: string): Promise<{ error?: string }> {
   const { u, s } = await editable(id);
-  if (s.sop?.startedAt) throw new Error("실행 중인 SOP는 다시 생성할 수 없습니다.");
-  await runSopGeneration(id, u.name);
+  if (s.sop?.startedAt) return { error: "실행 중인 SOP는 다시 생성할 수 없습니다." };
+  const sop = await buildSop(s);
+  if (typeof sop === "string") return { error: sop };
+  await saveSop(id, s.orgId, sop, u.name);
   revalidatePath(`/s/${id}`);
+  return {};
 }
 
 export async function startSop(id: string) {
@@ -250,20 +263,6 @@ export async function saveMission(id: string, mission: Mission) {
     await addEvent(id, { type: "mission", title: `임무 추가: ${mission.title}`, missionId: mission.id, userName: u.name });
   }
   return { ok: true };
-}
-
-/** 임무 여러 개를 한 번에 추가 (단계 전환 시 매뉴얼 임무 일괄 추가) */
-export async function addMissions(id: string, add: Mission[], label: string) {
-  const { u, s } = await editable(id);
-  if (!s.sop || !add.length) return;
-  if (s.sop.endedAt) throw new Error(ENDED);
-  const have = new Set(s.sop.missions.map((m) => m.code).filter(Boolean));
-  const fresh = add.filter((m) => !m.code || !have.has(m.code));
-  await appendMissions(id, fresh);
-  if (s.sop.startedAt) {
-    await addEvent(id, { type: "mission", title: `임무 추가: ${label}`, body: `${fresh.length}건`, userName: u.name });
-  }
-  revalidatePath(`/s/${id}/sop`);
 }
 
 export async function deleteMission(id: string, missionId: string) {

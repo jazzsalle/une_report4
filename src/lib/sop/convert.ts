@@ -105,7 +105,7 @@ export function emptyMission(phase: "대응" | "복구" = "대응"): Mission {
 }
 
 /** T3Q 응답(조치 목록+상세) → SOP 임무 목록 */
-export function responseToSop(res: SopActionsResponse, fallback: boolean): Sop {
+export function responseToSop(res: SopActionsResponse): Sop {
   const groupOf = new Map(res.missions.map((g) => [g.missionCode, { code: g.missionCode, name: g.missionName }]));
   const missions: Mission[] = res.actions
     .slice()
@@ -136,7 +136,7 @@ export function responseToSop(res: SopActionsResponse, fallback: boolean): Sop {
       };
     });
   return {
-    source: res.meta.mock || fallback ? "mock" : "t3q",
+    source: res.meta.mock ? "mock" : "t3q",
     manual: res.manual?.docTitle,
     deptMatched: res.manual?.departmentMatched,
     generatedAt: new Date().toISOString(),

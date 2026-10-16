@@ -19,7 +19,6 @@ info:
     | `src/app/actions/report.ts` | 상황일지 저장·다시 구성·한글 편집 저장본·확정·휴지통 |
     | `src/app/actions/contacts.ts` | 연락망 (조직·담당자·전파그룹) |
     | `src/app/actions/admin.ts` | 계정관리 |
-    | `src/app/actions/library.ts` | 매뉴얼 행동카드 → 임무 |
 servers:
   - url: /
 tags:
@@ -71,7 +70,7 @@ paths:
     post:
       tags: [상황·기상]
       summary: createSituation — 새 상황 등록 (+선택 시 SOP 생성)
-      description: 기상청 특보를 함께 저장하고 이벤트 「상황 등록」「기상특보 확인」을 남깁니다. `generate=true`면 SOP(API-02)까지 수행하고 SOP 탭 `/s/{id}/sop` 로, `generate=false`(상황 저장)면 홈 `/` 으로 이동.
+      description: 기상청 특보를 함께 저장하고 이벤트 「상황 등록」「기상특보 확인」을 남깁니다. `generate=true`면 SOP(API-02)까지 수행하고 SOP 탭 `/s/{id}/sop` 로, `generate=false`(상황 저장)면 홈 `/` 으로 이동. SOP를 먼저 만들고, T3Q 호출이 실패하면 상황도 만들지 않고 `{ error }`(시드로 대체하지 않음).
       requestBody:
         content:
           application/json:
@@ -169,9 +168,10 @@ paths:
     post:
       tags: [SOP 생성·실행]
       summary: generateSop — SOP 생성 (T3Q API-02)
-      description: T3Q 응답을 임무 목록(`Sop.missions`)으로 변환해 저장. 실행이 시작된 SOP는 다시 생성할 수 없습니다. T3Q 장애 시 매뉴얼 시드로 대체.
+      description: T3Q 응답을 임무 목록(`Sop.missions`)으로 변환해 저장. 실행이 시작된 SOP는 다시 생성할 수 없습니다. T3Q 호출이 실패하면 `{ error }`로 알리고 SOP를 바꾸지 않습니다(시드로 대체하지 않음).
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
-      responses: { "200": { description: 완료 } }
+      responses:
+        "200": { $ref: "#/components/responses/ErrorOnly" }
   /action/situation/startSop:
     post: { tags: [SOP 생성·실행], summary: startSop — SOP 실행 시작, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=running" } } }
   /action/situation/endSop:
@@ -185,7 +185,7 @@ paths:
       description: |
         화면에서 내용 수정은 0.8초 뒤, 상태 변경은 즉시 호출합니다.
         실행 중 상태가 바뀌면 「임무명 착수/완료/생략」 이벤트를 기록합니다. 없는 id면 새 임무로 추가합니다.
-        SOP 실행이 종료됐으면 거부합니다(실행 재개 후 가능). deleteMission·reorderMissions·addMissions도 같습니다.
+        SOP 실행이 종료됐으면 거부합니다(실행 재개 후 가능). deleteMission·reorderMissions도 같습니다.
       requestBody:
         content: { application/json: { schema: { type: object, properties: { id: { type: string }, mission: { $ref: "#/components/schemas/Mission" } } } } }
       responses: { "200": { description: "{ ok: true }" } }
@@ -203,33 +203,6 @@ paths:
       requestBody:
         content: { application/json: { schema: { type: object, properties: { id: { type: string }, ids: { type: array, items: { type: string } } } } } }
       responses: { "200": { description: 완료 } }
-  /action/situation/addMissions:
-    post:
-      tags: [SOP 생성·실행]
-      summary: addMissions — 임무 여러 개 한 번에 추가 (단계 전환 시)
-      description: "이미 있는 조치코드는 건너뜁니다. 실행 중이면 「임무 추가: 4단계 수습·복구 n건」 이벤트를 남깁니다. 실행 종료 후에는 거부합니다."
-      requestBody:
-        content:
-          application/json:
-            schema: { type: object, properties: { id: { type: string }, add: { type: array, items: { $ref: "#/components/schemas/Mission" } }, label: { type: string } } }
-      responses: { "200": { description: 완료 } }
-  /action/library/missionsFromLibrary:
-    post:
-      tags: [SOP 생성·실행]
-      summary: missionsFromLibrary — 매뉴얼 행동카드 여러 개를 임무로 변환
-      requestBody:
-        content: { application/json: { schema: { type: object, properties: { hazard: { type: string }, sido: { type: string, description: 발생 시도 — 재난유형과 함께 매뉴얼을 고름 }, codes: { type: array, items: { type: string } } } } } }
-      responses:
-        "200": { description: 임무 목록, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Mission" } } } } }
-  /action/library/missionFromLibrary:
-    post:
-      tags: [SOP 생성·실행]
-      summary: missionFromLibrary — 매뉴얼 행동카드를 임무로 변환 (임무 추가)
-      requestBody:
-        content: { application/json: { schema: { type: object, properties: { hazard: { type: string, example: 태풍/호우 }, sido: { type: string, example: 부산광역시 }, code: { type: string, example: BSN-FL-001 } } } } }
-      responses:
-        "200": { description: 임무 또는 null, content: { application/json: { schema: { $ref: "#/components/schemas/Mission" } } } }
-
   # ───────── 기록·전파 ─────────
   /action/situation/propagate:
     post:
@@ -423,7 +396,7 @@ paths:
       summary: fetchManualContacts — 매뉴얼에서 연락망 가져오기 (미리 보기)
       description: |
         기관의 시도로 T3Q API-04(`POST /contacts`)를 불러 매뉴얼 비상연락망을 돌려줍니다. 바꾸지 않습니다. 기관관리 이상만.
-        모의 모드·연계 실패 시 예시 연락망(자리표시 번호)과 `fallback: true`.
+        모의 모드는 예시 연락망(자리표시 번호). 연계 호출이 실패하면 예시로 대체하지 않고 `{ error }`.
         화면은 분류(유관기관·시·군·구·우리 기관 부서·상급 보고처)별로 보여 주고, 고른 줄을 `importContacts`(추가·수정만, upperKind=agency)로 넣습니다.
       requestBody:
         content:
@@ -431,7 +404,7 @@ paths:
             schema: { type: object, properties: { orgId: { type: string } } }
       responses:
         "200":
-          description: T3Q ContactsResponse + fallback (t3q.yaml 의 ContactsResponse 참고)
+          description: "{ data?: ContactsResponse, error?: string } (t3q.yaml 의 ContactsResponse 참고)"
   /action/contacts/importContacts:
     post:
       tags: [연락망]

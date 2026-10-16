@@ -22,13 +22,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
-import {
-  RESPONSE_STEPS,
-  STEP_LABEL,
-  type Mission,
-  type ResponseStep,
-  type Sop,
-} from "@/lib/types";
+import { STEP_LABEL, type Mission, type Sop } from "@/lib/types";
 import type { ContactsBundle } from "@/lib/data";
 import {
   deleteMission,
@@ -38,12 +32,10 @@ import {
   saveMission,
   startSop,
   createReport,
-  addMissions,
   reorderMissions,
 } from "@/app/actions/situation";
 import { KindIcon } from "./KindIcon";
 import { counted, currentMission, isOnDemand, missionKind } from "@/lib/sop/kind";
-import { missionFromLibrary, missionsFromLibrary } from "@/app/actions/library";
 import { emptyMission } from "@/lib/sop/convert";
 import { fmtDateTime, fmtTime } from "@/lib/format";
 import { MissionDetail } from "./MissionDetail";
@@ -70,15 +62,6 @@ export type DispatchRow = {
   ackAt: string | null;
 };
 
-export type LibraryItem = {
-  code: string;
-  stage: string;
-  step: string;
-  phase: string;
-  title: string;
-  lead: string;
-};
-
 export const MISSION_STATUS: Record<
   Mission["status"],
   { label: string; tone: "gray" | "blue" | "green" | "orange" }
@@ -96,10 +79,6 @@ export function SopWorkspace({
   me,
   events,
   contacts,
-  library,
-  hazard,
-  sido,
-  step,
   title,
   orgName,
   dispatches,
@@ -110,10 +89,6 @@ export function SopWorkspace({
   me: string;
   events: EventItem[];
   contacts: ContactsBundle;
-  library: LibraryItem[];
-  hazard: string;
-  sido: string;
-  step: string;
   title: string;
   orgName: string;
   dispatches: DispatchRow[];
@@ -131,6 +106,7 @@ export function SopWorkspace({
   const [busy, start] = useTransition();
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   // 편집: 임무·세부항목 구성 / 실행: 체크·착수·완료·전파
   const [modeSel, setMode] = useState<"edit" | "run">(
@@ -318,6 +294,17 @@ export function SopWorkspace({
       notify();
     });
 
+  /** SOP 생성·다시 생성 — T3Q 호출이 실패하면 화면에 알린다 */
+  const generate = () => {
+    setGenError(null);
+    start(async () => {
+      const r = await generateSop(id);
+      if (r.error) return setGenError(r.error);
+      router.refresh();
+      notify();
+    });
+  };
+
   if (!sop) {
     return (
       <Card className="py-10">
@@ -328,12 +315,13 @@ export function SopWorkspace({
               size="lg"
               variant="primary"
               disabled={busy}
-              onClick={() => act(() => generateSop(id))}
+              onClick={generate}
             >
               <Sparkles size={20} /> {busy ? "SOP 생성 중" : "SOP 생성하기"}
             </Button>
           </div>
         )}
+        {genError && <p className="mt-4 text-center text-[16px] text-danger">{genError}</p>}
       </Card>
     );
   }
@@ -417,12 +405,13 @@ export function SopWorkspace({
             요청 부서 없음 — 초기대응부서 기준
           </span>
         )}
+        {genError && <span className="text-[16px] font-semibold text-danger">{genError}</span>}
         <div className="ml-auto flex flex-wrap gap-2">
           {editable && !sop.startedAt && (
             <>
               <Button
                 disabled={busy}
-                onClick={() => act(() => generateSop(id))}
+                onClick={generate}
               >
                 <Sparkles size={18} /> 다시 생성
               </Button>
@@ -701,73 +690,42 @@ export function SopWorkspace({
       <AddMission
         open={adding}
         onClose={() => setAdding(false)}
-        library={library}
-        hazard={hazard}
-        sido={sido}
-        step={step}
-        existing={missions.map((m) => m.code)}
         onAdd={(m) => {
           update(m, true);
           setSel(m.id);
           setAdding(false);
-        }}
-        onAddMany={(ms, label) => {
-          setMissions((l) => [
-            ...l,
-            ...ms.filter((m) => !l.some((x) => x.code && x.code === m.code)),
-          ]);
-          if (ms[0]) setSel(ms[0].id);
-          setAdding(false);
-          start(async () => {
-            await addMissions(id, ms, label);
-            router.refresh();
-          });
         }}
       />
     </div>
   );
 }
 
+/** 임무 추가 — 임무명과 대응·복구만 정해 직접 추가 (내용은 추가 뒤 임무 상세에서 채운다) */
 function AddMission({
   open,
   onClose,
-  library,
-  hazard,
-  sido,
-  step,
-  existing,
   onAdd,
-  onAddMany,
 }: {
   open: boolean;
   onClose: () => void;
-  library: LibraryItem[];
-  hazard: string;
-  sido: string;
-  step: string;
-  existing: string[];
   onAdd: (m: Mission) => void;
-  onAddMany: (ms: Mission[], label: string) => void;
 }) {
-  const [q, setQ] = useState("");
   const [title, setTitle] = useState("");
   const [phase, setPhase] = useState<"대응" | "복구">("대응");
-  const [filter, setFilter] = useState<string>(step);
-  const [pending, start] = useTransition();
-  const list = library.filter(
-    (l) =>
-      (filter === "전체" || l.step === filter) &&
-      (!q || l.title.includes(q) || l.lead.includes(q)),
-  );
-  const addable = list.filter((l) => !existing.includes(l.code));
+  const add = () => {
+    if (!title.trim()) return;
+    onAdd({ ...emptyMission(phase), title: title.trim() });
+    setTitle("");
+  };
   return (
-    <Modal open={open} onClose={onClose} title="임무 추가" width={800}>
-      <div className="mb-6 flex gap-2">
+    <Modal open={open} onClose={onClose} title="임무 추가" width={640}>
+      <div className="flex gap-2">
         <input
           className="input"
-          placeholder="임무명 직접 입력"
+          placeholder="임무명"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && add()}
         />
         <select
           className="input w-32"
@@ -777,82 +735,9 @@ function AddMission({
           <option>대응</option>
           <option>복구</option>
         </select>
-        <Button
-          variant="primary"
-          disabled={!title.trim()}
-          onClick={() => {
-            onAdd({ ...emptyMission(phase), title: title.trim() });
-            setTitle("");
-          }}
-        >
+        <Button variant="primary" disabled={!title.trim()} onClick={add}>
           추가
         </Button>
-      </div>
-      <h4 className="mb-2 font-bold">매뉴얼에서 선택</h4>
-      <div className="mb-3 flex flex-wrap gap-2">
-        {["전체", ...RESPONSE_STEPS].map((st) => (
-          <button
-            key={st}
-            onClick={() => setFilter(st)}
-            className={clsx(
-              "h-10 rounded-md border px-3.5 text-[15px] font-medium",
-              filter === st
-                ? "border-primary bg-primary-weak text-primary-strong"
-                : "border-line hover:border-primary",
-            )}
-          >
-            {st === "전체" ? "전체" : STEP_LABEL[st as ResponseStep]}
-          </button>
-        ))}
-      </div>
-      <div className="mb-3 flex gap-2">
-        <input
-          className="input"
-          placeholder="검색"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        {filter !== "전체" && (
-          <Button
-            disabled={!addable.length || pending}
-            onClick={() =>
-              start(async () => {
-                const ms = await missionsFromLibrary(
-                  hazard,
-                  sido,
-                  addable.map((l) => l.code),
-                );
-                onAddMany(ms, STEP_LABEL[filter as ResponseStep]);
-              })
-            }
-          >
-            <Plus size={18} /> 이 단계 {addable.length}건 모두 추가
-          </Button>
-        )}
-      </div>
-      <div className="scroll-thin max-h-[400px] overflow-y-auto rounded-md border border-line-weak">
-        {list.map((l) => {
-          const has = existing.includes(l.code);
-          return (
-            <button
-              key={l.code}
-              disabled={has || pending}
-              onClick={() =>
-                start(async () => {
-                  const m = await missionFromLibrary(hazard, sido, l.code);
-                  if (m) onAdd(m);
-                })
-              }
-              className="flex w-full items-center gap-3 border-b border-line-weak px-4 py-3 text-left last:border-0 hover:bg-canvas disabled:opacity-40"
-            >
-              <Badge tone={l.step === "수습복구" ? "orange" : "blue"}>
-                {l.stage}
-              </Badge>
-              <span className="flex-1">{l.title}</span>
-              <span className="text-[15px] text-sub">{l.lead}</span>
-            </button>
-          );
-        })}
       </div>
     </Modal>
   );
