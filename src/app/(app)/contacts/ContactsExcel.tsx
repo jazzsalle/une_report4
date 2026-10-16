@@ -8,7 +8,7 @@ import type { ContactsBundle } from "@/lib/data";
 import { importContacts, type ImportStat } from "@/app/actions/contacts";
 import { downloadContactsXlsx, parseContactsXlsx, type ContactRow } from "@/lib/contacts-xlsx";
 
-/** 연락망 엑셀: 양식 내려받기 · 현재 연락망 내려받기 · 일괄 올리기 */
+/** 연락망 엑셀: 현재 연락망 다운로드 · 일괄 업로드(창 안에 양식 다운로드) */
 export function ContactsExcel({
   orgId,
   orgName,
@@ -91,12 +91,9 @@ export function ContactsExcel({
 
   return (
     <>
-      <Button variant={big ? "secondary" : "ghost"} size={big ? "md" : "sm"} onClick={() => downloadContactsXlsx(null, "연락망_양식.xlsx")}>
-        <FileSpreadsheet size={18} /> 엑셀 양식
-      </Button>
       {!big && (
-        <Button variant="ghost" size="sm" onClick={() => downloadContactsXlsx(bundle, `연락망_${orgName}.xlsx`)}>
-          <Download size={18} /> 엑셀 내려받기
+        <Button size="sm" onClick={() => downloadContactsXlsx(bundle, `연락망_${orgName}.xlsx`)}>
+          <Download size={18} /> 엑셀 다운로드
         </Button>
       )}
       <Button
@@ -106,25 +103,20 @@ export function ContactsExcel({
           setOpen(true);
         }}
       >
-        <Upload size={18} /> 엑셀 올리기
+        <Upload size={18} /> 엑셀 업로드
       </Button>
 
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="연락망 엑셀 올리기"
+        title="연락망 엑셀 업로드"
         width={820}
         footer={
           <>
             {rows.length > 0 && plan && (
               <span className="mr-auto self-center text-[17px] font-semibold">
                 추가 {plan.added} · 수정 {plan.updated}
-                {sync && (
-                  <span className={plan.removed || plan.removedUnits ? "text-danger" : ""}>
-                    {` · 삭제 ${plan.removed}명`}
-                    {plan.removedUnits > 0 && ` · 조직 ${plan.removedUnits}개`}
-                  </span>
-                )}
+                {sync && <span className={plan.removedRows.length ? "text-danger" : ""}>{` · 삭제 ${plan.removedRows.length}`}</span>}
               </span>
             )}
             <Button onClick={() => setOpen(false)}>{done ? "닫기" : "취소"}</Button>
@@ -159,6 +151,13 @@ export function ContactsExcel({
             >
               <Upload size={26} className="text-primary" />
               {file || "엑셀 파일을 끌어 놓거나 눌러서 고르세요"}
+            </button>
+            <button
+              type="button"
+              onClick={() => downloadContactsXlsx(null, "연락망_양식.xlsx")}
+              className="mt-2 inline-flex items-center gap-1.5 text-primary underline-offset-2 hover:underline"
+            >
+              <FileSpreadsheet size={18} /> 처음 등록한다면 양식 다운로드
             </button>
             <input
               ref={input}
@@ -195,17 +194,6 @@ export function ContactsExcel({
                 </button>
               ))}
             </div>
-            {sync && plan && (plan.removed > 0 || plan.removedUnits > 0) && (
-              <div className="mt-3 rounded-md bg-danger-weak px-4 py-3 text-danger">
-                <div className="font-semibold">
-                  지울 담당자 {plan.removed}명{plan.removedUnits > 0 && ` · 조직 ${plan.removedUnits}개`}
-                </div>
-                <div className="mt-1 text-[15px]">
-                  {[...plan.removedUnitNames.map((n) => `[조직] ${n}`), ...plan.removedNames].slice(0, 12).join(", ")}
-                  {plan.removedNames.length + plan.removedUnitNames.length > 12 && ` 외 ${plan.removedNames.length + plan.removedUnitNames.length - 12}건`}
-                </div>
-              </div>
-            )}
 
             {errors.length > 0 && (
               <ul className="mt-4 space-y-1 rounded-md bg-danger-weak px-4 py-3 text-danger">
@@ -248,6 +236,21 @@ export function ContactsExcel({
                         <td className="whitespace-nowrap px-3 py-1.5">{r.groups.join(", ")}</td>
                       </tr>
                     ))}
+                    {/* 맞추기: 연락망에서 지울 조직·담당자 */}
+                    {sync &&
+                      plan?.removedRows.map((r, i) => (
+                        <tr key={`del-${i}`} className="border-b border-line-weak text-danger">
+                          <td className="whitespace-nowrap px-3 py-1.5">
+                            <span className="whitespace-nowrap rounded bg-danger-weak px-1.5 text-[13px] font-semibold text-danger">삭제</span>
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-1.5">{r.upper}</td>
+                          <td className={clsx("whitespace-nowrap px-3 py-1.5", !r.name && "line-through")}>{r.unit}</td>
+                          <td className="whitespace-nowrap px-3 py-1.5 font-medium line-through">{r.name}</td>
+                          <td className="whitespace-nowrap px-3 py-1.5">{r.title}</td>
+                          <td className="whitespace-nowrap px-3 py-1.5">{r.phone}</td>
+                          <td className="whitespace-nowrap px-3 py-1.5" />
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

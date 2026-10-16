@@ -130,6 +130,8 @@ export interface ImportStat {
   removedUnits: number;
   removedNames: string[];
   removedUnitNames: string[];
+  /** 맞추기 미리 보기: 지울 조직(name 빈칸)·담당자 줄 */
+  removedRows: { upper: string; unit: string; name: string; title: string; phone: string }[];
 }
 
 /**
@@ -153,7 +155,7 @@ export async function importContacts(
   const people = await db.select().from(schema.contacts).where(eq(schema.contacts.orgId, orgId));
   const groups = await db.select().from(schema.contactGroups).where(eq(schema.contactGroups.orgId, orgId));
   const digits = (p: string) => p.replace(/\D/g, "");
-  const stat: ImportStat = { added: 0, updated: 0, units: 0, groups: 0, removed: 0, removedUnits: 0, removedNames: [], removedUnitNames: [] };
+  const stat: ImportStat = { added: 0, updated: 0, units: 0, groups: 0, removed: 0, removedUnits: 0, removedNames: [], removedUnitNames: [], removedRows: [] };
 
   // 1) 계획 — 메모리에서만 계산
   const newUnits: (typeof units)[number][] = [];
@@ -246,6 +248,11 @@ export async function importContacts(
   stat.removedUnits = removeUnits.length;
   stat.removedNames = removePeople.map((p) => `${nameOf(p.unitId) ?? ""} ${p.name}`.trim());
   stat.removedUnitNames = removeUnits.map((id) => nameOf(id) ?? "");
+  const parentName = (id: string) => nameOf(units.find((u) => u.id === id)?.parentId ?? null) ?? "";
+  stat.removedRows = [
+    ...removeUnits.map((id) => ({ upper: parentName(id), unit: nameOf(id) ?? "", name: "", title: "", phone: "" })),
+    ...removePeople.map((p) => ({ upper: parentName(p.unitId), unit: nameOf(p.unitId) ?? "", name: p.name, title: p.title, phone: p.phone })),
+  ];
   if (opts.dryRun) return stat;
 
   // 2) 반영 — 조직(위부터) → 담당자 → 삭제(담당자 → 조직 하위부터) → 전파그룹

@@ -206,3 +206,33 @@ export function Pager({
     </nav>
   );
 }
+
+/** 켜고 끄는 스위치 (켜짐 = 파랑). 글자는 옆에 따로 둔다 */
+export function Switch({
+  checked,
+  onChange,
+  disabled,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={clsx(
+        "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40",
+        checked ? "bg-primary" : "bg-line",
+      )}
+    >
+      <span className={clsx("inline-block size-5 rounded-full bg-white shadow transition", checked ? "translate-x-6" : "translate-x-1")} />
+    </button>
+  );
+}

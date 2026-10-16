@@ -7,7 +7,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
   const u = await requireUser();
   const sp = await searchParams;
   const db = await getDb();
-  const orgs = (await db.select().from(schema.orgs)).filter((o) => o.id !== "une");
+  const orgs = (await db.select().from(schema.orgs)).filter((o) => o.id !== "une" && o.id !== "t3q");
   const orgId = u.role === "admin" ? String(sp.org ?? "busan") : u.orgId;
   const bundle = await getContactsBundle(orgId);
   return (

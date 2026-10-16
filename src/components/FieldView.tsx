@@ -70,25 +70,24 @@ export function FieldView({ data, token }: { data: FieldData; token?: string }) 
           <p className="mt-3 whitespace-pre-line rounded-lg bg-primary-weak p-4 text-[17px] leading-relaxed">{data.message}</p>
         </section>
 
-        <section className="space-y-3">
-          <Step no={1} label="수신 확인" at={data.readAt} onClick={() => act("read")} busy={pending || !live} />
-          <Step no={2} label="임무 완료" at={data.doneAt} onClick={() => act("done")} busy={pending || !live} />
-        </section>
+        {/* 순서: 수신 확인 → 조치사항 → 임무 완료 */}
+        <Step no={1} label="수신 확인" at={data.readAt} onClick={() => act("read")} busy={pending || !live} />
+        {!data.readAt && <p className="px-1 text-[16px] text-sub">수신 확인을 누르면 조치사항·임무 완료를 할 수 있습니다</p>}
 
         <section className="rounded-xl bg-white p-5 shadow-sm">
           <h3 className="mb-2 text-[18px] font-bold">조치사항</h3>
           <textarea
             rows={4}
             value={note}
-            disabled={!live || pending}
+            disabled={!live || pending || !data.readAt}
             onChange={(e) => setNote(e.target.value)}
             placeholder="현장 조치 내용을 입력하세요"
             className="w-full rounded-lg border border-line p-3 text-[17px] leading-relaxed outline-none focus:border-primary"
           />
           <button
             onClick={() => act("note")}
-            disabled={!live || pending || !note.trim() || note === data.note}
-            className="mt-2 flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary text-[18px] font-bold text-white disabled:bg-line"
+            disabled={!live || pending || !data.readAt || !note.trim() || note === data.note}
+            className="mt-2 flex h-14 w-full items-center justify-center gap-2 rounded-xl border border-primary bg-white text-[18px] font-bold text-primary disabled:border-line disabled:text-mute"
           >
             <Send size={20} /> 조치사항 보내기
           </button>
@@ -96,14 +95,14 @@ export function FieldView({ data, token }: { data: FieldData; token?: string }) 
           {error && <p className="mt-2 text-[15px] text-danger">{error}</p>}
         </section>
 
-        <section
-          className={clsx(
-            "rounded-xl p-5 text-center text-[18px] font-bold",
-            data.ackAt ? "bg-success text-white" : "bg-white text-sub shadow-sm",
-          )}
-        >
-          {data.ackAt ? `상황실 확인 완료 · ${hm(data.ackAt)}` : "상황실 확인 대기"}
-        </section>
+        <Step no={2} label="임무 완료" at={data.doneAt} onClick={() => act("done")} busy={pending || !live || !data.readAt} />
+
+        {/* 상황실 확인: 누르는 곳이 아니라 상태 줄 */}
+        {data.noteAt && (
+          <p className={clsx("px-1 text-center text-[16px]", data.ackAt ? "font-semibold text-success" : "text-sub")}>
+            {data.ackAt ? `✓ 상황실 확인 완료 · ${hm(data.ackAt)}` : "상황실 확인 대기 중"}
+          </p>
+        )}
       </div>
     </div>
   );

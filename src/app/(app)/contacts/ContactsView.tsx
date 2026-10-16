@@ -27,6 +27,28 @@ type Unit = ContactsBundle["units"][number];
 type Contact = ContactsBundle["contacts"][number];
 type Group = ContactsBundle["groups"][number];
 
+/** 조직 트리 순서(본부 → 반 → 과, 같은 단계는 sort 순)로 조직 id → 순번 */
+function treeRank(units: Unit[]) {
+  const kids = new Map<string | null, Unit[]>();
+  units.forEach((u) => kids.set(u.parentId, [...(kids.get(u.parentId) ?? []), u]));
+  const rank = new Map<string, number>();
+  const walk = (pid: string | null) =>
+    (kids.get(pid) ?? []).forEach((u) => {
+      rank.set(u.id, rank.size);
+      walk(u.id);
+    });
+  walk(null);
+  return rank;
+}
+
+/** 담당자를 조직 트리 순서로 (같은 조직 안은 원래 순서) */
+function byTree(list: Contact[], rank: Map<string, number>) {
+  return list
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => (rank.get(a.c.unitId) ?? 1e9) - (rank.get(b.c.unitId) ?? 1e9) || a.i - b.i)
+    .map((x) => x.c);
+}
+
 export function mask(phone: string, show: boolean) {
   return show ? phone : phone.replace(/^(\d{3})-(\d{3,4})-(\d{4})$/, "$1-****-$3");
 }
@@ -64,9 +86,12 @@ export function ContactsView({
         <div className="ml-auto flex flex-wrap gap-2">
           {canManage && SHOW_MANUAL_IMPORT && <ManualContacts orgId={orgId} />}
           {canManage && <ContactsExcel orgId={orgId} orgName={orgName} bundle={bundle} />}
-        <Button variant="ghost" size="sm" onClick={() => setShow((v) => !v)}>
-          {show ? <EyeOff size={18} /> : <Eye size={18} />} {show ? "번호 가리기" : "번호 보기"}
-        </Button>
+          {/* 번호가 있는 탭(비상연락망·조직·담당자)에만 */}
+          {tab !== "groups" && (
+            <Button size="sm" onClick={() => setShow((v) => !v)}>
+              {show ? <EyeOff size={18} /> : <Eye size={18} />} {show ? "번호 가리기" : "번호 보기"}
+            </Button>
+          )}
         </div>
       </div>
       <Tabs
@@ -182,7 +207,8 @@ function People({ orgId, bundle, canManage, show }: { orgId: string; bundle: Con
   }, [units]);
   const desc = (id: string): string[] => [id, ...(childrenOf.get(id) ?? []).flatMap((c) => desc(c.id))];
   const unitName = new Map(units.map((u) => [u.id, u.name]));
-  const list = sel ? contacts.filter((c) => desc(sel).includes(c.unitId)) : contacts;
+  const rank = useMemo(() => treeRank(units), [units]);
+  const list = byTree(sel ? contacts.filter((c) => desc(sel).includes(c.unitId)) : contacts, rank);
 
   const UnitRow = ({ u, depth }: { u: Unit; depth: number }) => (
     <>
@@ -363,6 +389,9 @@ function Groups({ orgId, bundle, canManage }: { orgId: string; bundle: ContactsB
   const { pending, error, run, setError } = useRun();
   const byId = new Map(contacts.map((c) => [c.id, c]));
   const unitName = new Map(units.map((u) => [u.id, u.name]));
+  const rank = useMemo(() => treeRank(units), [units]);
+  const treeUnits = [...units].sort((a, b) => (rank.get(a.id) ?? 1e9) - (rank.get(b.id) ?? 1e9));
+  const membersOf = (g: Group) => byTree(g.memberIds.map((id) => byId.get(id)).filter((c): c is Contact => !!c), rank);
 
   return (
     <div>
@@ -392,16 +421,13 @@ function Groups({ orgId, bundle, canManage }: { orgId: string; bundle: ContactsB
               )}
             </div>
             <ul className="space-y-1.5">
-              {g.memberIds.slice(0, 8).map((id) => {
-                const c = byId.get(id);
-                return c ? (
-                  <li key={id} className="flex gap-2">
-                    <span className="font-medium">{c.name}</span>
-                    <span className="text-sub">{c.title}</span>
-                    <span className="ml-auto truncate text-[15px] text-mute">{unitName.get(c.unitId)}</span>
-                  </li>
-                ) : null;
-              })}
+              {membersOf(g).slice(0, 8).map((c) => (
+                <li key={c.id} className="flex gap-2">
+                  <span className="font-medium">{c.name}</span>
+                  <span className="text-sub">{c.title}</span>
+                  <span className="ml-auto truncate text-[15px] text-mute">{unitName.get(c.unitId)}</span>
+                </li>
+              ))}
               {g.memberIds.length > 8 && <li className="text-sub">외 {g.memberIds.length - 8}명</li>}
             </ul>
           </Card>
@@ -425,7 +451,7 @@ function Groups({ orgId, bundle, canManage }: { orgId: string; bundle: ContactsB
         {edit && (
           <div>
             <input className="input mb-4" placeholder="그룹명" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
-            {units
+            {treeUnits
               .filter((u) => contacts.some((c) => c.unitId === u.id))
               .map((u) => (
                 <div key={u.id} className="mb-3">

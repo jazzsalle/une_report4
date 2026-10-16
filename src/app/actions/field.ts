@@ -5,7 +5,7 @@ import { getDb, schema } from "@/lib/db";
 import { addEvent } from "@/lib/data";
 
 /**
- * 현장 응답 (로그인 없이 링크 토큰으로) — 수신확인 → 임무완료 → 조치사항
+ * 현장 응답 (로그인 없이 링크 토큰으로) — 수신확인 → 조치사항 → 임무완료. 수신확인 전에는 조치사항·임무완료를 받지 않는다
  * 응답은 수행 이력에 남고, 조치사항은 상황실이 「확인」해야 상황일지에 사실로 들어간다.
  */
 export async function fieldRespond(token: string, kind: "read" | "done" | "note", note?: string) {
@@ -21,10 +21,11 @@ export async function fieldRespond(token: string, kind: "read" | "done" | "note"
     if (d.readAt) return;
     patch.readAt = now;
     title = `현장 수신확인: ${d.name}`;
+  } else if (!d.readAt) {
+    throw new Error("먼저 수신 확인을 누르세요.");
   } else if (kind === "done") {
     if (d.doneAt) return;
     patch.doneAt = now;
-    if (!d.readAt) patch.readAt = now;
     title = `현장 임무완료: ${d.name}`;
   } else {
     const text = (note ?? "").trim().slice(0, 1000);
@@ -32,7 +33,6 @@ export async function fieldRespond(token: string, kind: "read" | "done" | "note"
     patch.note = text;
     patch.noteAt = now;
     patch.ackAt = null;
-    if (!d.readAt) patch.readAt = now;
     title = `현장 조치사항: ${d.name}`;
     body = text;
   }
