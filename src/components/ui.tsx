@@ -5,7 +5,8 @@ import { PAGE_SIZE } from "@/lib/paging";
 import { MoreHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+/** outline: 파란 테두리 세컨더리 (주 버튼 다음으로 중요한 동작) */
+type Variant = "primary" | "outline" | "secondary" | "ghost" | "danger";
 type Size = "md" | "lg" | "sm";
 
 export function Button({
@@ -24,6 +25,8 @@ export function Button({
         size === "sm" && "h-9 px-3 text-[15px]",
         variant === "primary" &&
           "bg-primary text-white hover:bg-primary-strong disabled:bg-line disabled:text-white",
+        variant === "outline" &&
+          "border border-primary bg-white text-primary hover:bg-primary-weak disabled:border-line disabled:text-mute",
         variant === "secondary" &&
           "border border-line bg-white text-ink hover:border-primary hover:text-primary disabled:text-mute",
         variant === "ghost" && "text-sub hover:bg-canvas hover:text-ink disabled:text-mute",

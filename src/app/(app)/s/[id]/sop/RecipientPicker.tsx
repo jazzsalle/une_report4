@@ -107,6 +107,7 @@ export function RecipientPicker({
   contacts: b,
   value,
   recommended,
+  hint = [],
   onSave,
 }: {
   open: boolean;
@@ -115,6 +116,8 @@ export function RecipientPicker({
   value: Selection;
   /** 매뉴얼 전파대상과 비슷한 전파그룹 */
   recommended: Set<string>;
+  /** 임무의 매뉴얼 전파대상 원문 — 창 제목 아래에 그대로 보인다 (P-19) */
+  hint?: string[];
   onSave: (v: Sel) => void;
 }) {
   const [sel, setSel] = useState<Sel>({ contactIds: [], groupIds: [], unitIds: [] });
@@ -165,6 +168,11 @@ export function RecipientPicker({
         </>
       }
     >
+      {hint.length > 0 && (
+        <div className="mb-4 rounded-md bg-canvas px-4 py-3">
+          <span className="font-medium text-sub">매뉴얼 전파대상</span> · {hint.join(", ")}
+        </div>
+      )}
       {b.contacts.length === 0 && (
         <div className="mb-4 rounded-md bg-warning-weak px-4 py-4 text-warning">
           등록된 연락망이 없습니다.{" "}

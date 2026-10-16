@@ -13,6 +13,7 @@ import { buildContext, responseToSop } from "@/lib/sop/convert";
 import { recipientIds } from "@/lib/sop/recipients";
 import { orderMissions, patchMission, patchSopHead, putMission, removeMission } from "@/lib/sop/store";
 import { composeReport } from "@/lib/report/compose";
+import { snapshotOf } from "@/lib/report/snapshot";
 import { progress } from "@/lib/sop/kind";
 import { ensureExampleContacts } from "@/lib/contacts-seed";
 import { getTutorialSeed, tutorialWeather } from "@/lib/tutorial";
@@ -288,7 +289,11 @@ export interface DispatchLink {
  * 상황전파 발송 — 수신자별 현장 응답 링크(토큰)를 만들고 발송 이력을 남긴다.
  * 실제 SMS·메일 발송은 UNE 발송 모듈 연계 시 이 함수에서 호출한다 (현재 모의 발송).
  */
-export async function propagate(id: string, missionId: string, message: string) {
+/** 발송 방법 (P-20) — 문자·이메일 중 하나 이상 */
+export type Channel = "SMS" | "EMAIL";
+const CHANNEL_LABEL: Record<Channel, string> = { SMS: "문자", EMAIL: "이메일" };
+
+export async function propagate(id: string, missionId: string, message: string, channels?: Channel[]) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
   // SOP 수정은 실행 전·중·종료 후 언제나 가능, 전파만 실행 중에
@@ -298,8 +303,13 @@ export async function propagate(id: string, missionId: string, message: string) 
   const bundle = await getContactsBundle(orgForSituation(s.orgId, s.sido));
   const ids = recipientIds(bundle, mission.propagation);
   const unitName = new Map(bundle.units.map((x) => [x.id, x.name]));
-  const people = bundle.contacts.filter((c) => ids.has(c.id));
-  if (!people.length) throw new Error("전파 대상을 선택하세요.");
+  const ways = (channels?.length ? channels : [mission.propagation.channel]).filter((c): c is Channel => c === "SMS" || c === "EMAIL");
+  if (!ways.length) throw new Error("발송 방법을 고르세요.");
+  // 고른 방법의 연락처가 없는 사람은 그 방법으로 보내지 않는다 — 어느 방법도 없으면 빼고 보낸다
+  const reach = (c: { phone: string; email: string }) =>
+    ways.filter((w) => (w === "SMS" ? !!c.phone : !!c.email));
+  const people = bundle.contacts.filter((c) => ids.has(c.id) && reach(c).length);
+  if (!people.length) throw new Error("고른 발송 방법으로 연락할 수 있는 대상이 없습니다.");
 
   const db = await getDb();
   const sentAt = new Date();
@@ -313,7 +323,7 @@ export async function propagate(id: string, missionId: string, message: string) 
     unit: unitName.get(c.unitId) ?? "",
     phone: c.phone,
     email: c.email,
-    channel: mission.propagation.channel,
+    channel: reach(c).join("+"),
     message,
     sentAt,
   }));
@@ -326,10 +336,10 @@ export async function propagate(id: string, missionId: string, message: string) 
     type: "propagate",
     title: `상황전파: ${mission.title}`,
     body: `${message}
-→ ${rows.length}명 (${mission.propagation.channel})`,
+→ ${rows.length}명 (${ways.map((w) => CHANNEL_LABEL[w]).join("·")})`,
     missionId,
     userName: u.name,
-    meta: { recipients, channel: mission.propagation.channel },
+    meta: { recipients, channel: ways.join("+") },
   });
   revalidatePath(`/s/${id}/sop`);
   return {
@@ -385,14 +395,18 @@ export async function createReport(id: string) {
   const db = await getDb();
   const [org] = await db.select().from(schema.orgs).where(eq(schema.orgs.id, s.orgId)).limit(1);
   const events = await listEvents(id);
-  const content = composeReport({
-    situation: s,
-    events,
-    dispatches: await listDispatches(id),
-    reporter: u.name,
-    dept: u.dept,
-    orgName: org?.name ?? "",
-  });
+  const content = {
+    ...composeReport({
+      situation: s,
+      events,
+      dispatches: await listDispatches(id),
+      reporter: u.name,
+      dept: u.dept,
+      orgName: org?.name ?? "",
+    }),
+    // 만들 당시 단계 (R-06) — 같은 이름의 상황일지를 목록에서 구분
+    snapshot: snapshotOf(s),
+  };
   const rid = nanoid(10);
   await db.insert(schema.reports).values({
     id: rid,

@@ -16,7 +16,7 @@ info:
     |---|---|
     | `src/app/actions/auth.ts` | 로그인·로그아웃·내 정보 |
     | `src/app/actions/situation.ts` | 상황·기상·SOP 생성/실행·상황전파·상황 기록·상황일지 생성 |
-    | `src/app/actions/report.ts` | 상황일지 저장·한글 편집 저장본·확정·휴지통 |
+    | `src/app/actions/report.ts` | 상황일지 저장·문서명 변경·한글 편집 저장본·휴지통 |
     | `src/app/actions/contacts.ts` | 연락망 (조직·담당자·전파그룹) |
     | `src/app/actions/admin.ts` | 계정관리 |
 servers:
@@ -213,10 +213,11 @@ paths:
         임무의 전파 대상(전파그룹·개별 담당자)을 펼쳐 수신자마다 응답 토큰을 만들고 dispatches 에 저장합니다.
         실제 SMS·메일 발송 모듈 연계 시 이 함수에서 수신자별로 `/m/{token}` 링크를 포함해 발송합니다.
         SOP 실행 중에만 보낼 수 있습니다(실행 전·종료 후 거부).
+        `channels`(발송 방법, 문자·이메일 중 하나 이상)를 고르면 그 방법의 연락처가 있는 수신자만 보내고, dispatches.channel 에 「SMS+EMAIL」처럼 실제 쓴 방법을 남깁니다. 없으면 임무의 channel.
       requestBody:
         content:
           application/json:
-            schema: { type: object, properties: { id: { type: string }, missionId: { type: string }, message: { type: string } } }
+            schema: { type: object, properties: { id: { type: string }, missionId: { type: string }, message: { type: string }, channels: { type: array, items: { type: string, enum: [SMS, EMAIL] } } } }
       responses:
         "200":
           description: "{ mission, links: [{ id, token, name, unit, phone }] }"
@@ -275,6 +276,8 @@ paths:
       description: |
         `src/lib/report/compose.ts` 가 상황정보 + 기상특보·요약 + SOP 실행이력 + 상황 기록으로 본문을 구성합니다.
         기본 목차: 상황 개요 / 기상 현황 / 피해 현황 / 대응 조치 / 상황 전파 / 복구 및 피해 조치 / 향후 계획.
+        만들 당시 단계(`content.snapshot` — 대응단계·완료 임무 수·실행 종료 여부)를 함께 저장해 목록에서 같은 이름의 상황일지를 구분합니다(R-06).
+        문서명(`reports.title`)과 문서 안 제목(`content.title`)은 처음엔 둘 다 「상황명 상황일지」.
         성공 시 `/reports/{rid}` 로 이동.
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
       responses: { "303": { description: 상황일지 편집 화면 이동 } }
@@ -282,6 +285,7 @@ paths:
     post:
       tags: [상황일지]
       summary: saveReport — 상황일지 저장 (화면에서 1초 자동 저장)
+      description: 본문만 저장합니다. 문서 안 제목(content.title)을 고쳐도 문서명(reports.title)은 바뀌지 않습니다.
       requestBody:
         content: { application/json: { schema: { type: object, properties: { rid: { type: string }, content: { $ref: "#/components/schemas/ReportContent" } } } } }
       responses: { "200": { description: "{ savedAt }" } }
@@ -299,13 +303,15 @@ paths:
       summary: getHwpx — 한글 편집기 저장본 가져오기
       requestBody: { $ref: "#/components/requestBodies/ReportId" }
       responses: { "200": { description: base64 문자열 또는 null } }
-  /action/report/setReportStatus:
+  /action/report/renameReport:
     post:
       tags: [상황일지]
-      summary: setReportStatus — 확정 / 확정 해제
+      summary: renameReport — 문서명 변경 (목록 「⋯」 → 「이름 변경」)
+      description: 목록·상황일지 관리·내보낸 파일 이름에 쓰는 문서명(reports.title)만 바꿉니다. 문서 안 제목은 그대로. 빈 값이면 `{ error }`.
       requestBody:
-        content: { application/json: { schema: { type: object, properties: { rid: { type: string }, status: { type: string, enum: [draft, final] } } } } }
-      responses: { "200": { description: 완료 } }
+        content: { application/json: { schema: { type: object, required: [rid, name], properties: { rid: { type: string }, name: { type: string } } } } }
+      responses:
+        "200": { $ref: "#/components/responses/ErrorOnly" }
 
   # ───────── 휴지통 ─────────
   /action/report/trashReport:
@@ -623,6 +629,15 @@ components:
         dept: { type: string }
         reportedAt: { type: string, format: date-time }
         sections: { type: array, items: { $ref: "#/components/schemas/ReportSection" } }
+        snapshot:
+          type: object
+          description: 만들 당시 단계 (R-06). 2026-10-16 이전 상황일지에는 없음
+          properties:
+            step: { type: string, example: 2단계 초기대응 }
+            done: { type: integer }
+            total: { type: integer }
+            started: { type: boolean }
+            ended: { type: boolean }
     WeatherImage:
       type: object
       properties:

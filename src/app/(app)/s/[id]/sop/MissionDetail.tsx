@@ -44,7 +44,6 @@ export function MissionDetail({
   situationId,
   onChange,
   onDelete,
-  onAddMission,
   onDone,
   dispatches,
   preview,
@@ -60,8 +59,7 @@ export function MissionDetail({
   situationId: string;
   onChange: (m: Mission, immediate?: boolean) => void;
   onDelete: () => void;
-  onAddMission?: () => void;
-  /** 조치 완료 후 — SOP 흐름도로 돌아가기 */
+  /** 조치 완료 후 — 다음 현재 임무로 */
   onDone?: () => void;
   dispatches: DispatchRow[];
   preview: { orgName: string; situationTitle: string };
@@ -73,6 +71,8 @@ export function MissionDetail({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [newDetail, setNewDetail] = useState("");
   const [sending, startSend] = useTransition();
+  // 발송 방법 (P-20) — 둘 다 고를 수 있고 기본은 문자
+  const [ways, setWays] = useState<{ sms: boolean; email: boolean }>({ sms: true, email: false });
   const set = (patch: Partial<Mission>, immediate = false) => onChange({ ...m, ...patch }, immediate);
   const st = MISSION_STATUS[m.status];
   const recipients = useMemo(
@@ -86,6 +86,16 @@ export function MissionDetail({
   const run = editable && mode === "run";
   /** 전파 내용·조치 기록을 고칠 수 있음 — SOP는 실행 종료 후에도 언제나 수정 가능 */
   const writable = editable;
+  // 상황전파 영역은 상황전파 임무에만 (P-19). 이미 보낸 기록이 있으면 종류와 상관없이 보인다
+  const isProp = missionKind(m) === "propagation";
+  const showProp = isProp || !!m.propagation.sentAt || dispatches.length > 0;
+  // 주 버튼은 흐름 순서대로 하나: 착수 → 전파 → 조치 완료 (P-18·P-19)
+  const sendFirst = isProp && m.status === "doing" && !m.propagation.sentAt;
+  const recGroups = contacts.groups.filter((g) => rec.has(g.id) && !m.propagation.groupIds.includes(g.id));
+  const addGroup = (gid: string) =>
+    set({ propagation: { ...m.propagation, groupIds: [...m.propagation.groupIds, gid] } }, true);
+  // 고른 발송 방법으로 연락처가 있는 수신자만 보낸다
+  const reachable = recipients.filter((r) => (ways.sms && r.phone) || (ways.email && r.email));
 
   const setStatus = (status: Mission["status"]) => {
     const patch: Partial<Mission> = { status };
@@ -145,14 +155,14 @@ export function MissionDetail({
             <Trash2 size={17} /> 임무 삭제
           </Button>
         )}
-        {onAddMission && (
-          <Button size="sm" onClick={onAddMission}>
-            <Plus size={17} /> 임무 추가
-          </Button>
-        )}
       </div>
 
-      <div className="scroll-thin flex-1 space-y-6 overflow-y-auto px-6 py-5">
+      <div className="scroll-thin min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
+        {!started && !edit && (
+          <div className="rounded-md bg-info-weak px-4 py-3 text-info">
+            실행 전입니다. 「SOP 실행 시작」을 누르면 착수·완료·전파를 기록할 수 있습니다.
+          </div>
+        )}
         {/* 임무 정보 (P-17) */}
         <Group title="임무 정보">
           <div className="space-y-3 rounded-lg bg-canvas p-5">
@@ -280,7 +290,8 @@ export function MissionDetail({
           )}
         </Group>
 
-        {/* 상황전파 */}
+        {/* 상황전파 — 상황전파 임무에만 (P-19) */}
+        {showProp && (
         <section className="rounded-lg border border-line-weak bg-canvas/60 p-5" data-tour="propagation">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-[18px] font-bold">상황전파</h3>
@@ -319,17 +330,28 @@ export function MissionDetail({
                 </Button>
               )}
             </div>
-            {!recipients.length && rec.size > 0 && (
-              <div className="mt-2 text-[16px] text-sub">
-                추천 전파그룹 · {contacts.groups.filter((g) => rec.has(g.id)).map((g) => g.name).join(", ")}
+            {writable && recGroups.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2" data-tour="rec-groups">
+                <span className="text-[16px] text-sub">추천 전파그룹</span>
+                {recGroups.map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => addGroup(g.id)}
+                    className="flex h-10 items-center gap-1 rounded-full border border-dashed border-primary px-3.5 font-medium text-primary hover:bg-primary-weak"
+                  >
+                    <Plus size={16} /> {g.name}
+                  </button>
+                ))}
               </div>
             )}
           </div>
-          {editable && running && (
+          {/* 전파는 실행 중 보기 화면에서만 (편집 중에는 실행 버튼을 숨김) */}
+          {run && running && (
             <div className="mt-4 flex items-center justify-end gap-3">
               <span className="text-[16px] text-sub">수신 {recipients.length}명</span>
               <Button
-                variant="primary"
+                variant={sendFirst ? "primary" : "secondary"}
+                data-tour="propagate-send"
                 disabled={!recipients.length || !m.propagation.message.trim() || sending}
                 onClick={() => setConfirmSend(true)}
               >
@@ -354,6 +376,7 @@ export function MissionDetail({
             />
           )}
         </section>
+        )}
 
         {/* 조치 기록 */}
         {(started || run) && (
@@ -410,7 +433,7 @@ export function MissionDetail({
             </Button>
           )}
           {m.status === "doing" && (
-            <Button variant="primary" data-tour="mission-done" onClick={() => setStatus("done")}>
+            <Button variant={sendFirst ? "secondary" : "primary"} data-tour="mission-done" onClick={() => setStatus("done")}>
               <Check size={18} /> 조치 완료
             </Button>
           )}
@@ -423,6 +446,7 @@ export function MissionDetail({
         contacts={contacts}
         value={m.propagation}
         recommended={rec}
+        hint={m.propagation.targetHint}
         onSave={(v) => {
           set({ propagation: { ...m.propagation, ...v } }, true);
           setPicking(false);
@@ -440,12 +464,13 @@ export function MissionDetail({
             <Button onClick={() => setConfirmSend(false)}>취소</Button>
             <Button
               variant="primary"
-              disabled={sending}
+              disabled={sending || !reachable.length}
               onClick={() =>
                 startSend(async () => {
                   setSendError(null);
                   try {
-                    const r = await propagate(situationId, m.id, m.propagation.message);
+                    const channels = [...(ways.sms ? (["SMS"] as const) : []), ...(ways.email ? (["EMAIL"] as const) : [])];
+                    const r = await propagate(situationId, m.id, m.propagation.message, channels);
                     onChange(r.mission);
                     setConfirmSend(false);
                     setSent(r.links);
@@ -456,7 +481,7 @@ export function MissionDetail({
                 })
               }
             >
-              <Send size={17} /> {recipients.length}명에게 전파 ({m.propagation.channel === "EMAIL" ? "이메일" : "문자"})
+              <Send size={17} /> {reachable.length}명에게 전파
             </Button>
           </>
         }
@@ -465,13 +490,35 @@ export function MissionDetail({
           <div>
             <h4 className="mb-2 font-bold">전파 내용</h4>
             <div className="whitespace-pre-line rounded-md bg-canvas p-4 leading-relaxed">{m.propagation.message}</div>
+            <h4 className="mb-2 mt-5 font-bold">발송 방법</h4>
+            <div className="flex gap-5">
+              {(
+                [
+                  ["sms", "문자"],
+                  ["email", "이메일"],
+                ] as const
+              ).map(([k, label]) => (
+                <label key={k} className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 accent-primary"
+                    checked={ways[k]}
+                    onChange={(e) => setWays((w) => ({ ...w, [k]: e.target.checked }))}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
             <h4 className="mb-2 mt-5 font-bold">수신 {recipients.length}명</h4>
             <ul className="scroll-thin max-h-[300px] divide-y divide-line-weak overflow-y-auto rounded-md border border-line-weak">
               {recipients.map((r) => (
-                <li key={r.id} className="flex items-center gap-3 px-3 py-2 text-[16px]">
+                <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 px-3 py-2 text-[16px]">
                   <span className="font-medium">{r.name}</span>
                   <span className="text-sub">{r.unit}</span>
-                  <span className="ml-auto tabular-nums text-sub">{r.phone}</span>
+                  <span className="ml-auto flex flex-wrap justify-end gap-x-3 tabular-nums text-sub">
+                    {ways.sms && (r.phone ? <span>{r.phone}</span> : <span className="text-danger">전화번호 없음</span>)}
+                    {ways.email && (r.email ? <span>{r.email}</span> : <span className="text-danger">이메일 없음</span>)}
+                  </span>
                 </li>
               ))}
             </ul>

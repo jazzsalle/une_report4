@@ -2,9 +2,8 @@
 import { useVisibleRefresh } from "@/lib/use-visible-refresh";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PanelTopClose } from "lucide-react";
+import { X } from "lucide-react";
 import type { Sop } from "@/lib/types";
-import { Button } from "@/components/ui";
 import { progress } from "@/lib/sop/kind";
 import { SopMetro } from "@/app/(app)/s/[id]/sop/SopMetro";
 import { propagationTargets, sopChannel, type SopMessage } from "@/lib/sop/targets";
@@ -50,16 +49,15 @@ export function BoardView({
         <span className="text-white/70">
           완료 {done} / {total}
         </span>
-        <Button
-          size="sm"
-          className="ml-auto"
-          onClick={() => {
-            bc.current?.postMessage({ type: "dock" } satisfies SopMessage);
-            window.close();
-          }}
+        {/* 닫기 — 창을 닫고 본 화면으로 (P-13) */}
+        <button
+          className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-md text-white/80 hover:bg-white/10 hover:text-white"
+          aria-label="닫기"
+          title="닫기"
+          onClick={() => window.close()}
         >
-          <PanelTopClose size={16} /> 창 복귀
-        </Button>
+          <X size={24} />
+        </button>
       </header>
       <div className="min-h-0 flex-1 px-3 pb-3">
         <SopMetro

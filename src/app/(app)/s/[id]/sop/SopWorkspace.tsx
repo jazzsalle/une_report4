@@ -1,28 +1,11 @@
 "use client";
 import { useVisibleRefresh } from "@/lib/use-visible-refresh";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import clsx from "clsx";
-import {
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  PanelTopClose,
-  FileText,
-  ListChecks,
-  Pencil,
-  Play,
-  Plus,
-  RotateCcw,
-  Sparkles,
-  Square,
-  Workflow,
-  List,
-  Zap,
-  BookOpen,
-} from "lucide-react";
+import { BookOpen, FileText, Pencil, Play, RotateCcw, Sparkles, Square, Check } from "lucide-react";
 import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
-import { STEP_LABEL, type Mission, type Sop } from "@/lib/types";
+import type { Mission, Sop } from "@/lib/types";
 import type { ContactsBundle } from "@/lib/data";
 import {
   deleteMission,
@@ -34,18 +17,13 @@ import {
   createReport,
   reorderMissions,
 } from "@/app/actions/situation";
-import { KindIcon } from "./KindIcon";
-import { counted, currentMission, isOnDemand, missionKind } from "@/lib/sop/kind";
+import { counted, currentMission } from "@/lib/sop/kind";
 import { emptyMission } from "@/lib/sop/convert";
 import { fmtDateTime, fmtTime } from "@/lib/format";
 import { MissionDetail } from "./MissionDetail";
 import { Timeline, type EventItem } from "./Timeline";
-import { SopMetro } from "./SopMetro";
-import {
-  propagationTargets,
-  sopChannel,
-  type SopMessage,
-} from "@/lib/sop/targets";
+import { SopFlow } from "./SopFlow";
+import { sopChannel, type SopMessage } from "@/lib/sop/targets";
 
 export type DispatchRow = {
   id: string;
@@ -71,6 +49,9 @@ export const MISSION_STATUS: Record<
   done: { label: "완료", tone: "green" },
   skipped: { label: "생략", tone: "orange" },
 };
+
+/** 세 영역(흐름 · 임무 상세 · 수행 이력)은 화면 높이에 맞추고 각자 안쪽에서 스크롤 (P-16) */
+const PANE = "xl:h-[calc(100vh-300px)] xl:min-h-[560px]";
 
 export function SopWorkspace({
   id,
@@ -99,7 +80,7 @@ export function SopWorkspace({
   useEffect(() => {
     missionsRef.current = missions;
   }, [missions]);
-  // 처음 고를 임무: 실행 중이면 흐름도 분홍(현재 임무)과 같은 임무, 아니면 첫 임무
+  // 처음 고를 임무: 실행 중이면 흐름 분홍(현재 임무)과 같은 임무, 아니면 첫 임무
   const pickFirst = (list: Mission[]) =>
     (sop?.startedAt && !sop?.endedAt ? currentMission(list)?.id : undefined) ?? list[0]?.id ?? null;
   const [sel, setSel] = useState<string | null>(() => pickFirst(sop?.missions ?? []));
@@ -108,15 +89,8 @@ export function SopWorkspace({
   const [adding, setAdding] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
-  // 편집: 임무·세부항목 구성 / 실행: 체크·착수·완료·전파
-  const [modeSel, setMode] = useState<"edit" | "run">(
-    sop?.startedAt ? "run" : "edit",
-  );
-  // 보기: 순서도(기본) / 목록
-  const [view, setView] = useState<"list" | "flow">("flow");
-  // SOP 창 분리
-  const [detached, setDetached] = useState(false);
-  const win = useRef<Window | null>(null);
+  // 기본은 보기(실행) 화면, 고칠 때만 「SOP 편집」 (P-11). 실행 종료 후에도 편집할 수 있다
+  const [editing, setEditing] = useState(false);
   const bc = useRef<BroadcastChannel | null>(null);
   const notify = () =>
     bc.current?.postMessage({ type: "changed" } satisfies SopMessage);
@@ -132,59 +106,28 @@ export function SopWorkspace({
     return () => window.removeEventListener("r4-tour-select", on);
   }, []);
 
+  // 크게 보기 창에서 임무를 누르면 여기서 그 임무를 고른다
   useEffect(() => {
     const ch = new BroadcastChannel(sopChannel(id));
     bc.current = ch;
     ch.onmessage = (e: MessageEvent<SopMessage>) => {
       if (e.data.type === "select") setSel(e.data.id);
-      if (e.data.type === "dock") setDetached(false);
-      if (e.data.type === "hello") setDetached(true);
     };
     return () => ch.close();
   }, [id]);
 
-  // 분리 창을 직접 닫으면 제자리로
-  useEffect(() => {
-    if (!detached) return;
-    const t = setInterval(() => {
-      if (win.current && win.current.closed) {
-        win.current = null;
-        setDetached(false);
-      }
-    }, 1000);
-    return () => clearInterval(t);
-  }, [detached]);
+  /** 크게 보기 — 가로 흐름도 새 창 (상황실 큰 화면용, P-13) */
+  const openBig = () => window.open(`/board/${id}`, `sop-board-${id}`, "width=1280,height=820")?.focus();
 
-  const detach = () => {
-    win.current = window.open(
-      `/board/${id}`,
-      `sop-board-${id}`,
-      "width=1280,height=820",
-    );
-    if (win.current) setDetached(true);
-  };
-  const dock = () => {
-    bc.current?.postMessage({ type: "dock" } satisfies SopMessage);
-    win.current?.close();
-    win.current = null;
-    setDetached(false);
-  };
-  // 조치 완료 → 다음 현재 임무(흐름도 분홍과 같은 기준)를 선택하고 SOP 흐름도(목록)로 돌아간다. 분리 창이면 그 창을 앞으로.
-  const topRef = useRef<HTMLDivElement | null>(null);
-  const backToFlow = () => {
-    // 완료 처리가 아직 상태에 반영되기 전이라 방금 완료한 임무(선택 중인 임무)는 뺀다
-    const next = currentMission(missions, sel);
-    if (next) select(next.id);
-    if (detached) {
-      const w = win.current && !win.current.closed ? win.current : window.open("", `sop-board-${id}`);
-      w?.focus();
-      return;
-    }
-    setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
-  };
   const select = (mid: string) => {
     setSel(mid);
     bc.current?.postMessage({ type: "select", id: mid } satisfies SopMessage);
+  };
+  // 조치 완료 → 다음 현재 임무(흐름 분홍과 같은 기준)를 고른다. 흐름은 왼쪽에 고정이라 화면 이동 없음
+  const next = () => {
+    // 완료 처리가 아직 상태에 반영되기 전이라 방금 완료한 임무(선택 중인 임무)는 뺀다
+    const n = currentMission(missions, sel);
+    if (n) select(n.id);
   };
 
   // 서버 값이 바뀌면(다시 생성, 다른 사람의 저장) 동기화 — 내가 고치는 중(저장 대기)인 임무는 내 것을 유지
@@ -208,8 +151,6 @@ export function SopWorkspace({
 
   const running = !!sop?.startedAt && !sop?.endedAt;
   const ended = !!sop?.endedAt;
-  // 실행 종료 후에는 고칠 수 없다 — 실행 재개 후 편집 (P-04)
-  const mode = modeSel;
 
   // 실행 중에는 현장 응답·다른 사람의 저장을 주기적으로 받아온다 (화면이 보일 때만)
   useVisibleRefresh(15000, running);
@@ -250,7 +191,7 @@ export function SopWorkspace({
     }
   };
 
-  /** 저장 대기 중인 내용 수정을 바로 저장 (실행 종료 전 — 종료 뒤에는 서버가 거부) */
+  /** 저장 대기 중인 내용 수정을 바로 저장 (실행 종료·편집 종료 전) */
   const flushSaves = () =>
     Promise.all(
       [...timers.current.entries()].map(([mid, t]) => {
@@ -266,13 +207,13 @@ export function SopWorkspace({
     const i = missions.findIndex((m) => m.id === mid);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= missions.length) return;
-    const next = [...missions];
-    [next[i], next[j]] = [next[j], next[i]];
-    setMissions(next);
+    const nextList = [...missions];
+    [nextList[i], nextList[j]] = [nextList[j], nextList[i]];
+    setMissions(nextList);
     start(async () => {
       await reorderMissions(
         id,
-        next.map((m) => m.id),
+        nextList.map((m) => m.id),
       );
       notify();
     });
@@ -294,7 +235,7 @@ export function SopWorkspace({
       notify();
     });
 
-  /** SOP 생성·다시 생성 — T3Q 호출이 실패하면 화면에 알린다 */
+  /** 다시 생성 (편집 모드, 실행 전만) — T3Q 호출이 실패하면 화면에 알린다 */
   const generate = () => {
     setGenError(null);
     start(async () => {
@@ -305,351 +246,177 @@ export function SopWorkspace({
     });
   };
 
+  // SOP가 없는 상황 — SOP는 상황정보 등록(이어서 작성)에서 만든다 (N-05)
   if (!sop) {
     return (
       <Card className="py-10">
         <Empty>생성된 SOP가 없습니다.</Empty>
         {editable && (
-          <div className="flex justify-center">
-            <Button
-              size="lg"
-              variant="primary"
-              disabled={busy}
-              onClick={generate}
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-[17px]">상황정보 등록에서 SOP를 생성하세요.</p>
+            <Link
+              href={`/new?resume=${id}`}
+              className="inline-flex h-14 items-center gap-1.5 rounded-md bg-primary px-7 text-[18px] font-medium text-white transition hover:bg-primary-strong"
             >
-              <Sparkles size={20} /> {busy ? "SOP 생성 중" : "SOP 생성하기"}
-            </Button>
+              <Sparkles size={20} /> 상황정보 등록으로
+            </Link>
           </div>
         )}
-        {genError && <p className="mt-4 text-center text-[16px] text-danger">{genError}</p>}
       </Card>
     );
   }
 
-  // 대응단계별 묶음 (1단계 → 4단계 → 직접 추가)
-  const groupOf = (m: Mission) =>
-    /^[0-9]단계/.test(m.stage)
-      ? m.stage
-      : m.phase === "복구"
-        ? STEP_LABEL.수습복구
-        : "직접 추가";
-  const groups = Array.from(new Set(missions.map(groupOf)))
-    .sort((a, b) =>
-      a === "직접 추가" ? 1 : b === "직접 추가" ? -1 : a.localeCompare(b),
-    )
-    .map((label) => {
-      const all = missions.filter((m) => groupOf(m) === label);
-      // 필요시 임무는 단계 끝에 따로 모은다
-      return { label, items: [...all.filter((m) => !isOnDemand(m)), ...all.filter(isOnDemand)] };
-    });
-
   return (
     <div className="space-y-5">
-      {/* 실행 상태 바 */}
-      <Card className="flex flex-wrap items-center gap-x-5 gap-y-3 px-6 py-4">
-        <Segmented
-          value={mode}
-          onChange={setMode}
-          items={[
-            { value: "edit", label: "SOP 편집", icon: <Pencil size={17} /> },
-            { value: "run", label: "SOP 실행", icon: <ListChecks size={18} /> },
-          ]}
-        />
-        <Segmented
-          value={view}
-          onChange={setView}
-          items={[
-            { value: "flow", label: "순서도", icon: <Workflow size={18} /> },
-            { value: "list", label: "목록", icon: <List size={18} /> },
-          ]}
-        />
-        {detached ? (
-          <Button size="sm" variant="primary" onClick={dock}>
-            <PanelTopClose size={16} /> 창 복귀
-          </Button>
-        ) : (
-          <Button size="sm" onClick={detach}>
-            <ExternalLink size={16} /> 창 분리
-          </Button>
-        )}
-        {running ? (
-          <Badge tone="blue">실행 중</Badge>
-        ) : ended ? (
-          <Badge tone="green">실행 종료</Badge>
-        ) : (
-          <Badge tone="gray">실행 전</Badge>
-        )}
-        {sop.startedAt && (
-          <span className="text-[16px] text-sub">
-            시작 {fmtDateTime(sop.startedAt)}
-            {sop.endedAt && ` · 종료 ${fmtTime(sop.endedAt)}`}
-          </span>
-        )}
-        <span className="text-[17px] font-medium">
-          완료 {counts.done} · 진행 중 {counts.doing} · 대기 {counts.todo} ·
-          생략 {counts.skipped}
-        </span>
-        {sop.source === "mock" && !sop.startedAt && (
-          <Badge tone="gray">기본 SOP</Badge>
-        )}
-        {sop.manual && (
-          <span className="flex items-center gap-1.5 text-[16px] text-sub">
-            <BookOpen size={17} />
-            {sop.manual.replace(/\s*\([^)]*\)\s*$/, "")} 기준
-          </span>
-        )}
-        {sop.deptMatched === false && (
-          <span className="text-[16px] font-semibold text-warning">
-            요청 부서 없음 — 초기대응부서 기준
-          </span>
-        )}
-        {genError && <span className="text-[16px] font-semibold text-danger">{genError}</span>}
-        <div className="ml-auto flex flex-wrap gap-2">
-          {editable && !sop.startedAt && (
-            <>
-              <Button
-                disabled={busy}
-                onClick={generate}
-              >
-                <Sparkles size={18} /> 다시 생성
-              </Button>
-              <Button
-                variant="primary"
-                disabled={busy || !missions.length}
-                data-tour="sop-start"
-                onClick={() => {
-                  setMode("run");
-                  act(() => startSop(id));
-                }}
-              >
-                <Play size={18} /> SOP 실행 시작
-              </Button>
-            </>
-          )}
-          {editable && running && (
-            <Button
-              variant="primary"
-              disabled={busy}
-              onClick={() => setConfirmEnd(true)}
-              data-tour="sop-end"
-            >
-              <Square size={16} /> 실행 종료
-            </Button>
-          )}
-          {editable && ended && (
-            <>
-              <Button
-                disabled={busy}
-                onClick={() => {
-                  setMode("run");
-                  act(() => reopenSop(id));
-                }}
-              >
-                <RotateCcw size={18} /> 실행 재개
-              </Button>
-              <Button
-                variant="primary"
-                disabled={busy}
-                onClick={() => start(() => createReport(id))}
-                data-tour="report-create"
-              >
-                <FileText size={18} /> 상황일지 작성
-              </Button>
-            </>
-          )}
+      {/* 도구줄 — 왼쪽 상태 정보, 오른쪽 SOP 작업 버튼 (P-12) */}
+      <Card className="flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4">
+        <div className="min-w-0 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            {editing ? (
+              <Badge tone="orange">편집 중</Badge>
+            ) : running ? (
+              <Badge tone="blue">실행 중</Badge>
+            ) : ended ? (
+              <Badge tone="green">실행 종료</Badge>
+            ) : (
+              <Badge tone="gray">실행 전</Badge>
+            )}
+            {sop.startedAt && (
+              <span className="text-[16px] text-sub">
+                시작 {fmtDateTime(sop.startedAt)}
+                {sop.endedAt && ` · 종료 ${fmtTime(sop.endedAt)}`}
+              </span>
+            )}
+            <span className="text-[17px] font-medium">
+              완료 {counts.done} · 진행 중 {counts.doing} · 대기 {counts.todo} · 생략 {counts.skipped}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Badge tone="gray">{sop.source === "t3q" ? "AI" : "기본 SOP"}</Badge>
+            {sop.manual && (
+              <span className="flex items-center gap-1.5 text-[16px] text-sub">
+                <BookOpen size={17} />
+                {sop.manual.replace(/\s*\([^)]*\)\s*$/, "")} 기준
+              </span>
+            )}
+            {sop.deptMatched === false && (
+              <span className="text-[16px] font-semibold text-warning">요청 부서 없음 — 초기대응부서 기준</span>
+            )}
+            {genError && <span className="text-[16px] font-semibold text-danger">{genError}</span>}
+          </div>
         </div>
+        {editable && (
+          <div className="ml-auto flex flex-wrap gap-2">
+            {editing ? (
+              <>
+                {!sop.startedAt && (
+                  <Button disabled={busy} onClick={generate}>
+                    <Sparkles size={18} /> 다시 생성
+                  </Button>
+                )}
+                <Button
+                  variant="primary"
+                  data-tour="edit-done"
+                  onClick={() => {
+                    setEditing(false);
+                    start(async () => {
+                      await flushSaves();
+                      router.refresh();
+                      notify();
+                    });
+                  }}
+                >
+                  <Check size={18} /> 편집 종료
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button data-tour="sop-edit" onClick={() => setEditing(true)}>
+                  <Pencil size={17} /> SOP 편집
+                </Button>
+                {!sop.startedAt && (
+                  <Button
+                    variant="primary"
+                    disabled={busy || !missions.length}
+                    data-tour="sop-start"
+                    onClick={() => act(() => startSop(id))}
+                  >
+                    <Play size={18} /> SOP 실행 시작
+                  </Button>
+                )}
+                {running && (
+                  <Button variant="outline" disabled={busy} onClick={() => setConfirmEnd(true)} data-tour="sop-end">
+                    <Square size={16} /> 실행 종료
+                  </Button>
+                )}
+                {ended && (
+                  <>
+                    <Button disabled={busy} onClick={() => act(() => reopenSop(id))}>
+                      <RotateCcw size={18} /> 실행 재개
+                    </Button>
+                    <Button
+                      variant="primary"
+                      disabled={busy}
+                      onClick={() => start(() => createReport(id))}
+                      data-tour="report-create"
+                    >
+                      <FileText size={18} /> 상황일지 작성
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </Card>
 
-      {detached && (
-        <Card className="flex items-center gap-3 border border-primary-line bg-primary-weak/60 px-6 py-3">
-          <ExternalLink size={18} className="text-primary" />
-          <span className="font-medium">SOP가 별도 창에 열려 있습니다</span>
-          <Button
-            size="sm"
-            className="ml-auto"
-            onClick={() => win.current?.focus()}
-          >
-            창 보기
-          </Button>
-          <Button size="sm" variant="primary" onClick={dock}>
-            <PanelTopClose size={16} /> 창 복귀
-          </Button>
-        </Card>
-      )}
+      {/* 흐름 · 임무 상세 · 수행 이력 3단 (P-09·P-10·P-16) */}
+      <div className="grid gap-5 xl:grid-cols-[minmax(300px,340px)_minmax(0,1fr)_minmax(300px,360px)]">
+        <div className={PANE}>
+          <SopFlow
+            missions={missions}
+            selected={sel}
+            started={!!sop.startedAt}
+            ended={ended}
+            editing={editing && editable}
+            onSelect={select}
+            onMove={move}
+            onAdd={() => setAdding(true)}
+            onBig={openBig}
+          />
+        </div>
 
-      <div ref={topRef} className="-mb-5 scroll-mt-28" />
-      {view === "flow" && !detached && (
-        <SopMetro
-          missions={missions}
-          selected={sel}
-          started={!!sop.startedAt}
-          ended={ended}
-          people={{ targets: propagationTargets(missions, contacts) }}
-          onSelect={select}
-        />
-      )}
-
-      <div
-        className={clsx(
-          "grid gap-5",
-          view === "list" && !detached
-            ? "xl:grid-cols-[360px_1fr_380px]"
-            : "xl:grid-cols-[1fr_380px]",
-        )}
-      >
-        {/* SOP 임무 목록 */}
-        {view === "list" && !detached && (
-          <Card className="flex max-h-[calc(100vh-240px)] min-h-[560px] flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-5 pb-2 pt-5">
-              <h2 className="text-[19px] font-bold">SOP 임무</h2>
-              <span className="text-sub">{missions.length}건</span>
-            </div>
-            <div className="scroll-thin flex-1 overflow-y-auto pb-2">
-              {groups.map((g) => (
-                <div key={g.label}>
-                  <div className="sticky top-0 z-10 bg-tab px-5 py-2 text-[15px] font-bold text-white">
-                    {g.label}
-                  </div>
-                  {g.items.map((m, i) => {
-                    const st = MISSION_STATUS[m.status];
-                    const onDemand = isOnDemand(m);
-                    const firstOnDemand = onDemand && !(i > 0 && isOnDemand(g.items[i - 1]));
-                    const newGroup =
-                      !onDemand && m.group && m.group.code !== g.items[i - 1]?.group?.code;
-                    return (
-                      <div key={m.id}>
-                        {firstOnDemand && (
-                          <div className="flex items-center gap-1.5 border-b border-line-weak bg-warning-weak px-5 pb-1.5 pt-3 text-[15px] font-bold text-warning">
-                            <Zap size={16} /> 필요시 임무
-                          </div>
-                        )}
-                        {newGroup && (
-                          <div className="border-b border-line-weak bg-canvas px-5 pb-1.5 pt-3 text-[15px] font-bold leading-snug">
-                            [{m.group!.code}] {m.group!.name}
-                          </div>
-                        )}
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => select(m.id)}
-                          onKeyDown={(e) => e.key === "Enter" && select(m.id)}
-                          className={clsx(
-                            "group flex w-full cursor-pointer items-start gap-3 border-l-4 px-5 py-3.5 text-left transition",
-                            sel === m.id
-                              ? "border-primary bg-primary-weak"
-                              : onDemand
-                                ? "border-warning/60 hover:bg-canvas"
-                                : "border-transparent hover:bg-canvas",
-                          )}
-                        >
-                          <KindIcon kind={missionKind(m)} />
-                          <div className="min-w-0 flex-1">
-                            <div
-                              className={clsx(
-                                "leading-snug",
-                                m.status === "skipped" &&
-                                  "text-mute line-through",
-                              )}
-                            >
-                              {m.group && /^\d/.test(m.code) && (
-                                <span className="mr-1.5 text-[15px] text-sub">
-                                  {m.code}
-                                </span>
-                              )}
-                              {m.title || "제목 없음"}
-                            </div>
-                            {m.condition && (
-                              <div className="mt-1 text-[15px] font-semibold text-warning">
-                                {m.condition}
-                              </div>
-                            )}
-                            {(m.startedAt || m.doneAt) && (
-                              <div className="mt-1 text-[15px] text-mute">
-                                {m.startedAt ? fmtTime(m.startedAt) : ""}
-                                {m.doneAt
-                                  ? ` ~ ${fmtTime(m.doneAt).split(" ")[1]}`
-                                  : m.startedAt
-                                    ? " ~"
-                                    : ""}
-                              </div>
-                            )}
-                          </div>
-                          {mode === "edit" && editable ? (
-                            <span className="flex shrink-0 flex-col">
-                              <button
-                                className="rounded p-0.5 text-sub hover:bg-white hover:text-primary"
-                                aria-label="위로"
-                                onClick={(e) => (
-                                  e.stopPropagation(),
-                                  move(m.id, -1)
-                                )}
-                              >
-                                <ChevronUp size={18} />
-                              </button>
-                              <button
-                                className="rounded p-0.5 text-sub hover:bg-white hover:text-primary"
-                                aria-label="아래로"
-                                onClick={(e) => (
-                                  e.stopPropagation(),
-                                  move(m.id, 1)
-                                )}
-                              >
-                                <ChevronDown size={18} />
-                              </button>
-                            </span>
-                          ) : (
-                            sop.startedAt && (
-                              <Badge tone={st.tone}>{st.label}</Badge>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-            {editable && mode === "edit" && (
-              <div className="border-t border-line-weak p-4">
-                <Button className="w-full" onClick={() => setAdding(true)}>
-                  <Plus size={18} /> 임무 추가
-                </Button>
-              </div>
-            )}
-          </Card>
-        )}
-
-        {/* 임무 상세 */}
-        <Card className="min-h-[560px]">
+        <Card className={`flex min-h-[560px] flex-col overflow-hidden ${PANE}`}>
+          <div className="border-b border-line-weak px-6 py-3.5">
+            <h2 className="text-[19px] font-bold">임무 상세</h2>
+          </div>
           {current ? (
-            <MissionDetail
-              key={current.id}
-              mission={current}
-              mode={mode}
-              dispatches={dispatches.filter((d) => d.missionId === current.id)}
-              preview={{ orgName, situationTitle: title }}
-              running={running}
-              started={!!sop.startedAt}
-              editable={editable}
-              onAddMission={
-                view === "flow" && mode === "edit" && editable
-                  ? () => setAdding(true)
-                  : undefined
-              }
-              me={me}
-              contacts={contacts}
-              situationId={id}
-              onChange={update}
-              onDone={backToFlow}
-              onDelete={() => remove(current.id)}
-            />
+            <div className="min-h-0 flex-1">
+              <MissionDetail
+                key={current.id}
+                mission={current}
+                mode={editing ? "edit" : "run"}
+                dispatches={dispatches.filter((d) => d.missionId === current.id)}
+                preview={{ orgName, situationTitle: title }}
+                running={running}
+                started={!!sop.startedAt}
+                editable={editable}
+                me={me}
+                contacts={contacts}
+                situationId={id}
+                onChange={update}
+                onDone={next}
+                onDelete={() => remove(current.id)}
+              />
+            </div>
           ) : (
             <Empty>임무를 선택하세요.</Empty>
           )}
         </Card>
 
-        {/* 수행 이력 · 상황 기록 */}
-        <Timeline id={id} events={events} editable={editable} />
+        <div className={PANE}>
+          <Timeline id={id} events={events} editable={editable} />
+        </div>
       </div>
 
       <Modal
@@ -737,35 +504,5 @@ function AddMission({
         </Button>
       </div>
     </Modal>
-  );
-}
-
-function Segmented<T extends string>({
-  value,
-  onChange,
-  items,
-}: {
-  value: T;
-  onChange: (v: T) => void;
-  items: { value: T; label: string; icon: React.ReactNode }[];
-}) {
-  return (
-    <div className="flex rounded-lg bg-canvas p-1">
-      {items.map((it) => (
-        <button
-          key={it.value}
-          onClick={() => onChange(it.value)}
-          className={clsx(
-            "flex h-10 items-center gap-1.5 rounded-md px-4 text-[16px] font-semibold transition",
-            value === it.value
-              ? "bg-white text-tab shadow-sm"
-              : "text-sub hover:text-ink",
-          )}
-        >
-          {it.icon}
-          {it.label}
-        </button>
-      ))}
-    </div>
   );
 }
