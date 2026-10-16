@@ -15,8 +15,8 @@ export default async function ReportPage({ params }: PageProps<"/reports/[rid]">
       id={r.id}
       situationId={s ? s.id : null}
       situationTitle={s?.title ?? null}
+      name={r.title}
       initial={r.content}
-      status={r.status}
       locked={r.locked}
       hasHwpx={!!r.hwpxData}
       hwpxSavedAt={r.hwpxSavedAt?.toISOString() ?? null}

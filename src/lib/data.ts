@@ -2,7 +2,7 @@ import "server-only";
 import { and, asc, desc, eq, isNull, isNotNull, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { getDb, schema } from "@/lib/db";
-import type { SessionUser } from "@/lib/types";
+import type { ReportSnapshot, SessionUser } from "@/lib/types";
 
 export type Situation = typeof schema.situations.$inferSelect;
 export type EventRow = typeof schema.events.$inferSelect;
@@ -74,6 +74,8 @@ export async function listReports(u: SessionUser, opts: { trashed?: boolean } = 
       ownerName: schema.users.name,
       /** 「1. 상황 개요」 본문 — 상황이 지워진 상황일지의 재난유형·위기경보를 읽는 데 쓴다 */
       overview: sql<string | null>`${r.content}->'sections'->0->>'body'`,
+      /** 만들 당시 단계 (R-06) */
+      snapshot: sql<ReportSnapshot | null>`${r.content}->'snapshot'`,
     })
     .from(r)
     .leftJoin(schema.users, eq(schema.users.id, r.ownerId))

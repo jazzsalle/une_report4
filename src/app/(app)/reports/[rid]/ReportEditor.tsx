@@ -7,7 +7,6 @@ import clsx from "clsx";
 import {
   ArrowDown,
   ArrowUp,
-  CheckCircle2,
   ChevronDown,
   ChevronRight,
   Download,
@@ -19,11 +18,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { nanoid } from "nanoid";
-import { Badge, Button, Modal } from "@/components/ui";
+import { Button, Modal } from "@/components/ui";
 import type { ReportContent, ReportSection } from "@/lib/types";
-import { saveReport, setReportStatus, trashReport, getHwpx } from "@/app/actions/report";
+import { saveReport, trashReport, getHwpx } from "@/app/actions/report";
 import { subtitleOf, safeFilename } from "@/lib/export/blocks";
-import { BackButton } from "@/components/BackButton";
 import { DocBlocks } from "@/components/DocView";
 import { downloadBytes, exportDocx, exportHwpx, base64ToBytes } from "@/lib/export/client";
 import { fmtTime } from "@/lib/format";
@@ -34,8 +32,8 @@ export function ReportEditor({
   id,
   situationId,
   situationTitle,
+  name,
   initial,
-  status,
   hasHwpx: hasHwpxInit,
   hwpxSavedAt: hwpxSavedInit,
   editable,
@@ -45,8 +43,9 @@ export function ReportEditor({
   situationId: string | null;
   /** 상위 상황 이름 — 경로 「상황명 › 상황일지」 */
   situationTitle: string | null;
+  /** 문서명 — 목록·내보낸 파일 이름 (문서 안 제목과 따로, R-12) */
+  name: string;
   initial: ReportContent;
-  status: string;
   hasHwpx: boolean;
   hwpxSavedAt: string | null;
   editable: boolean;
@@ -61,17 +60,20 @@ export function ReportEditor({
   const [hwp, setHwp] = useState(false);
   const [hwpx, setHwpx] = useState({ has: hasHwpxInit, at: hwpxSavedInit });
   const [exportOpen, setExportOpen] = useState(false);
-  const [confirm, setConfirm] = useState<null | "trash" | "final">(null);
+  const [confirm, setConfirm] = useState(false);
   const [busy, start] = useTransition();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const final = status === "final";
-  const ro = !editable || final;
+  /** 저장 대기 중인 본문 — 화면을 떠날 때 이것을 저장한다 */
+  const pendingRef = useRef<ReportContent | null>(null);
+  const ro = !editable;
 
   const update = (next: ReportContent) => {
     setC(next);
     setDirty(true);
+    pendingRef.current = next;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
+      pendingRef.current = null;
       const r = await saveReport(id, next);
       setSavedAt(r.savedAt);
       setDirty(false);
@@ -79,13 +81,37 @@ export function ReportEditor({
   };
   const flush = async () => {
     if (timer.current) clearTimeout(timer.current);
-    if (dirty) {
-      const r = await saveReport(id, c);
+    const next = pendingRef.current;
+    if (next) {
+      pendingRef.current = null;
+      const r = await saveReport(id, next);
       setSavedAt(r.savedAt);
       setDirty(false);
     }
   };
-  useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
+  // 「뒤로」 없이 떠날 때(상단 메뉴·경로 링크·탭 전환·창 닫기) 남은 수정을 저장한다 (C-04)
+  useEffect(() => {
+    const save = () => {
+      const next = pendingRef.current;
+      if (!next) return;
+      if (timer.current) clearTimeout(timer.current);
+      pendingRef.current = null;
+      void saveReport(id, next);
+    };
+    const onClick = (e: MouseEvent) => {
+      if ((e.target as Element | null)?.closest?.("a[href]")) save();
+    };
+    const onHide = () => document.visibilityState === "hidden" && save();
+    document.addEventListener("click", onClick, true);
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", save);
+    return () => {
+      document.removeEventListener("click", onClick, true);
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", save);
+      save();
+    };
+  }, [id]);
 
   const setSection = (sid: string, patch: Partial<ReportSection>) =>
     update({ ...c, sections: c.sections.map((s) => (s.id === sid ? { ...s, ...patch } : s)) });
@@ -102,7 +128,7 @@ export function ReportEditor({
     setEditing(s.id);
   };
 
-  const filename = safeFilename(c.title);
+  const filename = safeFilename(name);
   const doExport = async (kind: "hwpx" | "docx" | "pdf") => {
     setExportOpen(false);
     await flush();
@@ -137,8 +163,6 @@ export function ReportEditor({
       {/* 도구 영역 */}
       <div className="no-print border-b border-line bg-white px-6">
         <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 pt-3">
-          {/* 떠나기 전에 저장 대기 중인 수정 내용을 저장한다 (1초 자동저장 전에 나가면 사라짐) */}
-          <BackButton fallback={situationId ? `/s/${situationId}/report` : "/docs"} before={flush} />
           {/* 상위 상황 경로: 상황명을 누르면 그 상황의 상황일지 탭 */}
           {situationId && situationTitle && (
             <>
@@ -152,8 +176,7 @@ export function ReportEditor({
               <ChevronRight size={18} className="shrink-0 text-mute" />
             </>
           )}
-          <span className="mr-2 text-[19px] font-bold">{c.title}</span>
-          {final ? <Badge tone="green">확정</Badge> : <Badge tone="gray">작성 중</Badge>}
+          <span className="mr-2 text-[19px] font-bold">{name}</span>
         </div>
         <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 py-3">
           <Button size="sm" variant="ghost" data-tour="report-hwp" onClick={async () => (await flush(), setHwp(true))}>
@@ -196,8 +219,8 @@ export function ReportEditor({
                 </div>
               )}
             </div>
-            {editable && !final && !locked && (
-              <Button size="sm" variant="ghost" onClick={() => setConfirm("trash")}>
+            {editable && !locked && (
+              <Button size="sm" variant="ghost" onClick={() => setConfirm(true)}>
                 <Trash2 size={17} /> 삭제
               </Button>
             )}
@@ -288,55 +311,37 @@ export function ReportEditor({
               </section>
             ))}
           </article>
-          {editable && (
-            <div className="no-print mx-auto mt-6 flex max-w-[900px] justify-end">
-              {final ? (
-                <Button onClick={() => start(async () => (await setReportStatus(id, "draft"), router.refresh()))}>
-                  확정 해제
-                </Button>
-              ) : (
-                <Button size="lg" variant="primary" onClick={() => setConfirm("final")}>
-                  <CheckCircle2 size={20} /> 상황일지 확정
-                </Button>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
       <Modal
-        open={confirm !== null}
-        onClose={() => setConfirm(null)}
-        title={confirm === "trash" ? "상황일지 삭제" : "상황일지 확정"}
+        open={confirm}
+        onClose={() => setConfirm(false)}
+        title="상황일지 삭제"
         width={480}
         footer={
           <>
-            <Button onClick={() => setConfirm(null)}>취소</Button>
+            <Button onClick={() => setConfirm(false)}>취소</Button>
             <Button
-              variant={confirm === "trash" ? "danger" : "primary"}
+              variant="danger"
               disabled={busy}
               onClick={() =>
                 start(async () => {
-                  if (confirm === "trash") {
-                    await trashReport(id);
-                    router.push(situationId ? `/s/${situationId}/report` : "/docs");
-                  } else if (confirm === "final") {
-                    await flush();
-                    await setReportStatus(id, "final");
-                    router.refresh();
-                  }
-                  setConfirm(null);
+                  // 지울 문서는 남은 수정을 저장하지 않는다
+                  if (timer.current) clearTimeout(timer.current);
+                  pendingRef.current = null;
+                  await trashReport(id);
+                  setConfirm(false);
+                  router.push(situationId ? `/s/${situationId}/report` : "/docs");
                 })
               }
             >
-              {confirm === "trash" ? "휴지통으로" : "확인"}
+              휴지통으로
             </Button>
           </>
         }
       >
-        <p className="text-[18px] leading-relaxed">
-          {confirm === "trash" ? "휴지통에서 7일간 보관 후 삭제됩니다." : "확정하면 수정할 수 없습니다."}
-        </p>
+        <p className="text-[18px] leading-relaxed">휴지통에서 7일간 보관 후 삭제됩니다.</p>
       </Modal>
     </div>
   );

@@ -6,7 +6,9 @@ import { requireUser, canEdit } from "@/lib/auth/session";
 import { getSituation } from "@/lib/data";
 import { getDb, schema } from "@/lib/db";
 import { fmtDateTime } from "@/lib/format";
-import { Badge, Card, CardHead, Empty } from "@/components/ui";
+import { Card, CardHead, Empty } from "@/components/ui";
+import { snapshotLabel } from "@/lib/report/snapshot";
+import { ReportActions } from "@/app/(app)/docs/ReportActions";
 import { CreateReportButton } from "./CreateReportButton";
 
 export default async function SituationReports({ params }: PageProps<"/s/[id]/report">) {
@@ -39,16 +41,22 @@ export default async function SituationReports({ params }: PageProps<"/s/[id]/re
         <Empty>작성된 상황일지가 없습니다.</Empty>
       ) : (
         <ul className="px-6 py-3">
-          {reports.map((r) => (
-            <li key={r.id} className="border-b border-line-weak last:border-0">
-              <Link href={`/reports/${r.id}`} className="flex items-center gap-4 py-5 hover:text-primary">
-                <span className="text-[18px] font-semibold">{r.title}</span>
-                {r.status === "final" ? <Badge tone="green">확정</Badge> : <Badge tone="gray">작성 중</Badge>}
-                <span className="ml-auto text-sub">{fmtDateTime(r.updatedAt)}</span>
-                <ChevronRight size={20} />
-              </Link>
-            </li>
-          ))}
+          {reports.map((r) => {
+            const sub = snapshotLabel(r.content.snapshot);
+            return (
+              <li key={r.id} className="flex items-center gap-2 border-b border-line-weak last:border-0">
+                <Link href={`/reports/${r.id}`} className="flex min-w-0 flex-1 items-center gap-4 py-5 hover:text-primary">
+                  <span className="min-w-0">
+                    <span className="block text-[18px] font-semibold">{r.title}</span>
+                    {sub && <span className="mt-1 block text-[16px] text-sub">{sub}</span>}
+                  </span>
+                  <span className="ml-auto shrink-0 text-sub">{fmtDateTime(r.updatedAt)}</span>
+                  <ChevronRight size={20} className="shrink-0" />
+                </Link>
+                {canEdit(u, r) && <ReportActions id={r.id} name={r.title} canDelete={!r.locked} />}
+              </li>
+            );
+          })}
         </ul>
       )}
     </Card>

@@ -22,10 +22,24 @@ async function patch(rid: string, p: Partial<typeof schema.reports.$inferInsert>
     .where(eq(schema.reports.id, rid));
 }
 
+/** 본문 저장 — 문서 안 제목(content.title)을 고쳐도 문서명(reports.title)은 그대로 (R-12) */
 export async function saveReport(rid: string, content: ReportContent) {
   await editable(rid);
-  await patch(rid, { content, title: content.title });
+  await patch(rid, { content });
   return { savedAt: new Date().toISOString() };
+}
+
+/** 문서명 변경 (목록 「⋯」 → 「이름 변경」) — 목록·상황일지 관리·내보낸 파일 이름. 문서 안 제목은 그대로 */
+export async function renameReport(rid: string, name: string): Promise<{ error?: string }> {
+  const { r } = await editable(rid);
+  const t = name.trim();
+  if (!t) return { error: "문서명을 입력하세요." };
+  if (t === r.title) return {};
+  await patch(rid, { title: t });
+  revalidatePath("/docs");
+  if (r.situationId) revalidatePath(`/s/${r.situationId}/report`);
+  revalidatePath(`/reports/${rid}`);
+  return {};
 }
 
 /** 서버 액션 한도(4MB) 안쪽 — base64 기준 */
@@ -45,17 +59,12 @@ export async function getHwpx(rid: string): Promise<string | null> {
   return r?.hwpxData ?? null;
 }
 
-export async function setReportStatus(rid: string, status: "draft" | "final") {
-  await editable(rid);
-  await patch(rid, { status });
-  revalidatePath(`/reports/${rid}`);
-}
-
 export async function trashReport(rid: string) {
   const { r } = await editable(rid);
   if (r.locked) throw new Error("예시 문서는 지울 수 없습니다.");
   await patch(rid, { deletedAt: new Date() });
   revalidatePath("/docs");
+  if (r.situationId) revalidatePath(`/s/${r.situationId}/report`);
 }
 
 export async function restoreReport(rid: string) {

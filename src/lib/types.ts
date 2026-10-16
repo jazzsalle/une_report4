@@ -184,10 +184,22 @@ export interface ReportSection {
   images?: { src: string; caption: string; width: number; height: number }[];
 }
 
+/** 상황일지를 만들 당시 대응 단계 (R-06) — 목록에서 판본을 구분 */
+export interface ReportSnapshot {
+  /** 대응단계 표기 (예: 2단계 초기대응) */
+  step: string;
+  done: number;
+  total: number;
+  started: boolean;
+  ended: boolean;
+}
+
 export interface ReportContent {
   title: string;
   reporter: string;
   dept: string;
   reportedAt: string;
   sections: ReportSection[];
+  /** 만들 당시 단계 — 2026-10-16 이전 상황일지에는 없음 */
+  snapshot?: ReportSnapshot;
 }

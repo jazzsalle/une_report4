@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth/session";
 import { listReports, listSituations } from "@/lib/data";
+import { snapshotLabel } from "@/lib/report/snapshot";
 import { DocsView } from "./DocsView";
 
 export default async function DocsPage() {
@@ -17,8 +18,9 @@ export default async function DocsPage() {
         return {
           id: r.id,
           title: r.title,
-          status: r.status,
           locked: r.locked,
+          // 만들 당시 단계 · 상황: 상위 상황명 (상황이 지워졌으면 생략)
+          sub: [snapshotLabel(r.snapshot), s ? `상황: ${s.title}` : null].filter(Boolean).join(" · "),
           hazard: s?.hazard ?? fromOverview(r.overview, /재난유형: ([^\s(]+)/) ?? "-",
           level: s?.alertLevel ?? fromOverview(r.overview, /위기경보: ([^\s(]+)/) ?? "-",
           owner: r.ownerName ?? "-",
