@@ -98,6 +98,7 @@ export function SopWorkspace({
   contacts,
   library,
   hazard,
+  sido,
   step,
   title,
   orgName,
@@ -111,6 +112,7 @@ export function SopWorkspace({
   contacts: ContactsBundle;
   library: LibraryItem[];
   hazard: string;
+  sido: string;
   step: string;
   title: string;
   orgName: string;
@@ -680,6 +682,7 @@ export function SopWorkspace({
         onClose={() => setAdding(false)}
         library={library}
         hazard={hazard}
+        sido={sido}
         step={step}
         existing={missions.map((m) => m.code)}
         onAdd={(m) => {
@@ -709,6 +712,7 @@ function AddMission({
   onClose,
   library,
   hazard,
+  sido,
   step,
   existing,
   onAdd,
@@ -718,6 +722,7 @@ function AddMission({
   onClose: () => void;
   library: LibraryItem[];
   hazard: string;
+  sido: string;
   step: string;
   existing: string[];
   onAdd: (m: Mission) => void;
@@ -793,6 +798,7 @@ function AddMission({
               start(async () => {
                 const ms = await missionsFromLibrary(
                   hazard,
+                  sido,
                   addable.map((l) => l.code),
                 );
                 onAddMany(ms, STEP_LABEL[filter as ResponseStep]);
@@ -812,7 +818,7 @@ function AddMission({
               disabled={has || pending}
               onClick={() =>
                 start(async () => {
-                  const m = await missionFromLibrary(hazard, l.code);
+                  const m = await missionFromLibrary(hazard, sido, l.code);
                   if (m) onAdd(m);
                 })
               }

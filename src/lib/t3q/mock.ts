@@ -1,5 +1,5 @@
 import "server-only";
-import { selectSeed, stepOf, stepLabelOf } from "@/lib/seed";
+import { BUSAN_SOURCE, selectSeed, stepOf, stepLabelOf } from "@/lib/seed";
 import { STEP_CODE } from "@/lib/sop/convert";
 import { sidoShort } from "@/lib/regions";
 import type { ResponseStep } from "@/lib/types";
@@ -47,7 +47,7 @@ function deptMatched(dept?: string): boolean {
 /** API-02 모의: 매뉴얼 시드에서 대응단계에 맞는 조치를 추출 */
 export async function mockSopActions(req: SopActionsRequest): Promise<SopActionsResponse> {
   const step = STEP_BY_CODE[req.context.responseStep] ?? "초기대응";
-  const { source, actions } = selectSeed(req.context.disasterType.name, step);
+  const { source, actions } = selectSeed(req.context.disasterType.name, req.context.responsibleRegion.name, step);
   const missions = new Map<string, SopMission>();
   const out: SopAction[] = actions.map((a, i) => {
     const mc = a.mission?.code ?? `M-${STEP_CODE[stepOf(a)]}`;
@@ -98,7 +98,7 @@ export async function mockSopActions(req: SopActionsRequest): Promise<SopActions
       scope: "SIDO",
       stepBasis: "RESPONSE_STEP",
       // 부서 행 구분은 부산 풍수해 시드에만 있다 (산불·공통 시드는 판단하지 않음)
-      ...(req.context.disasterType.name === "태풍/호우"
+      ...(source === BUSAN_SOURCE
         ? { departments: SEED_DEPTS, departmentMatched: deptMatched(req.context.department) }
         : {}),
     },

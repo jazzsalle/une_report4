@@ -4,7 +4,7 @@ import { getContactsBundle, getSituation, listDispatches, listEvents } from "@/l
 import { getDb, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { seedLibrary, stepOf } from "@/lib/seed";
-import { orgForSituation } from "@/lib/regions";
+import { ORG_SIDO, orgForSituation } from "@/lib/regions";
 import { STEP_LABEL } from "@/lib/types";
 import { SopWorkspace } from "./SopWorkspace";
 
@@ -22,7 +22,7 @@ export default async function SopPage({ params }: PageProps<"/s/[id]/sop">) {
     db.select().from(schema.orgs).where(eq(schema.orgs.id, orgId)).limit(1),
   ]);
   // SOP 생성과 같은 기준: 자연재난과 관련 행동카드
-  const library = seedLibrary(s.hazard)
+  const library = seedLibrary(s.hazard, s.sido || ORG_SIDO[s.orgId] || "")
     .actions.filter((a) => a.nd !== false)
     .map((a) => ({
     code: a.code,
@@ -42,6 +42,7 @@ export default async function SopPage({ params }: PageProps<"/s/[id]/sop">) {
       contacts={contacts}
       library={library}
       hazard={s.hazard}
+      sido={s.sido || ORG_SIDO[s.orgId] || ""}
       title={s.title}
       orgName={org?.name ?? ""}
       dispatches={dispatches.map((d) => ({

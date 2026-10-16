@@ -217,7 +217,7 @@ paths:
       tags: [SOP 생성·실행]
       summary: missionsFromLibrary — 매뉴얼 행동카드 여러 개를 임무로 변환
       requestBody:
-        content: { application/json: { schema: { type: object, properties: { hazard: { type: string }, codes: { type: array, items: { type: string } } } } } }
+        content: { application/json: { schema: { type: object, properties: { hazard: { type: string }, sido: { type: string, description: 발생 시도 — 재난유형과 함께 매뉴얼을 고름 }, codes: { type: array, items: { type: string } } } } } }
       responses:
         "200": { description: 임무 목록, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Mission" } } } } }
   /action/library/missionFromLibrary:
@@ -225,7 +225,7 @@ paths:
       tags: [SOP 생성·실행]
       summary: missionFromLibrary — 매뉴얼 행동카드를 임무로 변환 (임무 추가)
       requestBody:
-        content: { application/json: { schema: { type: object, properties: { hazard: { type: string, example: 태풍/호우 }, code: { type: string, example: BSN-FL-001 } } } } }
+        content: { application/json: { schema: { type: object, properties: { hazard: { type: string, example: 태풍/호우 }, sido: { type: string, example: 부산광역시 }, code: { type: string, example: BSN-FL-001 } } } } }
       responses:
         "200": { description: 임무 또는 null, content: { application/json: { schema: { $ref: "#/components/schemas/Mission" } } } }
 

@@ -113,10 +113,13 @@ export const BUSAN_PROCESS: SeedAction[] = (busanProcess as { stages: ProcessSta
   ),
 );
 
-/** 재난유형별 매뉴얼 시드: 태풍/호우 = 부산 풍수해 매뉴얼, 산불 = 경북 산불 샘플, 그 외 = 공통 기본 SOP */
-export function seedLibrary(hazard: string): { source: string; actions: SeedAction[] } {
-  if (hazard === "산불") return { source: GB_WILDFIRE_SOURCE, actions: GB_WILDFIRE };
-  if (hazard === "태풍/호우") return { source: BUSAN_SOURCE, actions: BUSAN_PROCESS };
+/**
+ * 발생 시도 + 재난유형으로 매뉴얼 시드를 고른다 (PM Q-1).
+ * 부산 태풍/호우 = 부산 풍수해 매뉴얼, 경북 산불 = 경북 산불 샘플, 그 외(다른 시도 포함) = 공통 기본 SOP
+ */
+export function seedLibrary(hazard: string, sido: string): { source: string; actions: SeedAction[] } {
+  if (sido === "경상북도" && hazard === "산불") return { source: GB_WILDFIRE_SOURCE, actions: GB_WILDFIRE };
+  if (sido === "부산광역시" && hazard === "태풍/호우") return { source: BUSAN_SOURCE, actions: BUSAN_PROCESS };
   return { source: COMMON_SOURCE, actions: commonActions(hazard) };
 }
 
@@ -142,8 +145,8 @@ export function stepLabelOf(a: SeedAction) {
 }
 
 /** 대응단계별 기본 SOP 구성 — 선택한 단계의 행동카드만 */
-export function selectSeed(hazard: string, step: ResponseStep): { source: string; actions: SeedAction[] } {
-  const lib = seedLibrary(hazard);
+export function selectSeed(hazard: string, sido: string, step: ResponseStep): { source: string; actions: SeedAction[] } {
+  const lib = seedLibrary(hazard, sido);
   const mine = (a: SeedAction) => a.nd !== false;
   return { source: lib.source, actions: lib.actions.filter((a) => mine(a) && stepOf(a) === step) };
 }
