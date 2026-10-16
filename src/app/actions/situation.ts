@@ -241,14 +241,10 @@ export async function reopenSop(id: string) {
 
 const STATUS_TEXT: Record<Mission["status"], string> = { todo: "대기", doing: "착수", done: "완료", skipped: "생략" };
 
-/** 실행 종료된 SOP는 임무를 고치거나 전파할 수 없다 — 실행 재개 후 가능 (P-04) */
-const ENDED = "SOP 실행이 종료되어 수정·전파할 수 없습니다. 고치려면 「실행 재개」를 누르세요.";
-
 /** 실행 중 임무 저장 + 상태 변화는 이력으로 기록 */
 export async function saveMission(id: string, mission: Mission) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
-  if (s.sop.endedAt) throw new Error(ENDED);
   const prev = s.sop.missions.find((m) => m.id === mission.id);
   await putMission(id, mission);
   if (s.sop.startedAt && prev && prev.status !== mission.status) {
@@ -270,14 +266,12 @@ export async function saveMission(id: string, mission: Mission) {
 export async function deleteMission(id: string, missionId: string) {
   const { s } = await editable(id);
   if (!s.sop) return;
-  if (s.sop.endedAt) throw new Error(ENDED);
   await removeMission(id, missionId);
 }
 
 export async function reorderMissions(id: string, ids: string[]) {
   const { s } = await editable(id);
   if (!s.sop) return;
-  if (s.sop.endedAt) throw new Error(ENDED);
   await orderMissions(id, ids);
 }
 
@@ -297,8 +291,8 @@ export interface DispatchLink {
 export async function propagate(id: string, missionId: string, message: string) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
-  if (s.sop.endedAt) throw new Error(ENDED);
-  if (!s.sop.startedAt) throw new Error("전파는 SOP 실행 중에 보낼 수 있습니다.");
+  // SOP 수정은 실행 전·중·종료 후 언제나 가능, 전파만 실행 중에
+  if (!s.sop.startedAt || s.sop.endedAt) throw new Error("전파는 SOP 실행 중에 보낼 수 있습니다.");
   const mission = s.sop.missions.find((m) => m.id === missionId);
   if (!mission) throw new Error("임무를 찾을 수 없습니다.");
   const bundle = await getContactsBundle(orgForSituation(s.orgId, s.sido));

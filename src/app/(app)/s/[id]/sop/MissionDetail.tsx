@@ -38,7 +38,6 @@ export function MissionDetail({
   mode,
   running,
   started,
-  ended,
   editable,
   me,
   contacts,
@@ -55,7 +54,6 @@ export function MissionDetail({
   running: boolean;
   started: boolean;
   /** 실행 종료 — 입력란 읽기 전용 (P-04) */
-  ended: boolean;
   editable: boolean;
   me: string;
   contacts: ContactsBundle;
@@ -84,10 +82,10 @@ export function MissionDetail({
   const rec = useMemo(() => recommended(contacts.groups, m.propagation.targetHint), [contacts.groups, m.propagation.targetHint]);
   const now = () => new Date().toISOString();
 
-  const edit = editable && mode === "edit" && !ended;
+  const edit = editable && mode === "edit";
   const run = editable && mode === "run";
-  /** 전파 내용·조치 기록을 고칠 수 있음 (실행 종료 후에는 실행 재개 전까지 막음) */
-  const writable = editable && !ended;
+  /** 전파 내용·조치 기록을 고칠 수 있음 — SOP는 실행 종료 후에도 언제나 수정 가능 */
+  const writable = editable;
 
   const setStatus = (status: Mission["status"]) => {
     const patch: Partial<Mission> = { status };
@@ -155,12 +153,6 @@ export function MissionDetail({
       </div>
 
       <div className="scroll-thin flex-1 space-y-6 overflow-y-auto px-6 py-5">
-        {ended && editable && (
-          <div className="rounded-md bg-warning-weak px-4 py-3 font-medium text-warning">
-            SOP 실행이 종료되어 수정·전파할 수 없습니다. 고치려면 「실행 재개」를 누르세요.
-          </div>
-        )}
-
         {/* 임무 정보 (P-17) */}
         <Group title="임무 정보">
           <div className="space-y-3 rounded-lg bg-canvas p-5">
@@ -345,7 +337,7 @@ export function MissionDetail({
               </Button>
             </div>
           )}
-          {editable && !started && (
+          {editable && !running && (
             <p className="mt-4 text-right text-[16px] text-sub">전파는 SOP 실행 중에 보낼 수 있습니다</p>
           )}
           {dispatches.length > 0 && (

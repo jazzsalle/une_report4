@@ -209,7 +209,7 @@ export function SopWorkspace({
   const running = !!sop?.startedAt && !sop?.endedAt;
   const ended = !!sop?.endedAt;
   // 실행 종료 후에는 고칠 수 없다 — 실행 재개 후 편집 (P-04)
-  const mode = ended ? "run" : modeSel;
+  const mode = modeSel;
 
   // 실행 중에는 현장 응답·다른 사람의 저장을 주기적으로 받아온다 (화면이 보일 때만)
   useVisibleRefresh(15000, running);
@@ -347,16 +347,14 @@ export function SopWorkspace({
     <div className="space-y-5">
       {/* 실행 상태 바 */}
       <Card className="flex flex-wrap items-center gap-x-5 gap-y-3 px-6 py-4">
-        {!ended && (
-          <Segmented
-            value={mode}
-            onChange={setMode}
-            items={[
-              { value: "edit", label: "SOP 편집", icon: <Pencil size={17} /> },
-              { value: "run", label: "SOP 실행", icon: <ListChecks size={18} /> },
-            ]}
-          />
-        )}
+        <Segmented
+          value={mode}
+          onChange={setMode}
+          items={[
+            { value: "edit", label: "SOP 편집", icon: <Pencil size={17} /> },
+            { value: "run", label: "SOP 실행", icon: <ListChecks size={18} /> },
+          ]}
+        />
         <Segmented
           value={view}
           onChange={setView}
@@ -632,7 +630,6 @@ export function SopWorkspace({
               preview={{ orgName, situationTitle: title }}
               running={running}
               started={!!sop.startedAt}
-              ended={ended}
               editable={editable}
               onAddMission={
                 view === "flow" && mode === "edit" && editable
