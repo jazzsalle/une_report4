@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { BookOpen, ChevronDown, FileCode2, LogOut, UserRound } from "lucide-react";
+import { BookOpen, ChevronDown, FileCode2, FileSearch, LogOut, UserRound } from "lucide-react";
 import { AppIcon } from "./BrandMark";
 import { logout } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/types";
@@ -31,13 +31,8 @@ export function Header({
     { href: "/docs", label: "문서함" },
     { href: "/contacts", label: "연락망" },
     { href: "/trash", label: "휴지통" },
-    // 운영관리자만: 매뉴얼 분석 · 계정관리
-    ...(user.role === "admin"
-      ? [
-          { href: "/admin/manuals", label: "매뉴얼 분석" },
-          { href: "/admin", label: "계정관리" },
-        ]
-      : []),
+    // 운영관리자만: 계정관리 (매뉴얼 분석은 사용자 메뉴 대응설명서 아래)
+    ...(user.role === "admin" ? [{ href: "/admin", label: "계정관리" }] : []),
   ];
   const active = (h: string) =>
     h === "/" ? path === "/" || path.startsWith("/s/") || path === "/new" : h === "/admin" ? path === "/admin" : path.startsWith(h);
@@ -109,6 +104,15 @@ export function Header({
                 >
                   <BookOpen size={18} /> 대응설명서
                 </a>
+              )}
+              {user.role === "admin" && (
+                <Link
+                  href="/admin/manuals"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-4 py-3 text-[16px] hover:bg-canvas"
+                >
+                  <FileSearch size={18} /> 매뉴얼 분석
+                </Link>
               )}
               <form action={logout}>
                 <button className="flex w-full items-center gap-2 px-4 py-3 text-left text-[16px] hover:bg-canvas">
