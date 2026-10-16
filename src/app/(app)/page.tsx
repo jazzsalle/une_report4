@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { listSituations, userNames } from "@/lib/data";
-import { fmtDateTime } from "@/lib/format";
+import { fmtDateTime, fmtTime } from "@/lib/format";
 import { Badge, Empty, Pager } from "@/components/ui";
 import { PAGE_SIZE } from "@/lib/paging";
 import { StatusBadge, LevelBadge } from "@/components/badges";
@@ -39,6 +39,42 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               <TourStart />
             </div>
           </div>
+          {/* 최근 상황 카드 (최근 수정 순) */}
+          {list.length > 0 && (
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {list.slice(0, 4).map((s) => {
+                const ms = s.sop?.missions ?? [];
+                const done = ms.filter((m) => m.status === "done").length;
+                return (
+                  <Link
+                    key={s.id}
+                    href={`/s/${s.id}`}
+                    className="card flex h-[200px] flex-col border-2 border-transparent p-6 transition hover:border-primary"
+                  >
+                    <div className="flex gap-2">
+                      {s.tutorial && <Badge tone="orange">따라하기</Badge>}
+                      {s.locked && <Badge tone="blue">예시</Badge>}
+                      <Badge tone="blue">{s.hazard}</Badge>
+                      <LevelBadge level={s.alertLevel} />
+                    </div>
+                    <div className="mt-4 flex items-center gap-1 text-[19px] font-bold">
+                      <span className="line-clamp-1">{s.title}</span>
+                      <ChevronRight size={20} className="shrink-0" />
+                    </div>
+                    <div className="mt-auto flex items-center justify-between text-[16px] text-sub">
+                      <StatusBadge status={s.status} />
+                      {ms.length > 0 && (
+                        <span>
+                          임무 {done}/{ms.length}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2 text-[15px] text-mute">{fmtTime(s.updatedAt)} 수정</div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
