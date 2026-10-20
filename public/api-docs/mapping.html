@@ -321,14 +321,14 @@
     T3Q를 다시 부르지 않고 이 한 번의 응답으로 목록·순서도·상세·전파가 모두 만들어집니다.</p>
 
   <h3 class="sub"><span class="part">A</span>상황 머리 · 실행 바</h3>
-  <figure><img src="/api-docs/img/app-sop-head.png" alt="SOP 탭 상단" /><figcaption>상황 제목 줄과 SOP 실행 바</figcaption></figure>
+  <figure><img src="/api-docs/img/app-sop-head.png" alt="SOP 탭 상단" /><figcaption>상황 제목 줄과 SOP 도구줄</figcaption></figure>
   <table style="margin-top:12px">
     <tr><th>화면</th><th>어디서 오나</th></tr>
-    <tr><td>꼬리표 「실제재난 · 태풍/호우 · 관심 · 1단계 징후감지 · 발생 부산광역시」</td><td>상황정보 (요청 <code>context</code>, <a href="#select">⓪</a>)</td></tr>
+    <tr><td>꼬리표 「위기경보 관심 · 1단계 징후감지」, 「상황 정보」 창(업무유형 · 재난유형 · 발생지역 · 담당부서 · 대응 기간)</td><td>상황정보 (요청 <code>context</code>, <a href="#select">⓪</a>)</td></tr>
     <tr><td>「부산광역시 「풍수해…」 현장조치 행동매뉴얼 기준」</td><td>응답 <code>manual.docTitle</code> — T3Q가 고른 매뉴얼. 엉뚱한 매뉴얼이면 실무자가 여기서 바로 알아챔</td></tr>
-    <tr><td>「자연재난과」 꼬리표</td><td>상황정보 담당부서 (<code>department</code>). 매뉴얼에 없는 부서였으면 실행 바에 「요청 부서 없음 — 초기대응부서 기준」</td></tr>
+    <tr><td>「상황 정보」 창의 담당부서</td><td>상황정보 담당부서 (<code>department</code>). 매뉴얼에 없는 부서였으면 도구줄에 「요청 부서 없음 — 초기대응부서 기준」</td></tr>
     <tr><td>「완료 0 · 진행 중 0 · 대기 11 · 생략 0」</td><td><code>actions[]</code> 건수. <b>필요시 임무는 실행했을 때만 셈</b> (<a href="#ondemand">⑥</a>)</td></tr>
-    <tr><td>「기본 SOP」</td><td>T3Q 응답을 받지 못해 앱이 대신 만든 SOP</td></tr>
+    <tr><td>「기본 SOP」 / 「AI」</td><td>「AI」 = T3Q 응답으로 만든 SOP, 「기본 SOP」 = 모의 모드·따라하기에서 앱의 매뉴얼 시드로 만든 SOP. T3Q 호출이 실패하면 시드로 대신하지 않고 오류를 보여 줌</td></tr>
   </table>
 
   <h3 class="sub"><span class="part">B</span>SOP 임무 목록 — 단계 · 임무 · 조치</h3>
