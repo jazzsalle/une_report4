@@ -318,7 +318,7 @@
 <section id="screen">
   <h2><span class="no">⑤</span>우리 화면에 이렇게 적용됩니다</h2>
   <p class="lead">위 JSON을 받아 <b>SOP</b> 탭이 만들어지는 모습입니다. 조치 1건 = 화면의 SOP 임무 1개입니다.
-    T3Q를 다시 부르지 않고 이 한 번의 응답으로 목록·순서도·상세·전파가 모두 만들어집니다.</p>
+    T3Q를 다시 부르지 않고 이 한 번의 응답으로 흐름도·상세·전파가 모두 만들어집니다.</p>
 
   <h3 class="sub"><span class="part">A</span>상황 머리 · 실행 바</h3>
   <figure><img src="/api-docs/img/app-sop-head.png" alt="SOP 탭 상단" /><figcaption>상황 제목 줄과 SOP 도구줄</figcaption></figure>
@@ -331,32 +331,32 @@
     <tr><td>「기본 SOP」 / 「AI」</td><td>「AI」 = T3Q 응답으로 만든 SOP, 「기본 SOP」 = 모의 모드·따라하기에서 앱의 매뉴얼 시드로 만든 SOP. T3Q 호출이 실패하면 시드로 대신하지 않고 오류를 보여 줌</td></tr>
   </table>
 
-  <h3 class="sub"><span class="part">B</span>SOP 임무 목록 — 단계 · 임무 · 조치</h3>
+  <h3 class="sub"><span class="part">B</span>SOP 흐름도 — 단계 · 임무</h3>
   <div class="grid narrow">
-    <figure><img src="/api-docs/img/app-list-top.png" alt="SOP 임무 목록" /><figcaption>SOP 임무 목록</figcaption></figure>
+    <figure><img src="/api-docs/img/app-sopflow-top.png" alt="SOP 흐름도" /><figcaption>SOP 탭 왼쪽 · SOP 흐름도</figcaption></figure>
     <table>
       <tr><th>화면</th><th>JSON</th><th>규칙</th></tr>
-      <tr><td>남색 띠 「1단계 징후감지」</td><td><code>actions[].phaseLabel</code></td><td>단계별로 묶음. 응답이 한 단계만 오므로 보통 띠 1개, 다음 단계는 「임무 추가」로 이어 붙임</td></tr>
-      <tr><td>회색 줄 「[1] 기상특보… 접수」</td><td><code>missions[]</code> (<code>missionCode</code>, <code>missionName</code>)</td><td>조치의 <code>missionCode</code>로 찾아 위에 한 번만 표시</td></tr>
-      <tr><td>「1-1 기상정보 모니터링」</td><td><code>actionCode</code> + <code>actionName</code></td><td><code>orderHint</code> 순서. 편집 모드에서 위·아래로 순서 조정 가능 (같은 단계 안)</td></tr>
-      <tr><td>「3-3,3-4」</td><td><code>actionCode</code> = <code>"3-3,3-4"</code></td><td>R6 — 코드 두 개 한 줄 = 임무 1개</td></tr>
-      <tr><td>왼쪽 아이콘 (처리 / 상황판단 / 상황전파)</td><td>— (앱이 판단)</td><td>조치명에 판단·회의 → 상황판단, 전파·보고·홍보 → 상황전파, 그 외 처리. 화면에서 바꿀 수 있음</td></tr>
+      <tr><td>파란 칩 「1단계 징후감지」</td><td><code>actions[].phaseLabel</code></td><td>단계별로 묶음. 응답이 한 단계만 오므로 보통 칩 1개, 다음 단계는 「SOP 편집 → 임무 추가」로 이어 붙임</td></tr>
+      <tr><td>「1 기상정보 모니터링」</td><td><code>actionName</code></td><td>번호는 <code>orderHint</code> 순서로 앱이 1부터 매김(필요시 임무 제외). 「SOP 편집」에서 위·아래로 순서 조정 (같은 단계 안)</td></tr>
+      <tr><td>임무 상세 맨 위 회색 줄 「[3] 기상특보… 대응」</td><td><code>missions[]</code> (<code>missionCode</code>, <code>missionName</code>)</td><td>조치의 <code>missionCode</code>로 찾아 상위 임무 이름으로 표시 (<a href="#screen">C</a>)</td></tr>
+      <tr><td>코드 두 개가 한 줄인 조치</td><td><code>actionCode</code> = <code>"3-3,3-4"</code></td><td>R6 — 임무 1개로 표시</td></tr>
+      <tr><td>모양 (원 = 처리 / 노란 마름모 = 상황판단 / 하늘색 테두리 = 상황전파)</td><td>— (앱이 판단)</td><td>조치명에 판단·회의 → 상황판단, 전파·보고·홍보 → 상황전파, 그 외 처리. 「SOP 편집」에서 바꿀 수 있음. 뜻은 제목 옆 「ⓘ」</td></tr>
+      <tr><td>분홍 알약</td><td>— (실행 상태)</td><td>지금 할 임무. 실행 중에만</td></tr>
     </table>
   </div>
 
   <h3 class="sub"><span class="part">C</span>임무 상세 — 행동카드 내용</h3>
   <div class="grid">
-    <figure><img src="/api-docs/img/app-mission.png" alt="임무 상세 3-1" /><figcaption>임무 상세 · 3-1 (초기)상황판단회의 개최</figcaption></figure>
+    <figure><img src="/api-docs/img/app-mission.png" alt="임무 상세 (초기)상황판단회의 개최" /><figcaption>임무 상세 · (초기)상황판단회의 개최</figcaption></figure>
     <table>
       <tr><th>화면</th><th>JSON</th><th>매뉴얼 (<a href="#s2">②</a>)</th></tr>
-      <tr><td>맨 위 「[3] … › 3-1」</td><td><code>missionName</code> › <code>actionCode</code></td><td>프로세스 표 <code>[3]</code>, <code>[3-1]</code></td></tr>
+      <tr><td>맨 위 회색 줄 「[3] …」</td><td><code>missionCode</code> + <code>missionName</code></td><td>프로세스 표 <code>[3]</code></td></tr>
       <tr><td>제목 칸</td><td><code>actionName</code></td><td>조치목록</td></tr>
-      <tr><td>「1단계 징후감지」</td><td><code>phaseLabel</code></td><td>카드 단계 표시</td></tr>
       <tr><td>임무내용</td><td><code>summary</code></td><td>조치내용</td></tr>
       <tr><td>주관 / 지원 / 협업기관</td><td><code>organizations[]</code> <code>LEAD</code> / <code>SUPPORT</code> / <code>COOPERATE</code></td><td>주관부서 / 지원부서 / 협업기관</td></tr>
-      <tr><td>세부항목 (체크)</td><td><code>detailTasks[].title</code> (없으면 <code>content</code>)</td><td><code>-</code> 줄 또는 표준행동 (R3·R9·R13)</td></tr>
-      <tr><td>「매뉴얼 전파대상 · …」</td><td><code>propagation[].target</code></td><td>전파대상 — <b>참고만</b>. 실제 수신자는 연락망에서 고름</td></tr>
-      <tr><td>필요자원 꼬리표</td><td><code>resources[]</code> (<code>name</code> + <code>quantity</code><code>unit</code>)</td><td>필요자원</td></tr>
+      <tr><td>필요자원 꼬리표 (임무 정보 안)</td><td><code>resources[]</code> (<code>name</code> + <code>quantity</code><code>unit</code>)</td><td>필요자원</td></tr>
+      <tr><td>수행 확인 (체크)</td><td><code>detailTasks[].title</code> (없으면 <code>content</code>)</td><td><code>-</code> 줄 또는 표준행동 (R3·R9·R13)</td></tr>
+      <tr><td>상황전파 영역</td><td><code>propagation[]</code></td><td>상황전파 임무에만 보임 (<a href="#screen">D</a>)</td></tr>
       <tr><td>(표시 안 함)</td><td><code>sources[]</code></td><td>쪽번호 — 보관·검수용, 화면에 내지 않음</td></tr>
     </table>
   </div>
@@ -364,13 +364,13 @@
 
   <h3 class="sub"><span class="part">D</span>상황전파 — 전파 표</h3>
   <div class="grid">
-    <figure><img src="/api-docs/img/app-propagation.png" alt="임무 상세 2-2 상황전파" /><figcaption>임무 상세 · 2-2 기상특보 전파</figcaption></figure>
+    <figure><img src="/api-docs/img/app-propagation.png" alt="임무 상세 기상특보 전파" /><figcaption>임무 상세 · 기상특보 전파(시민, 유관기관)</figcaption></figure>
     <table>
       <tr><th>화면</th><th>JSON</th><th>매뉴얼 (<a href="#s3">③</a>)</th></tr>
       <tr><td>「매뉴얼 전파대상 · 공무원·기자·시민…」</td><td><code>propagation[].target</code> (행마다 1건, 쉼표로 이어 표시)</td><td>전파 표의 전파대상 열</td></tr>
       <tr><td>전파 내용 (문안)</td><td><code>propagation[0].messageTemplate</code></td><td>행동카드의 「표준문안」 원문. 없으면 빈 칸 — 사용자가 써서 보냄</td></tr>
-      <tr><td>발송 수단 (문자 / 이메일)</td><td><code>propagation[0].channelHint</code></td><td>구분 열 — <code>EMAIL</code>이면 이메일, 그 외 문자</td></tr>
-      <tr><td>「추천 전파그룹 · 유관기관」</td><td><code>target</code>과 연락망 전파그룹 이름 비교</td><td>— (앱이 추천)</td></tr>
+      <tr><td>발송 수단 (문자 / 이메일)</td><td><code>propagation[0].channelHint</code> (저장만)</td><td>「전파」 → 발송 확인 창에서 문자·이메일을 고름(기본 문자). 실제 발송은 연계 전이라 모의 발송</td></tr>
+      <tr><td>추천 전파그룹 칩 「+ 유관기관」</td><td><code>target</code>과 연락망 전파그룹 이름 비교</td><td>— (앱이 추천). 누르면 바로 전파 대상에 추가</td></tr>
       <tr><td>전파 대상 선택 · 수신 n명</td><td>— (우리 연락망)</td><td>실제 수신자는 <b>항상 사람이 확정</b></td></tr>
       <tr><td>필요자원 「UMS · One-Click …」</td><td><code>resources[]</code></td><td>구분·전파방법에 나온 시스템</td></tr>
     </table>
@@ -379,23 +379,23 @@
 
 <section id="ondemand">
   <h2><span class="no">⑥</span>필요시 임무 — 흐름을 끊고 바로 실행</h2>
-  <p class="lead">「(필요시)」「(피해발생시)」「＊태풍 북상 우려시」처럼 <b>조건이 맞을 때만 하는 조치</b>는 순서도의 흐름선에 넣지 않습니다.
+  <p class="lead">「(필요시)」「(피해발생시)」「＊태풍 북상 우려시」처럼 <b>조건이 맞을 때만 하는 조치</b>는 흐름도의 흐름선에 넣지 않습니다.
     매뉴얼 기재 순서대로 끝에 두면 기다리다 놓치고, 중간에 끼우면 순서가 꼬이기 때문입니다.</p>
   <div class="grid narrow">
-    <figure><img src="/api-docs/img/app-list-ondemand.png" alt="목록 끝의 필요시 임무" /><figcaption>목록 · 단계 끝 「필요시 임무」</figcaption></figure>
+    <figure><img src="/api-docs/img/app-sopflow-ondemand.png" alt="SOP 흐름도 끝의 필요시 임무" /><figcaption>SOP 흐름도 · 단계 끝 「필요시 임무」</figcaption></figure>
     <div>
       <table>
         <tr><th>항목</th><th>처리</th></tr>
         <tr><td>무엇이 필요시 임무인가</td><td>응답 <code>condition</code>에 값이 있는 조치 (R8). 제목 일부에만 조건이 붙은 조치는 아님 (R18)</td></tr>
-        <tr><td>목록</td><td>각 대응단계 끝 주황 띠 「필요시 임무」 아래에 모음. 조건 문구를 제목 아래 주황 글씨로</td></tr>
-        <tr><td>순서도</td><td>흐름선 밖 아래 칸에 <b>점선 주황</b>으로. 선으로 잇지 않음</td></tr>
+        <tr><td>SOP 흐름도 (SOP 탭 왼쪽)</td><td>각 대응단계 끝 주황 글씨 「필요시 임무」 아래에 <b>점선 주황</b> 칸으로 모음. 번호 없이, 조건 문구를 제목 아래 주황 글씨로</td></tr>
+        <tr><td>크게 보기 (가로 흐름도)</td><td>흐름선 밖 아래 칸에 <b>점선 주황</b>으로. 선으로 잇지 않음</td></tr>
         <tr><td>실행</td><td>상황이 생기면 순서와 상관없이 눌러서 착수·완료. <b>실행 시각</b>이 칸에 붙음 → 순서를 다시 짤 필요 없음</td></tr>
         <tr><td>「다음 임무」 자동 선택</td><td>필요시 임무는 건너뜀 (흐름이 멈추지 않게)</td></tr>
         <tr><td>완료 집계</td><td>실행했을 때만 셈. 실행 안 하면 「해당 없음」 — 미완료가 아님</td></tr>
       </table>
     </div>
   </div>
-  <figure style="margin-top:20px"><img src="/api-docs/img/app-flow.png" alt="SOP 흐름도와 필요시 임무" /><figcaption>순서도 · 흐름선(위)과 필요시 임무 칸(아래). 분홍 = 지금 할 임무</figcaption></figure>
+  <figure style="margin-top:20px"><img src="/api-docs/img/app-flow.png" alt="크게 보기 가로 흐름도와 필요시 임무" /><figcaption>크게 보기(새 창, 상황실 큰 화면용) · 흐름선(위)과 필요시 임무 칸(아래). 분홍 = 지금 할 임무</figcaption></figure>
 </section>
 
 <section id="contacts">
