@@ -36,7 +36,7 @@ const LEVEL: Record<string, string> = {
   심각: "bg-danger-weak text-danger",
 };
 
-export function LevelBadge({ level }: { level: string }) {
+export function LevelBadge({ level, prefix }: { level: string; prefix?: string }) {
   return (
     <span
       className={clsx(
@@ -44,6 +44,7 @@ export function LevelBadge({ level }: { level: string }) {
         LEVEL[level] ?? "bg-canvas text-sub",
       )}
     >
+      {prefix && `${prefix} `}
       {level}
     </span>
   );

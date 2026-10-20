@@ -6,8 +6,8 @@ import clsx from "clsx";
 export function SituationTabs({ id, status }: { id: string; status: string }) {
   const path = usePathname();
   const tabs = [
-    // 탭 번호 없이 SOP · 상황일지 (C-05·C-06). 상황 정보는 상황명 줄 「상황 정보」 창
-    { href: `/s/${id}/sop`, label: "SOP 실행", on: path.startsWith(`/s/${id}/sop`), dim: status === "setup", tour: "tab-sop" },
+    // 탭 번호 없이 SOP · 상황일지 (C-05~07). 상황 정보는 상황명 줄 「상황 정보」 창
+    { href: `/s/${id}/sop`, label: "SOP", on: path.startsWith(`/s/${id}/sop`), dim: status === "setup", tour: "tab-sop" },
     { href: `/s/${id}/report`, label: "상황일지", on: path.startsWith(`/s/${id}/report`), tour: "tab-report" },
   ];
   return (
