@@ -155,7 +155,7 @@ export function SopFlow({
           <Maximize2 size={20} />
         </button>
       </div>
-      {/* 범례 (P-15 보류 — 그대로 보임) */}
+      {/* 범례 (P-15 반영 안 함 — 그대로 보임) */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 border-b border-line-weak px-5 py-2 text-[15px] text-sub">
         <span className="flex items-center gap-1.5">
           <span className="h-4 w-4 rounded-full bg-primary" /> 완료
