@@ -369,7 +369,7 @@
       <tr><th>화면</th><th>JSON</th><th>매뉴얼 (<a href="#s3">③</a>)</th></tr>
       <tr><td>「매뉴얼 전파대상 · 공무원·기자·시민…」</td><td><code>propagation[].target</code> (행마다 1건, 쉼표로 이어 표시)</td><td>전파 표의 전파대상 열</td></tr>
       <tr><td>전파 내용 (문안)</td><td><code>propagation[0].messageTemplate</code></td><td>행동카드의 「표준문안」 원문. 없으면 빈 칸 — 사용자가 써서 보냄</td></tr>
-      <tr><td>발송 수단 (문자 / 이메일)</td><td><code>propagation[0].channelHint</code> (쓰지 않음)</td><td>발송 수단은 문자·이메일 두 가지뿐. 「전파」 → 발송 확인 창에서 고르며 기본은 늘 문자(매뉴얼·T3Q 값과 무관). 실제 발송은 연계 전이라 모의 발송</td></tr>
+      <tr><td>발송 수단 (문자 / 이메일)</td><td><code>propagation[0].channelHint</code> (쓰지 않음)</td><td>발송 수단은 전파모듈이 지원하는 문자·이메일 두 가지뿐. 「전파」 → 발송 확인 창에서 고르며 기본은 늘 문자. T3Q가 다른 수단(방송·유선 등)을 줘도 따르지 않음. 실제 발송은 연계 전이라 모의 발송</td></tr>
       <tr><td>추천 전파그룹 칩 「+ 유관기관」</td><td><code>target</code>과 연락망 전파그룹 이름 비교</td><td>— (앱이 추천). 누르면 바로 전파 대상에 추가</td></tr>
       <tr><td>전파 대상 선택 · 수신 n명</td><td>— (우리 연락망)</td><td>실제 수신자는 <b>항상 사람이 확정</b></td></tr>
       <tr><td>필요자원 「UMS · One-Click …」</td><td><code>resources[]</code></td><td>구분·전파방법에 나온 시스템</td></tr>
