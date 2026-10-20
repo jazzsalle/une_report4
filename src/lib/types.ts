@@ -161,6 +161,8 @@ export interface Sop {
   manual?: string;
   /** 요청한 담당부서가 매뉴얼에 있었는지 (false = 초기대응부서 기준으로 대신함) */
   deptMatched?: boolean;
+  /** 지역 매뉴얼이 없어 중앙 위기관리 표준매뉴얼의 지자체 역할로 만든 SOP — 화면에 알린다 */
+  centralStandard?: boolean;
   generatedAt: string;
   missions: Mission[];
   startedAt?: string;

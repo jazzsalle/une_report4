@@ -178,11 +178,14 @@ async function buildSop(s: Parameters<typeof buildContext>[0] & { tutorial: bool
   try {
     const live = !s.tutorial && sopMode() === "live";
     const res = await sopActions({ context: buildContext(s) }, { seedOnly: s.tutorial });
-    // 지역(시군구·시도·교육청) 매뉴얼이 없어 T3Q가 중앙부처 매뉴얼(표준·실무)로 넘어가면 만들지 않는다 —
-    // 표준은 기관별 역할 한 줄뿐, 실무는 그 부처 직원의 절차라 지자체 SOP로 쓰면 틀린 SOP가 된다 (2026-10-20 결정)
-    if (res.manual?.scope === "CENTRAL")
+    // 지역(시군구·시도·교육청) 매뉴얼이 없어 T3Q가 중앙부처 매뉴얼로 넘어간 경우 (2026-10-20 결정)
+    // - 위기관리 표준매뉴얼: 지자체 칸의 공통 역할 — 도(道) 담당자처럼 지역 매뉴얼이 없는 경우를 위해 허용하되 화면에 알린다
+    // - 위기대응 실무매뉴얼 등: 그 부처 직원의 절차라 지자체 SOP로 쓰면 틀린 SOP가 된다 — 만들지 않는다
+    const central = res.manual?.scope === "CENTRAL";
+    const standard = central && /표준\s*매뉴얼/.test(res.manual.docTitle);
+    if (central && !standard)
       return `${s.sido || "이 지역"}의 「${s.hazard}」 행동매뉴얼이 T3Q에 없습니다. 지역 매뉴얼이 등록되면 SOP를 만들 수 있습니다.`;
-    const sop = responseToSop(res);
+    const sop = { ...responseToSop(res), ...(standard ? { centralStandard: true } : {}) };
     // 매뉴얼은 골랐지만 이 대응단계(위기경보) 조치가 없으면 빈 SOP를 만들지 않는다
     if (!sop.missions.length)
       return `T3Q가 고른 매뉴얼${sop.manual ? `(${sop.manual})` : ""}에 이 대응단계의 조치가 없습니다. 대응단계·위기경보를 확인하세요.`;

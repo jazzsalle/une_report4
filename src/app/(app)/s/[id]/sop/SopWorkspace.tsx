@@ -304,7 +304,10 @@ export function SopWorkspace({
                 {sop.manual.replace(/\s*\([^)]*\)\s*$/, "")} 기준
               </span>
             )}
-            {sop.deptMatched === false && (
+            {sop.centralStandard && (
+              <span className="text-[16px] font-semibold text-warning">지역 매뉴얼 없음 — 중앙 표준매뉴얼의 지자체 공통 역할만 담겨 있습니다</span>
+            )}
+            {sop.deptMatched === false && !sop.centralStandard && (
               <span className="text-[16px] font-semibold text-warning">요청 부서 없음 — 초기대응부서 기준</span>
             )}
             {genError && <span className="text-[16px] font-semibold text-danger">{genError}</span>}
