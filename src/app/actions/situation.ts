@@ -177,7 +177,12 @@ export async function refreshWeather(id: string) {
 async function buildSop(s: Parameters<typeof buildContext>[0] & { tutorial: boolean }): Promise<Sop | string> {
   try {
     const live = !s.tutorial && sopMode() === "live";
-    const sop = responseToSop(await sopActions({ context: buildContext(s) }, { seedOnly: s.tutorial }));
+    const res = await sopActions({ context: buildContext(s) }, { seedOnly: s.tutorial });
+    // 지역(시군구·시도·교육청) 매뉴얼이 없어 T3Q가 중앙부처 매뉴얼(표준·실무)로 넘어가면 만들지 않는다 —
+    // 표준은 기관별 역할 한 줄뿐, 실무는 그 부처 직원의 절차라 지자체 SOP로 쓰면 틀린 SOP가 된다 (2026-10-20 결정)
+    if (res.manual?.scope === "CENTRAL")
+      return `${s.sido || "이 지역"}의 「${s.hazard}」 행동매뉴얼이 T3Q에 없습니다. 지역 매뉴얼이 등록되면 SOP를 만들 수 있습니다.`;
+    const sop = responseToSop(res);
     // 매뉴얼은 골랐지만 이 대응단계(위기경보) 조치가 없으면 빈 SOP를 만들지 않는다
     if (!sop.missions.length)
       return `T3Q가 고른 매뉴얼${sop.manual ? `(${sop.manual})` : ""}에 이 대응단계의 조치가 없습니다. 대응단계·위기경보를 확인하세요.`;
