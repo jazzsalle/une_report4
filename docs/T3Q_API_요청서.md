@@ -11,7 +11,7 @@
 > | 조치 | `category: RESPONSE\|DAMAGE`, 빈 값은 생략 | `category: NORMAL\|DAMAGE`, `condition`·`summary`는 `""`, `notes`는 `[]`, 전파 `targetType`·`channelHint`는 null 가능, 자원 `{name, quantity\|null, unit}`, 근거 `{docId, docTitle, page, pdfIndex}` |
 > | 단계명 | `1단계 징후감지` 형식 | 매뉴얼 원문 그대로 — 중앙 실무매뉴얼은 `심각 단계`, `경계`, `주의` 등 |
 > | 오류 | `{error:{code,message,detail}, meta}` | `{error:{code,message,retryable,retryAfter,requestId}}` — 422 입력 오류, 404 맞는 매뉴얼 없음 |
-> | 인증서 | — | **사설 인증기관(`*.t3q.ai`) 발급 — 일반 클라이언트(Node·브라우저)에서 검증 실패. T3Q에 공인 인증서 요청 필요 (2026-10-20 확인)** |
+> | 인증서 | — | **사설 인증기관(`*.t3q.ai`) 발급 — 일반 클라이언트(Node·브라우저)에서 검증 실패(2026-10-20 확인).** 우리 쪽은 지문 고정으로 임시 연결, 원문 PDF는 우리 서버가 중계. T3Q에 공인 인증서(또는 루트 인증서 파일) 요청 필요 |
 
 > **최종 규격(정본)은 Swagger 문서입니다:** https://unereport4.vercel.app/api-docs (① T3Q 연계 API 요청서)
 > 원본 파일 `public/api-docs/t3q.yaml` · 코드 계약 `src/lib/t3q/types.ts` — 이 문서는 배경 설명용입니다.

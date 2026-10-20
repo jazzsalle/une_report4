@@ -227,7 +227,7 @@ export function MissionDetail({
             {m.ref && (
               <InfoRow label="매뉴얼 원문">
                 <a
-                  href={`/manual/${encodeURIComponent(m.ref.docId)}?p=${m.ref.pdfIndex + 1}`}
+                  href={`/manual/${encodeURIComponent(m.ref.docId)}#page=${m.ref.pdfIndex + 1}`}
                   target="_blank"
                   rel="noopener"
                   className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"

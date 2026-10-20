@@ -8,6 +8,7 @@ import type {
   T3QErrorBody,
 } from "./types";
 import { mockContacts, mockSopActions } from "./mock";
+import { t3qRequest } from "./https";
 
 /**
  * T3Q 연계 진입점 — 화면·서버 코드는 이 파일의 함수만 호출한다.
@@ -24,6 +25,8 @@ export function sopMode(): "live" | "mock" {
 }
 
 export const T3Q_FAILED = "T3Q 호출에 실패했습니다. 잠시 후 다시 시도하세요.";
+
+const sopBase = () => process.env.T3Q_SOP_URL!.replace(/\/$/, "");
 
 /** 화면에 그대로 보여도 되는 T3Q 오류 문구 */
 export class T3QUserError extends Error {}
@@ -62,30 +65,57 @@ export async function sopActions(
 ): Promise<SopActionsResponse> {
   // 따라하기는 늘 같은 화면이 나오도록 매뉴얼 시드만 쓴다
   if (opts.seedOnly || sopMode() !== "live") return mockSopActions(req);
-  const base = process.env.T3Q_SOP_URL!.replace(/\/$/, "");
   const requestId = crypto.randomUUID();
-  let res: Response;
+  let status: number;
+  let text: string;
   try {
-    res = await fetch(`${base}/reports/sop/actions`, {
+    const res = await t3qRequest(`${sopBase()}/reports/sop/actions`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json", "X-Request-ID": requestId },
+      headers: { "Content-Type": "application/json; charset=utf-8", Accept: "application/json", "X-Request-ID": requestId },
       body: JSON.stringify(req),
-      signal: AbortSignal.timeout(40000),
-      cache: "no-store",
+      timeoutMs: 40000,
     });
+    status = res.status;
+    text = await res.text();
   } catch (e) {
     console.error("[t3q] sop actions unreachable", requestId, e);
     throw new T3QUserError(T3Q_FAILED);
   }
-  if (!res.ok) {
+  if (status < 200 || status >= 300) {
     // 게이트웨이 오류는 JSON이 아닐 수 있다 — 상태 코드로 판단
-    const body = (await res.json().catch(() => null)) as T3QErrorBody | null;
-    console.error("[t3q] sop actions failed", res.status, requestId, body?.error);
-    throw new T3QUserError(sopErrorMessage(res.status, body));
+    let body: T3QErrorBody | null = null;
+    try {
+      body = JSON.parse(text);
+    } catch {}
+    console.error("[t3q] sop actions failed", status, requestId, body?.error);
+    throw new T3QUserError(sopErrorMessage(status, body));
   }
-  const data = (await res.json()) as SopActionsResponse;
+  const data = JSON.parse(text) as SopActionsResponse;
   if (data.warnings?.length) console.warn("[t3q] sop warnings", requestId, data.warnings.map((w) => `${w.code}: ${w.message}`));
   return data;
+}
+
+/**
+ * 매뉴얼 원문 PDF (API-SOP v2 GET /documents/{id}/download) — 우리 서버가 받아 그대로 넘긴다(중계).
+ * 브라우저는 우리 주소만 보므로 T3Q 인증서와 상관없이 열린다. 없으면 null
+ */
+export async function manualDocument(docId: string): Promise<{ stream: ReadableStream<Uint8Array>; type: string; length?: string } | null> {
+  if (sopMode() !== "live") return null;
+  try {
+    const res = await t3qRequest(`${sopBase()}/documents/${encodeURIComponent(docId)}/download?disposition=inline`, {
+      headers: { Accept: "application/pdf" },
+      timeoutMs: 60000,
+    });
+    if (res.status !== 200) {
+      console.error("[t3q] document failed", docId, res.status);
+      return null;
+    }
+    const len = res.headers["content-length"];
+    return { stream: res.stream, type: String(res.headers["content-type"] ?? "application/pdf"), length: len ? String(len) : undefined };
+  } catch (e) {
+    console.error("[t3q] document unreachable", docId, e);
+    return null;
+  }
 }
 
 /** API-04 — 매뉴얼 연락망 */
