@@ -48,3 +48,6 @@ next-env.d.ts
 
 /.data/
 /accounts/
+
+# 위기대응 매뉴얼 원본 (공개 저장소에 올리지 않음)
+/manual/

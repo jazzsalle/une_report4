@@ -177,7 +177,11 @@ export async function refreshWeather(id: string) {
 async function buildSop(s: Parameters<typeof buildContext>[0] & { tutorial: boolean }): Promise<Sop | string> {
   try {
     const live = !s.tutorial && sopMode() === "live";
-    return { ...responseToSop(await sopActions({ context: buildContext(s) }, { seedOnly: s.tutorial })), source: live ? "t3q" : "mock" };
+    const sop = responseToSop(await sopActions({ context: buildContext(s) }, { seedOnly: s.tutorial }));
+    // 매뉴얼은 골랐지만 이 대응단계(위기경보) 조치가 없으면 빈 SOP를 만들지 않는다
+    if (!sop.missions.length)
+      return `T3Q가 고른 매뉴얼${sop.manual ? `(${sop.manual})` : ""}에 이 대응단계의 조치가 없습니다. 대응단계·위기경보를 확인하세요.`;
+    return { ...sop, source: live ? "t3q" : "mock" };
   } catch (e) {
     console.error("[sop] generation failed", e);
     return e instanceof T3QUserError ? e.message : "SOP를 만들지 못했습니다. 잠시 후 다시 시도하세요.";

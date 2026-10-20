@@ -107,6 +107,8 @@ function detailText(d: SopAction["detailTasks"][number]) {
 
 /** T3Q 응답(API-SOP v2, 조치 목록+상세) → SOP 임무 목록. source 는 호출부가 정한다 */
 export function responseToSop(res: SopActionsResponse): Sop {
+  // 중앙 매뉴얼의 「기관별 임무·역할」 표는 칸(예: 지자체)만 있고 주관 기관을 따로 적지 않는다 — 고른 칸을 주관으로 (R24)
+  const rowOrg = res.manual?.departments?.[0] ?? "";
   const groupOf = new Map(res.missions.map((g) => [g.missionCode, { code: g.missionCode, name: g.missionName }]));
   const missions: Mission[] = res.actions
     .slice()
@@ -127,7 +129,7 @@ export function responseToSop(res: SopActionsResponse): Sop {
         title: a.actionName,
         content: a.summary ?? "",
         // 주관이 여럿이면 첫째가 주관, 나머지는 지원 앞에
-        lead: leads[0] ?? "",
+        lead: leads[0] ?? rowOrg,
         support: [...leads.slice(1), ...a.organizations.filter((o) => o.role === "SUPPORT").map((o) => o.name)],
         collab: a.organizations.filter((o) => o.role === "COOPERATE").map((o) => o.name),
         details: a.detailTasks.map((d) => ({ id: nanoid(6), text: detailText(d), done: false })).filter((d) => d.text),
@@ -145,7 +147,8 @@ export function responseToSop(res: SopActionsResponse): Sop {
   return {
     source: "t3q",
     manual: res.manual?.docTitle,
-    deptMatched: res.departmentMatched,
+    // 중앙 매뉴얼에는 지자체 부서 칸이 없어 「요청 부서 없음」이 뜻이 없다 — 지자체·교육청 매뉴얼에서만 알린다
+    deptMatched: res.manual?.scope === "CENTRAL" ? undefined : res.departmentMatched,
     generatedAt: new Date().toISOString(),
     missions,
   };
