@@ -220,7 +220,8 @@ export async function endSop(id: string) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
   const { done, total } = progress(s.sop.missions);
-  await patchSopHead(id, { endedAt: new Date().toISOString() });
+  const now = new Date().toISOString();
+  await patchSopHead(id, { endedAt: now, ...(s.sop.firstEndedAt ? {} : { firstEndedAt: now }) });
   await touch(id, { status: "done" });
   await addEvent(id, {
     type: "sop",
@@ -242,15 +243,16 @@ export async function reopenSop(id: string) {
 
 const STATUS_TEXT: Record<Mission["status"], string> = { todo: "대기", doing: "착수", done: "완료", skipped: "생략" };
 
-/** 실행 종료 후 SOP 편집(임무 추가·삭제·순서)은 실행 재개 뒤에 (P-11). 임무 상세 기록은 종료 후에도 가능 */
-const ENDED_EDIT = "SOP 실행이 종료되었습니다. 「실행 재개」 후 편집하세요.";
+/** 실행을 한 번 종료하면 실행 재개 뒤에도 SOP 편집(임무 추가·삭제·순서) 불가 (P-04). 임무 상세 기록은 종료 후에도 가능 */
+const ENDED_EDIT = "SOP 실행을 한 번 종료한 뒤에는 SOP를 편집할 수 없습니다.";
+const frozen = (sop: Sop) => !!(sop.endedAt || sop.firstEndedAt);
 
 /** 실행 중 임무 저장 + 상태 변화는 이력으로 기록 */
 export async function saveMission(id: string, mission: Mission) {
   const { u, s } = await editable(id);
   if (!s.sop) throw new Error("SOP가 없습니다.");
   const prev = s.sop.missions.find((m) => m.id === mission.id);
-  if (!prev && s.sop.endedAt) throw new Error(ENDED_EDIT);
+  if (!prev && frozen(s.sop)) throw new Error(ENDED_EDIT);
   await putMission(id, mission);
   if (s.sop.startedAt && prev && prev.status !== mission.status) {
     await addEvent(id, {
@@ -271,14 +273,14 @@ export async function saveMission(id: string, mission: Mission) {
 export async function deleteMission(id: string, missionId: string) {
   const { s } = await editable(id);
   if (!s.sop) return;
-  if (s.sop.endedAt) throw new Error(ENDED_EDIT);
+  if (frozen(s.sop)) throw new Error(ENDED_EDIT);
   await removeMission(id, missionId);
 }
 
 export async function reorderMissions(id: string, ids: string[]) {
   const { s } = await editable(id);
   if (!s.sop) return;
-  if (s.sop.endedAt) throw new Error(ENDED_EDIT);
+  if (frozen(s.sop)) throw new Error(ENDED_EDIT);
   await orderMissions(id, ids);
 }
 

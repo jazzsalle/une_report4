@@ -163,6 +163,8 @@ export interface Sop {
   missions: Mission[];
   startedAt?: string;
   endedAt?: string;
+  /** 처음 실행 종료한 시각 — 실행 재개해도 지우지 않는다. 있으면 SOP 편집 불가 (P-04) */
+  firstEndedAt?: string;
 }
 
 /* ---------- 상황 기록 (사용자 입력 현황) ---------- */

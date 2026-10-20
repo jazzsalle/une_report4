@@ -176,9 +176,9 @@ paths:
   /action/situation/startSop:
     post: { tags: [SOP 생성·실행], summary: startSop — SOP 실행 시작, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=running" } } }
   /action/situation/endSop:
-    post: { tags: [SOP 생성·실행], summary: endSop — SOP 실행 종료, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=done, 완료/전체 건수 이벤트 기록" } } }
+    post: { tags: [SOP 생성·실행], summary: endSop — SOP 실행 종료, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=done, 완료/전체 건수 이벤트 기록. 처음 종료면 sop.firstEndedAt 기록(재개해도 남음)" } } }
   /action/situation/reopenSop:
-    post: { tags: [SOP 생성·실행], summary: reopenSop — 실행 재개, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=running" } } }
+    post: { tags: [SOP 생성·실행], summary: reopenSop — 실행 재개, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=running. SOP 편집 잠금(firstEndedAt)은 풀리지 않음" } } }
   /action/situation/saveMission:
     post:
       tags: [SOP 생성·실행]
@@ -186,7 +186,7 @@ paths:
       description: |
         화면에서 내용 수정은 0.8초 뒤, 상태 변경은 즉시 호출합니다.
         실행 중 상태가 바뀌면 「임무명 착수/완료/생략」 이벤트를 기록합니다. 없는 id면 새 임무로 추가합니다.
-        실행 종료 후에는 기존 임무의 기록·상태 저장만 됩니다. 새 임무 추가(없는 id)·deleteMission·reorderMissions는 거부하며, 「실행 재개」 후 가능합니다.
+        실행을 한 번 종료한 뒤에는(sop.firstEndedAt, 「실행 재개」 후에도) 기존 임무의 기록·상태 저장만 됩니다. 새 임무 추가(없는 id)·deleteMission·reorderMissions는 거부합니다.
       requestBody:
         content: { application/json: { schema: { type: object, properties: { id: { type: string }, mission: { $ref: "#/components/schemas/Mission" } } } } }
       responses: { "200": { description: "{ ok: true }" } }
