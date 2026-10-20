@@ -186,7 +186,7 @@ paths:
       description: |
         화면에서 내용 수정은 0.8초 뒤, 상태 변경은 즉시 호출합니다.
         실행 중 상태가 바뀌면 「임무명 착수/완료/생략」 이벤트를 기록합니다. 없는 id면 새 임무로 추가합니다.
-        SOP는 실행 전·중·종료 후 언제나 수정할 수 있습니다(deleteMission·reorderMissions도 같음).
+        실행 종료 후에는 기존 임무의 기록·상태 저장만 됩니다. 새 임무 추가(없는 id)·deleteMission·reorderMissions는 거부하며, 「실행 재개」 후 가능합니다.
       requestBody:
         content: { application/json: { schema: { type: object, properties: { id: { type: string }, mission: { $ref: "#/components/schemas/Mission" } } } } }
       responses: { "200": { description: "{ ok: true }" } }

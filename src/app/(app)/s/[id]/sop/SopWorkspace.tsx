@@ -89,7 +89,7 @@ export function SopWorkspace({
   const [adding, setAdding] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
-  // 기본은 보기(실행) 화면, 고칠 때만 「SOP 편집」 (P-11). 실행 종료 후에도 편집할 수 있다
+  // 기본은 보기(실행) 화면, 고칠 때만 「SOP 편집」 (P-11). 실행 종료 후에는 「실행 재개」 뒤에 편집
   const [editing, setEditing] = useState(false);
   const bc = useRef<BroadcastChannel | null>(null);
   const notify = () =>
@@ -151,6 +151,8 @@ export function SopWorkspace({
 
   const running = !!sop?.startedAt && !sop?.endedAt;
   const ended = !!sop?.endedAt;
+  // 편집 중에 다른 창에서 실행을 종료했으면 편집을 닫는다
+  if (ended && editing) setEditing(false);
 
   // 실행 중에는 현장 응답·다른 사람의 저장을 주기적으로 받아온다 (화면이 보일 때만)
   useVisibleRefresh(15000, running);
@@ -331,9 +333,11 @@ export function SopWorkspace({
               </>
             ) : (
               <>
-                <Button data-tour="sop-edit" onClick={() => setEditing(true)}>
-                  <Pencil size={17} /> SOP 편집
-                </Button>
+                {!ended && (
+                  <Button data-tour="sop-edit" onClick={() => setEditing(true)}>
+                    <Pencil size={17} /> SOP 편집
+                  </Button>
+                )}
                 {!sop.startedAt && (
                   <Button
                     variant="primary"
