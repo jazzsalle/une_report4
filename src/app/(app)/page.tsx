@@ -46,10 +46,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               <TourStart />
             </div>
           </div>
-          {/* 최근 상황 카드 (최근 수정 순) */}
-          {all.length > 0 && (
+          {/* 최근 상황 카드 (최근 수정 순, 예시 제외) */}
+          {mine.length > 0 && (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {all.slice(0, 4).map((s) => {
+              {mine.slice(0, 4).map((s) => {
                 const ms = s.sop?.missions ?? [];
                 const done = ms.filter((m) => m.status === "done").length;
                 return (
@@ -60,7 +60,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                   >
                     <div className="flex gap-2">
                       {s.tutorial && <Badge tone="orange">따라하기</Badge>}
-                      {s.locked && <Badge tone="blue">예시</Badge>}
                       <Badge tone="blue">{s.hazard}</Badge>
                       <LevelBadge level={s.alertLevel} />
                     </div>
