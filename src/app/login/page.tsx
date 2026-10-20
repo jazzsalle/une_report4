@@ -12,18 +12,17 @@ const DEMO_ACCOUNTS = [
   { loginId: "admin", label: "운영관리자 (전체)" },
   { loginId: "busan-admin", label: "부산광역시 관리자" },
   { loginId: "gb-admin", label: "경상북도 관리자" },
-  { loginId: "t3q", label: "T3Q 담당자" },
 ];
 
 /**
- * 시험 기간: DEMO_LOGIN="아이디:비밀번호" 를 설정하면 계정을 목록에서 고르고 비밀번호를 안내한다.
- * T3Q 웹 토큰 링크 로그인(API-03, /sso/t3q)이 운영에 붙기 전까지 유지한다 — 그 뒤에 환경변수만 지우면 된다.
+ * 시험 기간: DEMO_LOGIN="아이디" 를 설정하면 계정을 목록에서 고른다(기본 선택 = 그 아이디).
+ * 비밀번호는 화면에 표시하지 않는다 — 사내에서 따로 공유(2026-10-20). 「아이디:…」 꼴이면 뒤는 무시한다.
  */
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const sp = await searchParams;
   const raw = process.env.DEMO_LOGIN ?? "";
-  const i = raw.indexOf(":");
-  const demo = i > 0 ? { loginId: raw.slice(0, i), password: raw.slice(i + 1), accounts: DEMO_ACCOUNTS } : null;
+  const loginId = raw.split(":")[0].trim();
+  const demo = loginId ? { loginId, accounts: DEMO_ACCOUNTS } : null;
   const sso = typeof sp.sso === "string" ? (SSO_ERROR[sp.sso] ?? null) : null;
   return <LoginForm demo={demo} notice={sso} />;
 }
