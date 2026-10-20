@@ -2,7 +2,7 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { PAGE_SIZE } from "@/lib/paging";
-import { MoreHorizontal, X } from "lucide-react";
+import { ChevronDown, MoreHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 
 /** outline: 파란 테두리 세컨더리 (주 버튼 다음으로 중요한 동작) */
@@ -312,5 +312,67 @@ export function MoreMenu({ items, label = "더보기" }: { items: MoreItem[]; la
         </div>
       )}
     </>
+  );
+}
+
+export type CheckOption = { key: string; label: string; checked: boolean; onToggle: () => void };
+
+/**
+ * 체크박스로 여러 개 고르는 드롭리스트. 묶음(title)별로 나눠 보여 줄 수 있다.
+ * 고른 값의 요약 글(text)은 부르는 쪽이 만든다.
+ */
+export function CheckDropdown({
+  text,
+  placeholder,
+  groups,
+  disabled,
+}: {
+  text?: string;
+  placeholder: string;
+  groups: { title?: string; options: CheckOption[] }[];
+  disabled?: boolean;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const down = (e: MouseEvent) => !box.current?.contains(e.target as Node) && setOpen(false);
+    const key = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("mousedown", down);
+    window.addEventListener("keydown", key);
+    return () => {
+      window.removeEventListener("mousedown", down);
+      window.removeEventListener("keydown", key);
+    };
+  }, [open]);
+  return (
+    <div ref={box} className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="input flex items-center gap-2 text-left disabled:cursor-not-allowed"
+      >
+        <span className={clsx("min-w-0 flex-1 truncate", !text && "text-placeholder")}>{text || placeholder}</span>
+        <ChevronDown size={20} className={clsx("shrink-0 transition", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div role="listbox" aria-multiselectable className="card scroll-thin absolute left-0 top-full z-30 mt-1 max-h-80 w-full min-w-[280px] overflow-y-auto border border-line-weak py-1">
+          {groups.map((g, gi) => (
+            <div key={g.title ?? gi}>
+              {g.title && <div className="sticky top-0 bg-canvas px-4 py-2 font-bold">{g.title}</div>}
+              {g.options.map((o) => (
+                <label key={o.key} className="flex h-11 cursor-pointer items-center gap-3 px-4 text-[17px] hover:bg-canvas">
+                  <input type="checkbox" className="size-5 accent-primary" checked={o.checked} onChange={o.onToggle} />
+                  {o.label}
+                </label>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

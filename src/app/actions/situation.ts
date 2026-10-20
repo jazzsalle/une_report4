@@ -490,7 +490,6 @@ export async function copySituation(id: string, title: string): Promise<{ error?
 export async function trashSituation(id: string) {
   const { s } = await editable(id);
   if (s.locked) throw new Error("예시 문서는 지울 수 없습니다.");
-  if (s.tutorial) throw new Error("따라하기 상황은 지울 수 없습니다.");
   await touch(id, { deletedAt: new Date() });
   revalidatePath("/");
   redirect("/");

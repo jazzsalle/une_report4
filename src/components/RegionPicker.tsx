@@ -1,12 +1,14 @@
 "use client";
-import { useMemo, useState } from "react";
-import clsx from "clsx";
-import { ChevronDown } from "lucide-react";
+import { useMemo } from "react";
+import { CheckDropdown } from "@/components/ui";
 import { REGION_TREE, splitArea } from "@/lib/regions";
 
+/** 고른 이름이 많으면 "해운대구 외 2" */
+const brief = (names: string[]) => (names.length > 2 ? `${names[0]} 외 ${names.length - 1}` : names.join(", "));
+
 /**
- * 발생지역 선택 — 시도 1개, 시군구 여러 개, 시군구별 읍면동(선택)
- * 값: areas = ["해운대구", "수영구 광안동", "수영구 민락동"]
+ * 발생지역 선택 (N-01) — 시도 ▾ · 시군구 ▾(여러 개) · 읍면동 ▾(고른 시군구별, 「OO구 전역」 또는 동 여러 개)
+ * 값: areas = ["해운대구", "수영구 광안동", "수영구 민락동"] — 시군구만 있으면 그 시군구 전역
  */
 export function RegionPicker({
   sido,
@@ -18,9 +20,8 @@ export function RegionPicker({
   onChange: (sido: string, areas: string[]) => void;
 }) {
   const node = REGION_TREE.find((s) => s.n === sido) ?? REGION_TREE[0];
-  const [openSgg, setOpenSgg] = useState<string | null>(null);
 
-  // 시군구 → 선택된 읍면동 목록 (빈 배열 = 시군구 전체)
+  // 시군구 → 선택된 읍면동 목록 (빈 배열 = 시군구 전역)
   const picked = useMemo(() => {
     const m = new Map<string, string[]>();
     areas.forEach((a) => {
@@ -39,104 +40,77 @@ export function RegionPicker({
 
   const toggleSgg = (sgg: string) => {
     const m = new Map(picked);
-    if (m.has(sgg)) {
-      m.delete(sgg);
-      if (openSgg === sgg) setOpenSgg(null);
-    } else {
-      m.set(sgg, []);
-      setOpenSgg(sgg);
-    }
+    if (m.has(sgg)) m.delete(sgg);
+    else m.set(sgg, []);
     emit(m);
   };
 
-  const toggleUmd = (sgg: string, umd: string) => {
+  // 전역을 고르면 동 선택을 비우고, 동을 고르면 전역이 풀린다
+  const setUmds = (sgg: string, umds: string[]) => {
     const m = new Map(picked);
-    const cur = m.get(sgg) ?? [];
-    m.set(sgg, cur.includes(umd) ? cur.filter((x) => x !== umd) : [...cur, umd]);
+    m.set(sgg, umds);
     emit(m);
   };
 
-  const openNode = openSgg ? node.s.find((s) => s.n === openSgg) : undefined;
+  const sggs = node.s.filter((s) => picked.has(s.n));
+  const umdNames = sggs.flatMap((s) => picked.get(s.n)!);
+
+  const summary = sggs.length
+    ? sggs.map((s) => {
+        const umds = picked.get(s.n)!;
+        return umds.length ? `${s.n} ${umds.join(" · ")}` : `${s.n} 전역`;
+      })
+    : [`${node.n} 전역`];
 
   return (
     <div className="space-y-3">
-      <select
-        className="input max-w-[280px]"
-        value={node.n}
-        onChange={(e) => {
-          setOpenSgg(null);
-          onChange(e.target.value, []);
-        }}
-      >
-        {REGION_TREE.map((s) => (
-          <option key={s.c} value={s.n}>
-            {s.n}
-          </option>
-        ))}
-      </select>
-
-      <div className="flex flex-wrap gap-2">
-        {node.s.map((s) => {
-          const on = picked.has(s.n);
-          const n = picked.get(s.n)?.length ?? 0;
-          return (
-            <button
-              type="button"
-              key={s.c}
-              onClick={() => (on && openSgg !== s.n ? setOpenSgg(s.n) : toggleSgg(s.n))}
-              className={clsx(
-                "h-10 rounded-md border px-3.5 text-[15px] font-medium transition",
-                on ? "border-primary bg-primary-weak text-primary-strong" : "border-line bg-white hover:border-primary",
-                openSgg === s.n && "ring-2 ring-primary/30",
-              )}
-            >
+      <div className="grid max-w-[960px] gap-3 md:grid-cols-3">
+        <select className="input" aria-label="시도" value={node.n} onChange={(e) => onChange(e.target.value, [])}>
+          {REGION_TREE.map((s) => (
+            <option key={s.c} value={s.n}>
               {s.n}
-              {on && n > 0 && <span className="ml-1 text-[14px]">{n}</span>}
-            </button>
-          );
-        })}
+            </option>
+          ))}
+        </select>
+        <CheckDropdown
+          placeholder="시군구 선택"
+          text={brief(sggs.map((s) => s.n))}
+          groups={[
+            {
+              options: node.s.map((s) => ({
+                key: s.c,
+                label: s.n,
+                checked: picked.has(s.n),
+                onToggle: () => toggleSgg(s.n),
+              })),
+            },
+          ]}
+        />
+        <CheckDropdown
+          placeholder="읍면동 선택"
+          disabled={!sggs.length}
+          text={sggs.length ? (umdNames.length ? brief(umdNames) : "전역") : undefined}
+          groups={sggs.map((s) => {
+            const umds = picked.get(s.n)!;
+            return {
+              title: s.n,
+              options: [
+                { key: `${s.c}-all`, label: `${s.n} 전역`, checked: !umds.length, onToggle: () => setUmds(s.n, []) },
+                ...s.u.map((u) => ({
+                  key: `${s.c}-${u}`,
+                  label: u,
+                  checked: umds.includes(u),
+                  onToggle: () => setUmds(s.n, umds.includes(u) ? umds.filter((x) => x !== u) : [...umds, u]),
+                })),
+              ],
+            };
+          })}
+        />
       </div>
-
-      {openNode && (
-        <div className="rounded-lg border border-primary-line bg-primary-weak/40 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <ChevronDown size={18} className="text-primary" />
-            <b>{openNode.n}</b>
-            <span className="text-sub">읍면동</span>
-            <button type="button" onClick={() => toggleSgg(openNode.n)} className="ml-auto text-[15px] text-sub hover:text-danger">
-              {openNode.n} 선택 해제
-            </button>
-            <button type="button" onClick={() => setOpenSgg(null)} className="text-[15px] text-sub hover:text-ink">
-              닫기
-            </button>
-          </div>
-          <div className="scroll-thin flex max-h-56 flex-wrap gap-1.5 overflow-y-auto">
-            {openNode.u.map((u) => {
-              const on = picked.get(openNode.n)?.includes(u);
-              return (
-                <button
-                  type="button"
-                  key={u}
-                  onClick={() => toggleUmd(openNode.n, u)}
-                  className={clsx(
-                    "h-9 rounded-md border px-3 text-[15px] transition",
-                    on ? "border-primary bg-primary text-white" : "border-line bg-white hover:border-primary",
-                  )}
-                >
-                  {u}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {areas.length > 0 && (
-        <div className="text-[16px]">
-          <span className="text-sub">선택 · </span>
-          {areas.join(", ")}
-        </div>
-      )}
+      <div className="text-[17px]">
+        <span className="text-sub">선택 · </span>
+        {summary.join(", ")}
+      </div>
     </div>
   );
 }
