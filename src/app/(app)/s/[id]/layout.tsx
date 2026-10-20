@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { getSituation } from "@/lib/data";
 import { fmtPeriod } from "@/lib/format";
+import { SituationInfo } from "./SituationInfo";
 import { STEP_LABEL, type ResponseStep } from "@/lib/types";
 import { ORG_SIDO } from "@/lib/regions";
 import { readLocation } from "@/lib/location";
@@ -30,6 +31,20 @@ export default async function SituationLayout({ children, params }: LayoutProps<
             <Badge tone={loc && loc.sido !== sido ? "orange" : "gray"}>발생 {sido}</Badge>
             {loc && loc.sido !== sido && <span className="text-[15px] text-warning">상단 특보는 현재 위치 {loc.sido} 기준</span>}
             <span className="ml-2 text-[16px] text-sub">{fmtPeriod(s.periodStart, s.periodEnd)}</span>
+            <span className="ml-auto">
+              <SituationInfo
+                currentStatus={s.currentStatus}
+                rows={[
+                  ["업무유형", s.kind === "drill" ? "안전한국훈련" : "실제재난"],
+                  ["재난유형", s.hazard],
+                  ["위기경보", s.alertLevel],
+                  ["대응단계", STEP_LABEL[s.responseStep as ResponseStep] ?? s.responseStep],
+                  ["발생지역", `${sido} ${s.areas.length ? s.areas.join(", ") : "전역"}`],
+                  ["담당부서", s.dept || "-"],
+                  ["대응 기간", fmtPeriod(s.periodStart, s.periodEnd)],
+                ]}
+              />
+            </span>
           </div>
           <SituationTabs id={id} status={s.status} />
         </div>

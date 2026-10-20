@@ -51,5 +51,5 @@ export function LevelBadge({ level }: { level: string }) {
 
 /** 상황을 열 주소: SOP가 없으면 상황정보 등록(이어서 작성), 있으면 상황 화면 (N-05) */
 export function situationHref(s: { id: string; sop: unknown }) {
-  return s.sop ? `/s/${s.id}` : `/new?resume=${s.id}`;
+  return s.sop ? `/s/${s.id}/sop` : `/new?resume=${s.id}`;
 }

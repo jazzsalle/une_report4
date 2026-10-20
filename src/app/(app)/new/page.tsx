@@ -21,7 +21,7 @@ export default async function NewPage({ searchParams }: PageProps<"/new">) {
   if (typeof sp.resume === "string") {
     const s = await getSituation(u, sp.resume);
     if (!s) redirect("/");
-    if (s.sop) redirect(`/s/${s.id}`);
+    if (s.sop) redirect(`/s/${s.id}/sop`);
     const input: SituationInput = {
       title: s.title,
       kind: s.kind as "real" | "drill",

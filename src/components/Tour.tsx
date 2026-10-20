@@ -166,8 +166,8 @@ export const TOUR_STEPS: Step[] = [
     advance: "next",
   },
   {
-    path: /^\/s\/[^/]+$/,
-    href: (c) => (c.sid ? `/s/${c.sid}` : undefined),
+    path: /^\/s\/[^/]+\/report$/,
+    href: (c) => (c.sid ? `/s/${c.sid}/report` : undefined),
     target: "weather",
     title: "기상특보 보고",
     body: "발효 중인 특보, 강수 현황과 전망이 자동으로 들어갑니다. 아래 세 칸에는 방재기상정보시스템의 특보·레이더·위성 그림을 끌어다 놓거나 Ctrl+V로 붙입니다.",

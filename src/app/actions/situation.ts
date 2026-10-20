@@ -156,7 +156,7 @@ export async function updateSituation(id: string, v: SituationInput): Promise<{ 
   if (deptChanged) {
     await addEvent(id, { type: "change", title: "담당부서 변경", body: `${s.dept} → ${v.dept.trim()}`, userName: u.name });
   }
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
   return {};
 }
 
@@ -170,7 +170,7 @@ export async function refreshWeather(id: string) {
     body: weather.active.length ? weather.active.map((a) => a.name).join(", ") : "발효 중인 특보 없음",
     userName: u.name,
   });
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
 }
 
 /** T3Q(모의 모드·따라하기는 매뉴얼 시드)로 SOP를 만든다. 실패하면 화면에 보일 오류 문구 */
@@ -203,7 +203,7 @@ export async function generateSop(id: string): Promise<{ error?: string }> {
   const sop = await buildSop(s);
   if (typeof sop === "string") return { error: sop };
   await saveSop(id, s.orgId, sop, u.name);
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
   return {};
 }
 
@@ -213,7 +213,7 @@ export async function startSop(id: string) {
   await patchSopHead(id, { startedAt: new Date().toISOString(), endedAt: null });
   await touch(id, { status: "running" });
   await addEvent(id, { type: "sop", title: "SOP 실행 시작", body: `임무 ${s.sop.missions.length}건`, userName: u.name });
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
 }
 
 export async function endSop(id: string) {
@@ -228,7 +228,7 @@ export async function endSop(id: string) {
     body: `완료 ${done} / 전체 ${total}`,
     userName: u.name,
   });
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
 }
 
 export async function reopenSop(id: string) {
@@ -237,7 +237,7 @@ export async function reopenSop(id: string) {
   await patchSopHead(id, { endedAt: null });
   await touch(id, { status: "running" });
   await addEvent(id, { type: "sop", title: "SOP 실행 재개", userName: u.name });
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
 }
 
 const STATUS_TEXT: Record<Mission["status"], string> = { todo: "대기", doing: "착수", done: "완료", skipped: "생략" };
@@ -385,14 +385,14 @@ export async function addRecord(id: string, kind: string, text: string, at?: str
     at: at ? new Date(fromLocalInput(at)) : new Date(),
   });
   await touch(id);
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
 }
 
 export async function deleteRecord(id: string, eventId: string) {
   await editable(id);
   const db = await getDb();
   await db.delete(schema.events).where(eq(schema.events.id, eventId));
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
 }
 
 /** 상황일지 생성 — 입력·실행이력으로 자동 구성 */
@@ -518,5 +518,5 @@ export async function saveWeatherImage(id: string, which: WeatherSlot, img: Weat
       userName: u.name,
     });
   }
-  revalidatePath(`/s/${id}`);
+  revalidatePath(`/s/${id}`, "layout");
 }
