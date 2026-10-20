@@ -63,7 +63,7 @@
 <body>
 <header>
   <div class="in">
-    <h1>매뉴얼 ↔ JSON ↔ 화면 대응 설명서 · API-02 SOP · API-04 연락망</h1>
+    <h1>매뉴얼 ↔ JSON ↔ 화면 대응 설명서 · API-02 SOP</h1>
     <a href="/api-docs">API 요청서로</a>
   </div>
 </header>
@@ -93,7 +93,7 @@
     <a href="#rules">추출 규칙 R1~R25</a><a href="#edge">애매한 경우</a><a href="#other">다른 매뉴얼 적용</a><a href="#json">JSON 예시</a>
   </div>
   <div class="toc">
-    <span class="k">JSON → 화면</span><a href="#screen">⑤ 우리 화면 적용</a><a href="#ondemand">⑥ 필요시 임무</a><a href="#contacts">⑦ 연락망 추출</a>
+    <span class="k">JSON → 화면</span><a href="#screen">⑤ 우리 화면 적용</a><a href="#ondemand">⑥ 필요시 임무</a>
   </div>
 </section>
 
@@ -398,27 +398,6 @@
   <figure style="margin-top:20px"><img src="/api-docs/img/app-flow.png" alt="크게 보기 가로 흐름도와 필요시 임무" /><figcaption>크게 보기(새 창, 상황실 큰 화면용) · 흐름선(위)과 필요시 임무 칸(아래). 분홍 = 지금 할 임무</figcaption></figure>
 </section>
 
-<section id="contacts">
-  <h2><span class="no">⑦</span>연락망 추출 — API-04</h2>
-  <p class="lead">상황전파에서 가장 중요한 대상은 <b>유관기관</b>입니다. 매뉴얼의 「기관명·관련 부서·전화·비고(FAX)」 비상연락망 표를 뽑습니다.
-    T3Q가 이 표를 뽑아 주면, 연락망 화면의 <b>매뉴얼에서 가져오기</b>에서 분류별로 미리 보고 고른 줄만 넣습니다(지우지 않음). 지금은 연락망을 엑셀 올리기로만 만들기로 해서 이 버튼을 숨겨 두었습니다(연계 후 다시 켬). 내부 연락망이라 성명·직위·휴대전화도 문서에 있으면 그대로 받습니다.</p>
-  <div class="grid">
-    <figure><img src="/api-docs/img/app-manual-contacts.png" alt="매뉴얼에서 연락망 가져오기 창" /><figcaption>우리 화면 · 매뉴얼에서 연락망 가져오기 (예시 응답)</figcaption></figure>
-    <table>
-      <tr><th>규칙</th><th>내용</th></tr>
-      <tr><td>C1 찾기</td><td>「비상연락망·유관기관 연락처·연락처·작성기관」 제목 + (기관|부서|연락처) 열 머리 + 쪽마다 일반전화 6개 이상</td></tr>
-      <tr><td>C2 열 머리</td><td>기관(명)·주관기관·관련부서·부서·직위·성명·연락처·전화·휴대(H.P·CP)·팩스·비고를 같은 뜻끼리. 성명·휴대전화도 그대로</td></tr>
-      <tr><td>C3 번호 나누기</td><td>(전)·(팩)·[Fax]·(사)·야)·당직·(CP)·010 → <code>phones</code>·<code>fax</code>·<code>night</code>·<code>mobile</code></td></tr>
-      <tr><td>C4 번호 정리</td><td>짧은 번호에 지역번호 보충, 「~5」 범위는 원문, 「0010-」 같은 오타 거름</td></tr>
-      <tr><td>C5 칸 짝짓기</td><td>흩어진 칸은 순서대로 짝짓고 번호 개수로 확인. 안 맞으면 기관명만 + 경고</td></tr>
-      <tr><td>C6 이름 정리</td><td>세로쓰기·줄바꿈 이음, 「중부/온산소방서」는 두 기관</td></tr>
-      <tr><td>C7 분류</td><td><code>AGENCY</code> 유관기관 · <code>INTERNAL</code> 자기 기관 부서 · <code>HIGHER</code> 중앙부처 상황실 · <code>LOCAL_GOV</code> 시·도·시군구 → 화면 묶음 「유관기관」「우리 기관 부서」「상급 보고처」「시·군·구 재난부서」</td></tr>
-      <tr><td>C8 카드 안 연락처</td><td>행동카드 협업기관 칸·「기관(☎ …)」은 API-02 <code>OrgRef.phones</code>에도</td></tr>
-      <tr><td>C9 연락망 아님</td><td>학교 주소록, 병원·응급실, 구급차 현황</td></tr>
-      <tr><td>C10 기준일·출처</td><td><code>asOf</code>·<code>source.page</code>. 그림 쪽은 <code>IMAGE_PAGE</code> 경고</td></tr>
-    </table>
-  </div>
-</section>
 
 </main>
 </body>

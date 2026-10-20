@@ -1,7 +1,7 @@
 /**
  * T3Q 연계 API 계약.
  * API-02 SOP는 T3Q 납품본(API-SOP v2, 2026-10-19 · etc/T3Q_API/3…/MOIS_API-SOP_v2_openapi.json)이 정본이다.
- * API-03 인증 · API-04 연락망은 아직 T3Q가 제공하지 않았다 — docs/T3Q_API_요청서.md 의 요청안 그대로.
+ * API-03 인증은 아직 T3Q가 제공하지 않았다 — docs/T3Q_API_요청서.md 의 요청안 그대로. (API-04 연락망은 철회 — 연락망은 엑셀·직접 입력)
  * 계약을 바꾸면 public/api-docs/t3q.yaml · docs/T3Q_API_요청서.md 를 함께 고친다.
  */
 
@@ -11,21 +11,7 @@ export type AlertLevelCode = "INTEREST" | "CAUTION" | "ALERT" | "SERIOUS";
 /** 대응단계 — 징후감지 / 초기대응 / 비상대응 / 수습·복구 (SOP 구성 기준) */
 export type ResponseStepCode = "SIGN_DETECTION" | "INITIAL_RESPONSE" | "EMERGENCY_RESPONSE" | "RECOVERY";
 
-/** (API-03·04 요청안) 재난유형 객체 */
-export interface DisasterType {
-  code: string;
-  name: string;
-  group?: string;
-}
-
-/** (API-04 요청안) 행정구역 */
-export interface Region {
-  code: string;
-  name: string;
-  level: "SIDO" | "SIGUNGU" | "EUPMYEONDONG";
-}
-
-/** (API-03·04 요청안) 응답 메타 — API-02 v2 응답에는 없다 */
+/** (API-03 요청안) 응답 메타 — API-02 v2 응답에는 없다 */
 export interface T3QMeta {
   requestId: string;
   traceId: string;
@@ -203,69 +189,6 @@ export interface SopActionsResponse {
   warnings: ExtractionWarning[];
   missions: SopMission[];
   actions: SopAction[];
-}
-
-/* ---------- (API-04 요청안) 매뉴얼 참조·근거 ---------- */
-
-/** T3Q가 고른 매뉴얼 (API-04 요청안 모양) */
-export interface ManualRef {
-  docId: string;
-  docTitle: string;
-  scope: "SIGUNGU" | "SIDO" | "CENTRAL";
-  region?: Region;
-  version?: string;
-  stepBasis: "RESPONSE_STEP" | "ALERT_LEVEL";
-  departments?: string[];
-  departmentMatched?: boolean;
-}
-
-export interface SourceRef {
-  docId: string;
-  docTitle: string;
-  page?: number;
-  excerpt?: string;
-}
-
-/* ---------- API-04 매뉴얼 연락망 (v2.0) ---------- */
-
-/** 연락망 분류 — 유관기관 / 우리 기관 내부 부서 / 상급 보고처(중앙부처 상황실 등) / 시·도·시군구 */
-export type ContactCategory = "AGENCY" | "INTERNAL" | "HIGHER" | "LOCAL_GOV";
-
-export interface ContactsRequest {
-  /** 매뉴얼 고르기는 API-02 와 같은 규칙 (재난유형 → 시군구 → 시도 → 중앙). 재난유형이 없으면 그 지역의 모든 매뉴얼 */
-  region: Region;
-  affectedRegions?: Region[];
-  disasterType?: DisasterType;
-  documents?: { docId: string }[];
-}
-
-/** 연락처 1줄 — 문서에 있으면 성명·직위·휴대전화도 그대로 (내부용) */
-export interface ContactEntry {
-  category: ContactCategory;
-  /** 기관명 (예: 부산경찰청) */
-  org: string;
-  /** 부서 (예: 경비교통과) */
-  dept?: string;
-  title?: string;
-  name?: string;
-  /** 사무실·대표 번호 (지역번호 붙여서, 범위 「~5」는 그대로) */
-  phones: string[];
-  mobile?: string;
-  fax?: string[];
-  /** 야간·당직 번호 */
-  night?: string[];
-  email?: string;
-  note?: string;
-  /** 표의 기준일 원문 (예: 2026. 2월 기준) */
-  asOf?: string;
-  source: SourceRef;
-}
-
-export interface ContactsResponse {
-  meta: T3QMeta;
-  manuals: ManualRef[];
-  entries: ContactEntry[];
-  warnings?: ExtractionWarning[];
 }
 
 /* ---------- API-03 사용자 인증 (T3Q 플랫폼 링크 로그인) ---------- */

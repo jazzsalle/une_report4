@@ -57,7 +57,7 @@ npm run dev                    # http://localhost:3000
 
 - 계약(정본): **API 문서 https://unereport4.vercel.app/api-docs** · 매뉴얼↔JSON 대응 설명서 https://unereport4.vercel.app/api-docs/mapping.html — ① T3Q 요청서 ② 내부 API ③ 기상청 (원본 `public/api-docs/*.yaml`, 설명 `docs/T3Q_API_요청서.md`)
 - 코드: `src/lib/t3q/types.ts`(계약 타입) · `client.ts`(실제 호출) · `mock.ts`(매뉴얼 시드 응답)
-- 전환: SOP(API-02, T3Q 납품 v2)는 `T3Q_SOP_MODE=live` + `T3Q_SOP_URL`. 연락망·링크 로그인(요청안, 미제공)은 `T3Q_MODE=live` + `T3Q_BASE_URL`·`T3Q_TOKEN`. 실제 호출이 실패하면 시드로 대체하지 않고 오류를 화면에 알림(따라하기는 늘 시드).
+- 전환: SOP(API-02, T3Q 납품 v2)는 `T3Q_SOP_MODE=live` + `T3Q_SOP_URL`. 링크 로그인(요청안, 미제공)은 `T3Q_MODE=live` + `T3Q_BASE_URL`·`T3Q_TOKEN`. 실제 호출이 실패하면 시드로 대체하지 않고 오류를 화면에 알림(따라하기는 늘 시드).
 
 ## 시드 데이터
 

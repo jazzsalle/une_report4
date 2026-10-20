@@ -393,21 +393,6 @@ paths:
           application/json:
             schema: { type: object, properties: { orgId: { type: string } } }
       responses: { "200": { description: 완료 } }
-  /action/contacts/fetchManualContacts:
-    post:
-      tags: [연락망]
-      summary: fetchManualContacts — 매뉴얼에서 연락망 가져오기 (미리 보기)
-      description: |
-        기관의 시도로 T3Q API-04(`POST /contacts`)를 불러 매뉴얼 비상연락망을 돌려줍니다. 바꾸지 않습니다. 기관관리 이상만.
-        모의 모드는 예시 연락망(자리표시 번호). 연계 호출이 실패하면 예시로 대체하지 않고 `{ error }`.
-        화면은 분류(유관기관·시·군·구·우리 기관 부서·상급 보고처)별로 보여 주고, 고른 줄을 `importContacts`(추가·수정만, upperKind=agency)로 넣습니다.
-      requestBody:
-        content:
-          application/json:
-            schema: { type: object, properties: { orgId: { type: string } } }
-      responses:
-        "200":
-          description: "{ data?: ContactsResponse, error?: string } (t3q.yaml 의 ContactsResponse 참고)"
   /action/contacts/importContacts:
     post:
       tags: [연락망]

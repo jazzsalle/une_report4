@@ -17,10 +17,6 @@ import {
 } from "@/app/actions/contacts";
 import { EmergencyTree } from "./EmergencyTree";
 import { ContactsExcel } from "./ContactsExcel";
-import { ManualContacts } from "./ManualContacts";
-
-/** 「매뉴얼에서 가져오기」(T3Q API-04) — 당분간 엑셀 업로드로만 연락망을 구성하므로 숨긴다. 다시 쓰려면 true */
-const SHOW_MANUAL_IMPORT = false;
 
 type Tab = "people" | "groups" | "tree";
 type Unit = ContactsBundle["units"][number];
@@ -130,7 +126,6 @@ export function ContactsView({
           </select>
         )}
         <div className="ml-auto flex flex-wrap gap-2">
-          {canManage && SHOW_MANUAL_IMPORT && <ManualContacts orgId={orgId} />}
           {canManage && <ContactsExcel orgId={orgId} orgName={orgName} bundle={bundle} />}
         </div>
       </div>
@@ -192,12 +187,9 @@ function EmptyGuide({
             {error && <p className="mt-2 text-danger">{error}</p>}
           </div>
           <div className="rounded-lg border border-line p-6">
-            <div className="text-[19px] font-bold">2. {SHOW_MANUAL_IMPORT ? "매뉴얼·엑셀로" : "엑셀로"} 한 번에</div>
-            <p className="mt-2 text-[16px] text-sub">
-              {SHOW_MANUAL_IMPORT ? "재난 매뉴얼의 비상연락망(유관기관 등)을 가져오거나, 엑셀 양식을 채워 올립니다." : "엑셀 양식을 내려받아 채운 뒤 올립니다."}
-            </p>
+            <div className="text-[19px] font-bold">2. 엑셀로 한 번에</div>
+            <p className="mt-2 text-[16px] text-sub">엑셀 양식을 내려받아 채운 뒤 올립니다.</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {SHOW_MANUAL_IMPORT && <ManualContacts orgId={orgId} big />}
               <ContactsExcel orgId={orgId} orgName={orgName} bundle={bundle} big />
             </div>
           </div>

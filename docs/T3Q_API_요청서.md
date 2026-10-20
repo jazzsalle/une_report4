@@ -1,6 +1,6 @@
 # T3Q 연계 API 요청서
 
-> **2026-10-19 API-02 납품 (T3Q API-SOP v2)** — 이후 API-02의 정본은 T3Q 납품 OpenAPI(`etc/T3Q_API/3. …/(261019)MOIS_API-SOP_v2_openapi.json`, 우리 쪽 사본 `public/api-docs/t3q.yaml`)이다. 아래 4장(API-02)은 요청 당시 배경 설명으로 남긴다. API-03·04는 아직 미제공 — 요청안 그대로.
+> **2026-10-19 API-02 납품 (T3Q API-SOP v2)** — 이후 API-02의 정본은 T3Q 납품 OpenAPI(`etc/T3Q_API/3. …/(261019)MOIS_API-SOP_v2_openapi.json`, 우리 쪽 사본 `public/api-docs/t3q.yaml`)이다. 아래 4장(API-02)은 요청 당시 배경 설명으로 남긴다. API-03은 아직 미제공 — 요청안 그대로. API-04 연락망은 철회.
 >
 > | 항목 | 요청안 (이 문서 4장) | 납품본 (v2, 현재 연계 기준) |
 > |---|---|---|
@@ -428,7 +428,9 @@ export interface SopActionsResponse {
 
 ---
 
-## 4-2. API-04 매뉴얼 연락망 (v2.0)
+## 4-2. API-04 매뉴얼 연락망 (v2.0) — 철회 (2026-10-20)
+
+> 연락망은 T3Q 연계 없이 엑셀·직접 입력으로만 만들기로 해 이 API는 요청하지 않는다. 아래는 기록으로 남긴다.
 
 | 메서드·경로 | 설명 |
 |---|---|

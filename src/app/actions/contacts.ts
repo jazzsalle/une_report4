@@ -5,9 +5,6 @@ import { revalidatePath } from "next/cache";
 import { getDb, schema } from "@/lib/db";
 import { requireUser } from "@/lib/auth/session";
 import { ensureExampleContacts } from "@/lib/contacts-seed";
-import { manualContacts, T3Q_FAILED } from "@/lib/t3q/client";
-import type { ContactsResponse } from "@/lib/t3q/types";
-import { ORG_SIDO, sidoNode } from "@/lib/regions";
 
 async function manager(orgId: string) {
   const u = await requireUser();
@@ -281,21 +278,4 @@ export async function seedExampleContacts(orgId: string) {
   await manager(orgId);
   if (!(await ensureExampleContacts(orgId))) throw new Error("이미 연락망이 있습니다.");
   revalidatePath("/contacts");
-}
-
-/**
- * 매뉴얼 연락망 가져오기 (API-04) — 기관의 시도 매뉴얼에서 연락망을 뽑아 미리 보여 준다. 바꾸지 않음.
- * 고른 줄은 화면에서 entryToRow → importContacts(추가·수정만) 로 넣는다.
- */
-export async function fetchManualContacts(orgId: string): Promise<{ data?: ContactsResponse; error?: string }> {
-  await manager(orgId);
-  const sido = ORG_SIDO[orgId];
-  const node = sido ? sidoNode(sido) : undefined;
-  if (!node) return { error: "기관의 시도를 알 수 없습니다." };
-  try {
-    return { data: await manualContacts({ region: { code: node.c.padEnd(10, "0"), name: node.n, level: "SIDO" } }) };
-  } catch (e) {
-    console.error("[contacts] manual contacts failed", e);
-    return { error: e instanceof Error && e.message === T3Q_FAILED ? T3Q_FAILED : "연락망을 가져오지 못했습니다." };
-  }
 }

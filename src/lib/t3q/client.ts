@@ -1,19 +1,17 @@
 import "server-only";
 import type {
   AuthVerifyResponse,
-  ContactsRequest,
-  ContactsResponse,
   SopActionsRequest,
   SopActionsResponse,
   T3QErrorBody,
 } from "./types";
-import { mockContacts, mockSopActions } from "./mock";
+import { mockSopActions } from "./mock";
 import { t3qRequest } from "./https";
 
 /**
  * T3Q 연계 진입점 — 화면·서버 코드는 이 파일의 함수만 호출한다.
  * API마다 따로 켠다: SOP(API-02)는 T3Q_SOP_MODE=live + T3Q_SOP_URL(납품 v2),
- * 연락망(API-04)·링크 로그인(API-03)은 T3Q_MODE=live + T3Q_BASE_URL(요청안 — 아직 T3Q 미제공).
+ * 링크 로그인(API-03)은 T3Q_MODE=live + T3Q_BASE_URL(요청안 — 아직 T3Q 미제공). 연락망은 T3Q 연계 없이 엑셀·직접 입력.
  * 그 외(mock)는 매뉴얼 시드 응답. 실제 호출이 실패하면 시드로 대체하지 않고 오류를 화면에 그대로 알린다.
  */
 export function t3qMode(): "live" | "mock" {
@@ -115,17 +113,6 @@ export async function manualDocument(docId: string): Promise<{ stream: ReadableS
   } catch (e) {
     console.error("[t3q] document unreachable", docId, e);
     return null;
-  }
-}
-
-/** API-04 — 매뉴얼 연락망 */
-export async function manualContacts(req: ContactsRequest): Promise<ContactsResponse> {
-  if (t3qMode() !== "live") return mockContacts(req);
-  try {
-    return await post<ContactsResponse>("/contacts", req, 40000);
-  } catch (e) {
-    console.error("[t3q] contacts failed", e);
-    throw new Error(T3Q_FAILED);
   }
 }
 
