@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SOP 추출 표준</title>
+  <link rel="stylesheet" href="/fonts/pretendard-gov/pretendardvariable-gov-dynamic-subset.css" />
+  <style>
+    :root {
+      --ink: #1e2124; --sub: #464c53; --line: #cdd1d5; --weak: #e6e8ea; --canvas: #f4f5f6; --card: #fff;
+      --navy: #052b57; --primary: #256ef4; --primary-weak: #ecf2fe; --orange-weak: #fff3e5; --orange: #c25400;
+      --green-weak: #eaf6ec; --green: #228738; --red: #de2134; --code: #f1f3f5;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font-family: "Pretendard GOV Variable", "Malgun Gothic", sans-serif; font-size: 17px; line-height: 1.6; word-break: keep-all; }
+    header { background: var(--navy); color: #fff; }
+    header .in { max-width: 1180px; margin: 0 auto; padding: 18px 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    header h1 { margin: 0 auto 0 0; font-size: 22px; }
+    header .tag { font-size: 14px; border: 1px solid rgba(255,255,255,.5); border-radius: 999px; padding: 2px 12px; }
+    main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 28px; margin-bottom: 24px; }
+    h2 { margin: 0 0 8px; font-size: 24px; }
+    h2 .no { display: inline-block; min-width: 34px; height: 34px; line-height: 34px; text-align: center; border-radius: 8px; background: var(--navy); color: #fff; font-size: 18px; margin-right: 10px; }
+    h3 { margin: 24px 0 8px; font-size: 19px; }
+    .lead { margin: 0 0 16px; color: var(--sub); }
+    table { width: 100%; border-collapse: collapse; font-size: 16px; margin: 8px 0; }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; text-align: left; }
+    th { background: var(--canvas); font-weight: 700; white-space: nowrap; }
+    code { font-family: Consolas, "D2Coding", monospace; background: var(--code); border-radius: 4px; padding: 1px 5px; font-size: .92em; }
+    pre { margin: 8px 0; background: #1b2430; color: #e6edf3; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 14.5px; line-height: 1.55; }
+    pre .c { color: #8b9bb0; }
+    .note { background: var(--orange-weak); border-left: 4px solid var(--orange); padding: 12px 16px; border-radius: 6px; margin-top: 14px; }
+    .ok { background: var(--green-weak); border-left: 4px solid var(--green); padding: 12px 16px; border-radius: 6px; margin-top: 14px; }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 4px; }
+    .flow span { border: 2px solid var(--navy); border-radius: 10px; padding: 8px 14px; background: #fff; font-weight: 600; }
+    .flow i { color: var(--sub); font-style: normal; }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .toc a { text-decoration: none; color: var(--navy); border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; background: #fff; font-size: 15px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+    .card b { display: block; font-size: 18px; margin-bottom: 4px; }
+    .y { color: var(--green); font-weight: 700; } .n { color: var(--red); font-weight: 700; } .w { color: var(--orange); font-weight: 700; }
+    ul { margin: 6px 0 0; padding-left: 22px; } li { margin: 3px 0; }
+    @media (max-width: 860px) { .two { grid-template-columns: 1fr; } main { padding: 20px 16px 60px; } section { padding: 20px 16px; } table { display: block; overflow-x: auto; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="in">
+    <h1>SOP 추출 표준 — 재난 매뉴얼에서 상황별 SOP 뽑기</h1>
+    <span class="tag">사내 · v1 · 2026-10-20</span>
+  </div>
+</header>
+<main>
+
+<section>
+  <h2>이 문서</h2>
+  <p class="lead">재난 매뉴얼에서 <b>상황(재난유형·지역·단계·부서)에 맞는 SOP</b> — 임무·조치·세부행동·기관·전파·자원 — 를 뽑는 기능의 <b>사내 표준</b>입니다.
+    특정 공급자에 기대지 않고, 우리 SW에 직접 탑재하거나 API 서비스로 제공할 때 이 문서대로 만들면 받는 쪽(화면·보고서)을 바꾸지 않고 쓸 수 있습니다.
+    재난상황일지 생성도구(report4)를 만들며 약 80개 매뉴얼로 정리한 규칙과 운영하며 정한 판단을 담았습니다.</p>
+  <div class="two">
+    <div class="card"><b>만드는 쪽 (추출기)</b><a href="#data">③ 매뉴얼 데이터</a> → <a href="#select">⑤ 매뉴얼 선택</a> → <a href="#extract">⑥ 추출 원칙</a> → <a href="#contract">④ 계약</a> → <a href="#test">⑧ 검증</a></div>
+    <div class="card"><b>쓰는 쪽 (화면·보고서)</b><a href="#contract">④ 계약</a> → <a href="#consume">⑦ 받는 쪽 처리 규칙</a></div>
+  </div>
+  <div class="flow" style="margin-top:18px">
+    <span>상황정보</span><i>→</i><span>매뉴얼 1종 선택</span><i>→</i><span>단계 선택</span><i>→</i><span>부서 행 선택</span><i>→</i><span>조치 추출</span><i>→</i><span>응답</span><i>→</i><span>받는 쪽 검증·변환</span>
+  </div>
+  <div class="toc">
+    <a href="#kinds">② 매뉴얼 체계</a><a href="#data">③ 매뉴얼 데이터</a><a href="#contract">④ 계약</a><a href="#select">⑤ 매뉴얼 선택</a><a href="#extract">⑥ 추출 원칙</a><a href="#consume">⑦ 받는 쪽 처리</a><a href="#test">⑧ 검증</a><a href="#ref">⑨ 참고 구현</a>
+  </div>
+</section>
+
+<section id="kinds">
+  <h2><span class="no">②</span>매뉴얼 체계 — 무엇으로 SOP를 만드나</h2>
+  <p class="lead">재난 매뉴얼은 세 단계입니다. <b>SOP 품질은 어떤 매뉴얼을 쓰느냐로 대부분 정해집니다.</b></p>
+  <table>
+    <tr><th>종류 (<code>kind</code>)</th><th>만드는 곳</th><th>내용</th><th>지자체 SOP로</th></tr>
+    <tr><td><b>현장조치 행동매뉴얼</b> <code>ACTION</code></td><td>시군구 · 시도 · 시도 교육청 (공공기관도 자체판 보유)</td><td>그 기관이 실제로 할 조치 — 프로세스 표, 행동카드(주관·지원·세부행동·전파·자원)</td><td class="y">가장 적합</td></tr>
+    <tr><td><b>위기관리 표준매뉴얼</b> <code>STANDARD</code></td><td>재난관리 주관부처 (관계부처 합동 등)</td><td>정부 전체 역할 분담 — 위기경보 단계별 「기관별 임무·역할」 표. 지자체 칸은 한 줄짜리 공통 역할</td><td class="w">지역 매뉴얼이 없을 때만 (공통 역할 수준)</td></tr>
+    <tr><td><b>위기대응 실무매뉴얼</b> <code>PRACTICE</code></td><td>각 부처·기관</td><td>그 부처 직원이 할 대응 절차</td><td class="n">쓰지 않음 (다른 기관의 절차라 틀린 SOP가 됨)</td></tr>
+  </table>
+  <p class="note">도(道) 담당자처럼 여러 시군에 걸친 상황을 다루는데 도 자체 행동매뉴얼이 없는 경우, 표준매뉴얼의 지자체 칸(상황 총괄·전파·대책본부 가동 등)이 방향이 맞습니다. 시군 행동매뉴얼을 대신 쓰면 다른 기관의 현장 조치가 됩니다.</p>
+</section>
+
+<section id="data">
+  <h2><span class="no">③</span>매뉴얼 데이터 준비</h2>
+  <p class="lead">선택 규칙(⑤)이 동작하려면 매뉴얼마다 아래 메타데이터가 있어야 합니다. 본문은 PDF 원본을 보관해 쪽 이동이 되게 합니다.</p>
+  <table>
+    <tr><th>항목</th><th>값</th><th>예</th></tr>
+    <tr><td><code>docId</code></td><td>문서 고유값 (판마다 다름)</td><td>UUID</td></tr>
+    <tr><td><code>docTitle</code></td><td>발행기관 + 원제목</td><td>부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼</td></tr>
+    <tr><td><code>disasterType</code></td><td>재난유형 10종 중 하나 (복수 유형을 다루는 매뉴얼은 유형별로 등록)</td><td>태풍/호우</td></tr>
+    <tr><td><code>kind</code></td><td><code>ACTION | STANDARD | PRACTICE</code></td><td>ACTION</td></tr>
+    <tr><td><code>scope</code></td><td><code>SIGUNGU | SIDO | OTHER</code>(시도 교육청) <code>| CENTRAL | AGENCY</code>(공공기관 자체)</td><td>SIDO</td></tr>
+    <tr><td><code>region</code></td><td>행정구역 이름·코드 (중앙은 기관명만)</td><td>{name: 부산광역시, code: 2600000000}</td></tr>
+    <tr><td><code>issuer</code></td><td>발행기관</td><td>부산광역시</td></tr>
+    <tr><td><code>version</code></td><td>표지의 연·월 (<code>YYYY.MM</code>)</td><td>2026.07</td></tr>
+    <tr><td><code>stepBasis</code></td><td>단계 구분: <code>RESPONSE_STEP</code>(징후감지·초기대응·비상대응·수습복구) <code>| ALERT_LEVEL</code>(관심·주의·경계·심각)</td><td>RESPONSE_STEP</td></tr>
+  </table>
+  <h3>운영 원칙</h3>
+  <ul>
+    <li><b>같은 기관·같은 종류는 최신판만 사용</b>(옛판은 보관). 연·월은 파일 이름이 아니라 <b>표지</b>로 확인 — 파일 이름과 실제 판이 다른 경우가 많음.</li>
+    <li>파일 이름 규칙(검색용): <code>재난유형_{1표준|2실무|3행동}매뉴얼_발행기관(YYYY.MM).확장자</code> — 예: <code>지진_3행동매뉴얼_경북의성군(2019).pdf</code></li>
+    <li>비상연락망의 실명·휴대전화는 SOP에 싣지 않음(⑥ R17). 연락처는 기관 연락망에서 따로 관리.</li>
+    <li>매뉴얼 원본은 공개 저장소에 올리지 않음.</li>
+  </ul>
+</section>
+
+<section id="contract">
+  <h2><span class="no">④</span>계약 — 요청 · 응답 · 오류</h2>
+  <p class="lead">한 번 호출로 매뉴얼 1종의 SOP 전체를 돌려줍니다(받는 쪽은 다시 부르지 않고 흐름도·상세·전파를 모두 구성). 라이브러리 함수든 HTTP API든 입출력 모양은 같게 합니다.</p>
+  <h3>요청 <code>{"context": {...}}</code></h3>
+  <table>
+    <tr><th>필드</th><th>필수</th><th>값</th><th>쓰임</th></tr>
+    <tr><td><code>disasterType</code></td><td>필수</td><td>폭염 · 태풍/호우 · 지진 · 황사 · 산불 · 감염병 · 가축질병 · 다중밀집건축물붕괴대형사고 · 정부주요시설 · 학교시설 (영문 코드 <code>HEAT_WAVE</code> … 도 허용)</td><td>매뉴얼 선택</td></tr>
+    <tr><td><code>affectedRegions</code></td><td rowspan="2">둘 중 하나</td><td>발생지역 이름 배열, 시도부터 전체 표기 (예: <code>부산광역시 해운대구 우동</code>)</td><td rowspan="2">매뉴얼 선택</td></tr>
+    <tr><td><code>responsibleRegion</code></td><td>관할 시도·시군구 이름. (선택 기능) 기관명이면 그 기관 매뉴얼</td></tr>
+    <tr><td><code>responseStep</code></td><td>필수</td><td><code>SIGN_DETECTION | INITIAL_RESPONSE | EMERGENCY_RESPONSE | RECOVERY</code> 또는 한글</td><td>단계 선택</td></tr>
+    <tr><td><code>alertLevel</code></td><td>선택</td><td><code>INTEREST | CAUTION | ALERT | SERIOUS</code> 또는 관심·주의·경계·심각</td><td>단계 선택 (위기경보형 매뉴얼)</td></tr>
+    <tr><td><code>department</code></td><td>선택</td><td>담당부서 원문</td><td>부서 행 선택</td></tr>
+    <tr><td><code>title</code> · <code>currentSituation</code> · <code>workType</code> · <code>period</code> · <code>situationId</code> · <code>baseTime</code></td><td>선택</td><td>참고용</td><td>선택에 쓰지 않음</td></tr>
+  </table>
+  <p class="note">선택 항목은 생략·<code>null</code>·<code>""</code> 모두 미지정. 모르는 키는 무시하고 <code>warnings</code>에 <code>IGNORED_FIELD</code>. 열거형 밖 값은 422 (허용값을 message에).</p>
+  <h3>응답</h3>
+  <table>
+    <tr><th>필드</th><th>내용</th></tr>
+    <tr><td><code>manual</code></td><td><code>docId · docTitle · version · kind · scope · region · stepBasis · departments</code>(고른 부서 칸) — <b><code>kind</code>로 받는 쪽이 처리 방식을 정함(⑦)</b></td></tr>
+    <tr><td><code>departmentMatched</code></td><td>요청 부서가 매뉴얼에 있었는지</td></tr>
+    <tr><td><code>warnings[]</code></td><td><code>{code, message, docId?, page?, actionCode?}</code> — NO_LOCAL_ACTIONS · AMBIGUOUS_STEP · AMBIGUOUS_CODE · IMAGE_PAGE · UNMATCHED_TABLE · IGNORED_FIELD · TRUNCATED · OTHER</td></tr>
+    <tr><td><code>missions[]</code></td><td>임무 <code>{missionCode, missionName, responseStep, actionCodes[]}</code> — 코드는 문자열(「3」, 「가」)</td></tr>
+    <tr><td><code>actions[]</code></td><td>조치 — <code>actionCode</code>(「3-1」, 「3-3,3-4」, 「가-1」) · <code>actionName</code> · <code>missionCode</code> · <code>phaseLabel</code>(원문 단계명) · <code>responseStep</code> · <code>alertLevel|null</code> · <code>category</code>(<code>NORMAL | DAMAGE</code>) · <code>phase</code>(<code>RESPONSE | RECOVERY</code>) · <code>orderHint</code> · <code>condition</code>(없으면 <code>""</code>) · <code>summary</code> · <code>notes[]</code> · <code>organizations[{name, role: LEAD|SUPPORT|COOPERATE}]</code> · <code>detailTasks[{seq, title, content, note}]</code> · <code>propagation[{target, targetType, channelHint, method, messageTemplate}]</code> · <code>resources[{name, quantity|null, unit}]</code> · <code>sources[{docId, docTitle, page, pdfIndex}]</code></td></tr>
+  </table>
+  <p class="note">빈 값 규칙: 문자열은 <code>""</code>, 배열은 <code>[]</code>, 숫자·열거형은 <code>null</code>. 받는 쪽은 필드가 없을 수도 있다고 보고 방어적으로 읽습니다.</p>
+  <h3>원문 문서</h3>
+  <p>근거 PDF는 <code>docId</code>로 내려받을 수 있어야 하고(예: <code>GET /documents/{docId}/download?disposition=inline</code>), 특정 쪽은 <code>#page={pdfIndex+1}</code>.</p>
+  <h3>오류 <code>{"error": {code, message, retryable, retryAfter, requestId}}</code></h3>
+  <table>
+    <tr><th>상태</th><th>code</th><th>뜻</th></tr>
+    <tr><td>422</td><td><code>INVALID_REQUEST</code></td><td>입력 오류 — 필드 경로와 허용값</td></tr>
+    <tr><td>404</td><td><code>NOT_FOUND</code></td><td>선택 규칙(⑤)으로 고를 매뉴얼이 없음</td></tr>
+    <tr><td>429</td><td><code>RATE_LIMIT</code></td><td><code>retryAfter</code> 초 뒤</td></tr>
+    <tr><td>5xx</td><td><code>TIMEOUT · SERVICE_UNAVAILABLE · GENERATION_FAILED · UNKNOWN</code></td><td>재시도 가능 여부는 <code>retryable</code></td></tr>
+  </table>
+</section>
+
+<section id="select">
+  <h2><span class="no">⑤</span>매뉴얼 선택 규칙</h2>
+  <p class="lead">응답은 언제나 <b>매뉴얼 1종</b>의 조치만 담습니다(여러 매뉴얼을 섞으면 단계·코드·기관이 어긋남).</p>
+  <table>
+    <tr><th>순서</th><th>규칙</th><th>이유</th></tr>
+    <tr><td>1</td><td><code>disasterType</code>이 같은 매뉴얼만</td><td></td></tr>
+    <tr><td>2</td><td>발생 <b>시군구가 1곳</b>이면 그 시군구 행동매뉴얼</td><td>현장 조치가 가장 구체적</td></tr>
+    <tr><td>3</td><td>없거나 <b>시군구가 여럿</b>이면 그 <b>시도</b> 행동매뉴얼</td><td>여러 시군에 걸치면 시도가 총괄</td></tr>
+    <tr><td>4</td><td><b>학교시설</b>은 시군구를 보지 않고 <b>시도 교육청</b> 행동매뉴얼</td><td>학교는 교육청 관할</td></tr>
+    <tr><td>5</td><td>지역 매뉴얼이 없으면 <b>중앙 표준매뉴얼</b>(<code>kind: STANDARD</code>)의 <b>지자체 칸</b></td><td>지자체 공통 역할은 맞음</td></tr>
+    <tr><td>6</td><td><b>실무매뉴얼(<code>PRACTICE</code>)은 지자체 요청에 고르지 않음</b> → 표준도 없으면 404</td><td>다른 기관의 절차</td></tr>
+    <tr><td>7</td><td>공공기관 자체 매뉴얼(<code>AGENCY</code>: 공항·항만공사·발전사 등)은 지역 요청에 고르지 않음</td><td>그 기관 시설 전용</td></tr>
+    <tr><td>8</td><td>같은 기관·같은 종류 여러 판이면 최신판</td><td></td></tr>
+    <tr><td>9</td><td>단계: <code>stepBasis=RESPONSE_STEP</code>이면 <code>responseStep</code>, <code>ALERT_LEVEL</code>이면 <code>alertLevel</code>(없으면 대응단계를 경보로 환산: 징후감지→관심 …)</td><td></td></tr>
+    <tr><td>10</td><td>부서: <code>department</code>가 든 부서 칸의 조치만. 없으면 초기대응(총괄) 칸 + <code>departmentMatched: false</code>. 표준매뉴얼은 지자체 칸</td><td>R19</td></tr>
+  </table>
+  <p class="note">(선택 기능) <code>responsibleRegion</code>이 기관명이면 그 기관의 매뉴얼을 먼저 고릅니다 — 중앙부처·공공기관 사용자용. 이때는 그 기관의 실무·행동매뉴얼이 맞는 매뉴얼입니다.</p>
+</section>
+
+<section id="extract">
+  <h2><span class="no">⑥</span>추출 원칙</h2>
+  <p class="lead">매뉴얼의 어느 칸이 어느 필드가 되는지는 상세 규칙 R1~R25(캡처 포함)에 있습니다 — <a href="/api-docs/mapping.html#rules">추출 규칙 상세</a>(외부 공급자에게 준 설명서이지만 규칙은 이 표준과 같음). 구현 시 반드시 지킬 핵심:</p>
+  <table>
+    <tr><th>원칙</th><th>내용</th></tr>
+    <tr><td>계층</td><td>재난대응 프로세스 표 <code>[n]</code> = 임무, <code>[n-m]</code> = 조치, 그 아래 줄 = 세부행동. 기관·전파·자원은 행동카드에서</td></tr>
+    <tr><td>원문 그대로</td><td>조치명·단계명·조건·표준문안은 원문 그대로. 새로 짓거나 요약하지 않음. 표준문안이 없으면 비움</td></tr>
+    <tr><td>코드</td><td>원문 코드 유지(「3-3,3-4」처럼 한 줄 두 코드는 조치 1건). 코드가 없으면 <code>{단계}-{순번}</code>, 같은 판이면 늘 같은 코드</td></tr>
+    <tr><td>조건 (R8·R18·R23)</td><td>조치 전체에 붙은 「필요시 · ○○시」만 <code>condition</code>. 제목 일부의 조건은 아님</td></tr>
+    <tr><td>표준매뉴얼 (R24)</td><td>위기경보 단계별 「기관별 임무·역할」 표의 지자체 칸(「지자체」「지방자치단체」「시·도 및 시·군·구」) 항목을 조치로. 칸 이름을 주관(LEAD)으로. 칸 안 소제목(【초기대응 활동】 등)은 임무로 나눔. 같은 문서의 다른 재난 장(예: 풍수해 표준의 대설)은 섞지 않음</td></tr>
+    <tr><td>개인정보 (R17)</td><td>실명·전화번호 싣지 않음. 기관·직위만</td></tr>
+    <tr><td>근거</td><td>조치마다 <code>docId · page(표기 쪽) · pdfIndex(PDF 0부터)</code></td></tr>
+    <tr><td><b>예외 원칙 (R25)</b></td><td>규칙으로 정할 수 없는 곳은 <b>만들지 않고</b> <code>warnings</code>에 이유·쪽. 추측해서 채우지 않음</td></tr>
+  </table>
+</section>
+
+<section id="consume">
+  <h2><span class="no">⑦</span>받는 쪽 처리 규칙</h2>
+  <p class="lead">응답을 화면 SOP로 바꿀 때의 규칙입니다(report4 적용). 추출기가 표준을 덜 지켜도 사용자에게 틀린 SOP가 가지 않게 받는 쪽에서 한 번 더 거릅니다.</p>
+  <h3>매뉴얼 종류별</h3>
+  <table>
+    <tr><th>응답 매뉴얼</th><th>처리</th></tr>
+    <tr><td>지역·교육청 행동매뉴얼 (<code>SIGUNGU · SIDO · OTHER</code>)</td><td class="y">SOP 생성</td></tr>
+    <tr><td>중앙 표준매뉴얼 (<code>kind: STANDARD</code>, 없으면 제목의 「표준매뉴얼」로 판단)</td><td class="w">SOP 생성 + 「지역 매뉴얼 없음 — 중앙 표준매뉴얼의 지자체 공통 역할만」 표시</td></tr>
+    <tr><td>그 밖의 중앙 매뉴얼 (실무 등)</td><td class="n">만들지 않음 — 「○○의 △△ 행동매뉴얼이 없습니다. 지역 매뉴얼이 등록되면 만들 수 있습니다」</td></tr>
+  </table>
+  <h3>변환</h3>
+  <table>
+    <tr><th>상황</th><th>처리</th></tr>
+    <tr><td>조치 0건</td><td>빈 SOP를 만들지 않음 — 「고른 매뉴얼(…)에 이 대응단계의 조치가 없습니다」</td></tr>
+    <tr><td>정렬·묶음</td><td><code>orderHint</code> 순. 흐름도 묶음은 <code>phaseLabel</code> <b>원문 그대로</b> (「1단계 징후감지」, 「심각 단계」, 「경계」 — 형식을 가정하지 말 것)</td></tr>
+    <tr><td>주관</td><td>LEAD 여럿이면 첫째가 주관, 나머지는 지원 앞. LEAD가 없으면 <code>manual.departments[0]</code></td></tr>
+    <tr><td>세부항목</td><td><code>title</code> + (다르면) <code>content</code> + (있으면) <code>(note)</code></td></tr>
+    <tr><td>전파</td><td>표준문안은 문안 있는 첫 전파 행에서. 낱말 가운데 남은 PDF 줄바꿈 이음. 대상은 중복 제거. 발송 수단은 자체 전파모듈 기준(<code>channelHint</code>는 참고)</td></tr>
+    <tr><td>필요시 임무</td><td><code>condition</code> 있는 조치는 흐름선 밖 「필요시 임무」</td></tr>
+    <tr><td>원문 보기</td><td><code>sources[0]</code>로 원문 PDF 해당 쪽. 브라우저가 추출기에 직접 가지 않게 서버가 중계</td></tr>
+    <tr><td>실패</td><td>샘플·시드로 대신하지 않고 오류를 알림 (404 「맞는 매뉴얼 없음」, 422 「상황정보 확인」, 429 「n초 뒤」, 그 밖 「호출 실패」)</td></tr>
+    <tr><td><code>warnings</code></td><td>서버 로그에 남김</td></tr>
+  </table>
+</section>
+
+<section id="test">
+  <h2><span class="no">⑧</span>검증 기준</h2>
+  <p class="lead">구현이 바뀌어도 아래가 통과해야 합니다. 1~2는 부산광역시 풍수해 현장조치 행동매뉴얼(2026.7.) 원문·대응설명서와 대조한 결과입니다.</p>
+  <table>
+    <tr><th>#</th><th>요청 요지</th><th>기대</th></tr>
+    <tr><td>1</td><td>태풍/호우 · 부산광역시 해운대구 · 징후감지 · 관심 · 자연재난과</td><td>부산광역시 풍수해 행동매뉴얼(SIDO), 조치 12건: 1-1, 2-1, 2-2, 3-1~3-10(3-3,3-4는 한 줄), 3-9 <code>condition</code> 「태풍 한반도 북상 우려시」, 3-10 주관 재난안전상황실·지원 자연재난과, 근거 p.34</td></tr>
+    <tr><td>2</td><td>같은 조건 · 초기대응 · 주의</td><td>같은 매뉴얼, 조치 15건, 단계명 「2단계 초기대응」</td></tr>
+    <tr><td>3</td><td>지역 행동매뉴얼이 없는 재난유형·지역 (표준매뉴얼 있음)</td><td>중앙 표준매뉴얼(<code>kind: STANDARD</code>)의 해당 경보단계 지자체 칸 항목, 주관 = 칸 이름</td></tr>
+    <tr><td>4</td><td>지역 매뉴얼도 표준매뉴얼도 없고 실무매뉴얼만 있음</td><td>404 (실무매뉴얼을 고르지 않음)</td></tr>
+    <tr><td>5</td><td>학교시설 · 교육청 매뉴얼이 있는 도의 시군</td><td>시군과 상관없이 그 시도 교육청 매뉴얼(<code>OTHER</code>)</td></tr>
+    <tr><td>6</td><td>시군구 2곳 이상 선택</td><td>시군구 매뉴얼을 건너뛰고 시도 매뉴얼</td></tr>
+    <tr><td>7</td><td><code>disasterType: "기타"</code></td><td>422, message에 허용값</td></tr>
+    <tr><td>8</td><td>모르는 키 포함</td><td>200 + <code>warnings</code>에 <code>IGNORED_FIELD</code></td></tr>
+    <tr><td>9</td><td>매뉴얼은 골랐지만 그 단계 조치가 없음</td><td>200 + <code>actions: []</code> + 이유 <code>warnings</code> (받는 쪽이 「조치 없음」 안내)</td></tr>
+  </table>
+  <p class="ok">원문 대조 방법: 응답 조치마다 <code>sources[].pdfIndex</code> 쪽 본문에 <code>actionName</code>이 있는지(공백·가운뎃점 무시) 확인하면 근거 쪽 정확도를 자동으로 잴 수 있습니다.</p>
+</section>
+
+<section id="ref">
+  <h2><span class="no">⑨</span>참고 구현 (report4)</h2>
+  <table>
+    <tr><th>위치</th><th>내용</th></tr>
+    <tr><td><code>src/lib/t3q/types.ts</code></td><td>계약 타입 (<code>SopContext</code>, <code>SopActionsResponse</code>, 오류 본문)</td></tr>
+    <tr><td><code>src/lib/sop/convert.ts</code></td><td><code>buildContext</code>(상황정보 → 요청), <code>responseToSop</code>(응답 → 화면 SOP, ⑦ 변환)</td></tr>
+    <tr><td><code>src/app/actions/situation.ts</code> <code>buildSop</code></td><td>⑦ 매뉴얼 종류별 처리, 조치 0건 처리</td></tr>
+    <tr><td><code>src/lib/t3q/client.ts</code> · <code>mock.ts</code></td><td>추출기 호출 진입점(교체 지점) · 같은 계약의 모의 응답(매뉴얼 시드)</td></tr>
+    <tr><td><code>src/data/samples/*.json</code></td><td>재난유형별 추출 예시(울주군 행동매뉴얼 등)</td></tr>
+    <tr><td><code>/api-docs/mapping.html</code></td><td>추출 규칙 R1~R25 상세(캡처)</td></tr>
+  </table>
+  <p class="note">report4는 지금 외부 추출기를 호출하지만, 같은 계약을 지키는 자체 추출기로 바꿀 때는 <code>client.ts</code>의 호출 대상만 바꾸면 됩니다.</p>
+</section>
+
+</main>
+</body>
+</html>

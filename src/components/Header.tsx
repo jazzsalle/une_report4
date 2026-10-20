@@ -112,6 +112,16 @@ export function Header({
                   <FileSearch size={18} /> 매뉴얼 분석
                 </a>
               )}
+              {user.role === "admin" && (
+                <a
+                  href="/dev-docs/sop-standard.html"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 px-4 py-3 text-[16px] hover:bg-canvas"
+                >
+                  <FileCode2 size={18} /> SOP 추출 표준(사내)
+                </a>
+              )}
               <form action={logout} className="mt-1 border-t border-line-weak pt-1">
                 <button className="flex w-full items-center gap-2 px-4 py-3 text-left text-[16px] hover:bg-canvas">
                   <LogOut size={18} /> 로그아웃

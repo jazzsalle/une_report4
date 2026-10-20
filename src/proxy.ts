@@ -3,9 +3,10 @@ import { jwtVerify } from "jose";
 
 const PUBLIC = ["/login", "/api/cron", "/sso/", "/m/"];
 
-/** 문서 열람 권한: API 문서·대응설명서는 운영관리자·T3Q, 매뉴얼 분석 그림은 운영관리자만 */
+/** 문서 열람 권한: API 문서·대응설명서는 운영관리자·T3Q, 사내 개발 문서·매뉴얼 분석 그림은 운영관리자만 */
 const DOCS: { prefix: string; roles: string[] }[] = [
   { prefix: "/api-docs", roles: ["admin", "t3q"] },
+  { prefix: "/dev-docs", roles: ["admin"] },
   { prefix: "/analysis", roles: ["admin"] },
 ];
 
@@ -33,10 +34,11 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|templates|fonts|rhwp-studio|api-docs|analysis|.*\.(?:png|svg|jpg|ico|woff2?)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|templates|fonts|rhwp-studio|api-docs|dev-docs|analysis|.*\.(?:png|svg|jpg|ico|woff2?)$).*)",
     // 문서·분석 그림은 정적 파일이라도 권한을 확인한다
     "/api-docs",
     "/api-docs/:path*",
+    "/dev-docs/:path*",
     "/analysis/:path*",
   ],
 };

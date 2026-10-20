@@ -108,7 +108,7 @@ export default async function ManualAnalysisPage() {
           </div>
           <p className="text-[16px] text-sub">
             규칙 원문: <a className="font-semibold text-primary underline" href="/api-docs/mapping.html#rules">대응설명서 · 추출 규칙</a> ·{" "}
-            <a className="font-semibold text-primary underline" href="/api-docs/mapping.html#contacts">⑦ 연락망 추출</a>
+            <a className="font-semibold text-primary underline" href="/dev-docs/sop-standard.html">SOP 추출 표준(사내)</a>
           </p>
         </div>
       </Card>
