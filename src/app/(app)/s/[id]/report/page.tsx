@@ -40,13 +40,17 @@ export default async function SituationReports({ params }: PageProps<"/s/[id]/re
       <Card>
         <CardHead
           title="상황일지"
-          right={canEdit(u, s) && <CreateReportButton id={id} primary={s.status === "done" || reports.length === 0} />}
+          right={canEdit(u, s) && <CreateReportButton id={id} />}
         />
+        {/* 실행이 끝나기 전 작성하면 어떻게 되는지 (R-08) */}
         {s.status !== "done" && (
-          <div className="mx-6 mt-5 rounded-md bg-warning-weak px-5 py-4 text-warning">
-            {s.sop?.startedAt
-              ? `SOP 실행 중 · 완료 ${ms.filter((m) => m.status === "done").length}/${ms.length}`
-              : "SOP 실행 전"}
+          <div className="mx-6 mt-5 break-keep rounded-md bg-warning-weak px-5 py-4 text-warning">
+            <div className="font-semibold">
+              {s.sop?.startedAt
+                ? `SOP 실행 중 · 완료 ${ms.filter((m) => m.status === "done").length}/${ms.length}`
+                : "SOP 실행 전"}
+            </div>
+            <div className="mt-1">지금 작성하면 진행 중·대기 임무는 「7. 향후 계획」에 들어갑니다.</div>
           </div>
         )}
         {reports.length === 0 ? (
