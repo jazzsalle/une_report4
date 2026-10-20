@@ -146,6 +146,8 @@ export interface Mission {
   status: MissionStatus;
   startedAt?: string;
   doneAt?: string;
+  /** 매뉴얼 원문 위치 (T3Q sources[0]) — 「매뉴얼 원문 p.34」 링크. page 는 표기 쪽수, pdfIndex 는 PDF 안 0부터 */
+  ref?: { docId: string; page: number; pdfIndex: number };
   /** 조치결과 */
   result: string;
   /** 피해조치 / 복구 내용 */

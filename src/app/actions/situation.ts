@@ -8,7 +8,7 @@ import { canEdit, requireUser } from "@/lib/auth/session";
 import { addEvent, getContactsBundle, getSituation, listDispatches, listEvents } from "@/lib/data";
 import { getWeatherSnapshot } from "@/lib/weather/kma";
 import { ORG_SIDO, orgForSituation } from "@/lib/regions";
-import { sopActions, T3Q_FAILED } from "@/lib/t3q/client";
+import { sopActions, sopMode, T3QUserError } from "@/lib/t3q/client";
 import { buildContext, responseToSop } from "@/lib/sop/convert";
 import { recipientIds } from "@/lib/sop/recipients";
 import { orderMissions, patchMission, patchSopHead, putMission, removeMission, resetSopRun } from "@/lib/sop/store";
@@ -176,10 +176,11 @@ export async function refreshWeather(id: string) {
 /** T3Q(모의 모드·따라하기는 매뉴얼 시드)로 SOP를 만든다. 실패하면 화면에 보일 오류 문구 */
 async function buildSop(s: Parameters<typeof buildContext>[0] & { tutorial: boolean }): Promise<Sop | string> {
   try {
-    return responseToSop(await sopActions({ context: buildContext(s), filter: { maxActions: 40 } }, { seedOnly: s.tutorial }));
+    const live = !s.tutorial && sopMode() === "live";
+    return { ...responseToSop(await sopActions({ context: buildContext(s) }, { seedOnly: s.tutorial })), source: live ? "t3q" : "mock" };
   } catch (e) {
     console.error("[sop] generation failed", e);
-    return e instanceof Error && e.message === T3Q_FAILED ? T3Q_FAILED : "SOP를 만들지 못했습니다. 잠시 후 다시 시도하세요.";
+    return e instanceof T3QUserError ? e.message : "SOP를 만들지 못했습니다. 잠시 후 다시 시도하세요.";
   }
 }
 

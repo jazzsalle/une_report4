@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, useTransition } from "react";
 import clsx from "clsx";
-import { Check, Plus, Send, Trash2, UserPlus, X } from "lucide-react";
+import { Check, ExternalLink, Plus, Send, Trash2, UserPlus, X } from "lucide-react";
 import { nanoid } from "nanoid";
 import { Badge, Button, Modal } from "@/components/ui";
 import type { Mission } from "@/lib/types";
@@ -223,6 +223,19 @@ export function MissionDetail({
                 </div>
               </InfoRow>
             )}
+            {/* T3Q 매뉴얼 원문 PDF 해당 쪽 (새 창) */}
+            {m.ref && (
+              <InfoRow label="매뉴얼 원문">
+                <a
+                  href={`/manual/${encodeURIComponent(m.ref.docId)}?p=${m.ref.pdfIndex + 1}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                >
+                  p.{m.ref.page} 열기 <ExternalLink size={16} />
+                </a>
+              </InfoRow>
+            )}
           </div>
         </Group>
 
@@ -257,7 +270,7 @@ export function MissionDetail({
                     onChange={(e) => set({ details: m.details.map((x) => (x.id === d.id ? { ...x, text: e.target.value } : x)) })}
                   />
                 ) : (
-                  <span className={clsx("flex-1 leading-relaxed", d.done && "text-sub")}>{d.text}</span>
+                  <span className={clsx("flex-1 whitespace-pre-line leading-relaxed", d.done && "text-sub")}>{d.text}</span>
                 )}
                 {d.doneAt && <span className="text-[15px] text-mute">{fmtTime(d.doneAt).split(" ")[1]}</span>}
                 {edit && (

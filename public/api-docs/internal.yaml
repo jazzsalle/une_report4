@@ -170,7 +170,7 @@ paths:
     post:
       tags: [SOP 생성·실행]
       summary: generateSop — SOP 생성 (T3Q API-02)
-      description: T3Q 응답을 임무 목록(`Sop.missions`)으로 변환해 저장. 실행이 시작된 SOP는 다시 생성할 수 없습니다. T3Q 호출이 실패하면 `{ error }`로 알리고 SOP를 바꾸지 않습니다(시드로 대체하지 않음).
+      description: T3Q 응답을 임무 목록(`Sop.missions`)으로 변환해 저장. 실행이 시작된 SOP는 다시 생성할 수 없습니다. T3Q 호출이 실패하면 `{ error }`로 알리고 SOP를 바꾸지 않습니다(시드로 대체하지 않음). 오류 문구: 404 「맞는 매뉴얼을 찾지 못했습니다」, 422 「상황정보를 확인하세요」, 429 「n초 뒤 다시」, 그 외 「T3Q 호출에 실패했습니다」. T3Q 호출은 `T3Q_SOP_MODE=live` 일 때만(API-SOP v2).
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
       responses:
         "200": { $ref: "#/components/responses/ErrorOnly" }

@@ -1,5 +1,18 @@
 # T3Q 연계 API 요청서
 
+> **2026-10-19 API-02 납품 (T3Q API-SOP v2)** — 이후 API-02의 정본은 T3Q 납품 OpenAPI(`etc/T3Q_API/3. …/(261019)MOIS_API-SOP_v2_openapi.json`, 우리 쪽 사본 `public/api-docs/t3q.yaml`)이다. 아래 4장(API-02)은 요청 당시 배경 설명으로 남긴다. API-03·04는 아직 미제공 — 요청안 그대로.
+>
+> | 항목 | 요청안 (이 문서 4장) | 납품본 (v2, 현재 연계 기준) |
+> |---|---|---|
+> | 주소 | `{T3Q_BASE_URL}/t3q/v1/sop/actions` | `https://plf.mois-disaster.t3q.ai/model-api/4920a/reports/sop/actions` (`GET /health`, `GET /documents/{id}/download`) |
+> | 인증 | Bearer 토큰 | 없음(예약). `X-Request-ID` 선택 |
+> | 요청 | `context`(재난유형·지역은 객체) + `filter` | `context`만. `disasterType`은 라벨 10종 문자열, `responsibleRegion`은 이름(또는 기관명), `affectedRegions`는 이름 배열. 위기경보·대응단계는 한글·코드 모두 |
+> | 응답 최상위 | `meta`, `disasterType`, `manual`(안에 `departmentMatched`) … | `manual`, `departmentMatched`, `warnings`, `missions`, `actions` (`meta` 없음) |
+> | 조치 | `category: RESPONSE\|DAMAGE`, 빈 값은 생략 | `category: NORMAL\|DAMAGE`, `condition`·`summary`는 `""`, `notes`는 `[]`, 전파 `targetType`·`channelHint`는 null 가능, 자원 `{name, quantity\|null, unit}`, 근거 `{docId, docTitle, page, pdfIndex}` |
+> | 단계명 | `1단계 징후감지` 형식 | 매뉴얼 원문 그대로 — 중앙 실무매뉴얼은 `심각 단계`, `경계`, `주의` 등 |
+> | 오류 | `{error:{code,message,detail}, meta}` | `{error:{code,message,retryable,retryAfter,requestId}}` — 422 입력 오류, 404 맞는 매뉴얼 없음 |
+> | 인증서 | — | **사설 인증기관(`*.t3q.ai`) 발급 — 일반 클라이언트(Node·브라우저)에서 검증 실패. T3Q에 공인 인증서 요청 필요 (2026-10-20 확인)** |
+
 > **최종 규격(정본)은 Swagger 문서입니다:** https://unereport4.vercel.app/api-docs (① T3Q 연계 API 요청서)
 > 원본 파일 `public/api-docs/t3q.yaml` · 코드 계약 `src/lib/t3q/types.ts` — 이 문서는 배경 설명용입니다.
 >

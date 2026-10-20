@@ -54,11 +54,22 @@ interface Sample {
     weather: { active: { name: string; areas: string; kind: string }[]; preliminary: string[]; infoLines: string[] };
   };
   missions: { missionCode: string; missionName: string }[];
-  actions: (Omit<SopAction, "phase" | "orderHint" | "sources" | "responseStep" | "propagation" | "resources"> & {
-    propagation?: SopAction["propagation"];
-    resources?: SopAction["resources"];
+  /** 추출 결과(예전 응답 모양) — makeSample 에서 API-SOP v2 모양으로 맞춘다 */
+  actions: {
+    actionCode: string;
+    actionName: string;
+    missionCode: string;
+    phaseLabel: string;
+    category: "RESPONSE" | "DAMAGE";
+    summary?: string;
+    condition?: string;
+    notes?: string[];
+    organizations: SopAction["organizations"];
+    detailTasks: { seq: number; title: string; content?: string; note?: string }[];
+    propagation?: { target: string; targetType?: string | null; channelHint?: string | null; method?: string; messageTemplate?: string }[];
+    resources?: { category?: string; name: string; quantity?: number; unit?: string }[];
     page?: number;
-  })[];
+  }[];
   execution: {
     doneCodes: string[];
     doingCode?: string;
@@ -284,27 +295,56 @@ async function makeSample(db: DB, s: Sample, owner: typeof schema.users.$inferSe
     nationwideText: "",
   };
 
-  // SOP — 추출 결과를 API-02 응답 모양으로 만들어 앱과 같은 변환을 거친다
+  // SOP — 추출 결과를 API-02(API-SOP v2) 응답 모양으로 만들어 앱과 같은 변환을 거친다
   const res: SopActionsResponse = {
-    meta: { requestId: "sample", traceId: "sample", generatedAt: start.toISOString(), mock: false },
-    disasterType: { code: s.key, name: s.hazard },
-    manual: { docId: s.key, docTitle: s.manual.docTitle, scope: (s.manual.scope as "SIDO") ?? "SIDO", stepBasis: "RESPONSE_STEP" },
+    manual: {
+      docId: s.key,
+      docTitle: s.manual.docTitle,
+      version: s.manual.version ?? "",
+      scope: (s.manual.scope as "SIDO") ?? "SIDO",
+      region: { name: s.manual.region ?? s.scenario.sido, level: "SIDO" },
+      stepBasis: "RESPONSE_STEP",
+      departments: [],
+    },
+    departmentMatched: true,
+    warnings: [],
     missions: s.missions.map(
-      (m): SopMission => ({ ...m, actionCodes: s.actions.filter((a) => a.missionCode === m.missionCode).map((a) => a.actionCode) }),
+      (m): SopMission => ({
+        ...m,
+        responseStep: STEP_CODE[s.scenario.step],
+        actionCodes: s.actions.filter((a) => a.missionCode === m.missionCode).map((a) => a.actionCode),
+      }),
     ),
     actions: s.actions.map(
       (a, k): SopAction => ({
-        ...a,
+        actionCode: a.actionCode,
+        actionName: a.actionName,
+        missionCode: a.missionCode,
+        phaseLabel: a.phaseLabel,
+        category: a.category === "DAMAGE" ? "DAMAGE" : "NORMAL",
+        condition: a.condition ?? "",
+        summary: a.summary ?? "",
+        notes: a.notes ?? [],
+        organizations: a.organizations,
+        detailTasks: a.detailTasks.map((d) => ({ seq: d.seq, title: d.title, content: d.content ?? "", note: d.note ?? "" })),
         phase: a.category === "DAMAGE" ? "RECOVERY" : "RESPONSE",
         responseStep: STEP_CODE[s.scenario.step],
         orderHint: k + 1,
-        propagation: a.propagation ?? [],
-        resources: a.resources ?? [],
-        sources: [{ docId: s.key, docTitle: s.manual.docTitle, page: a.page }],
+        propagation: (a.propagation ?? []).map((p) => ({
+          target: p.target,
+          targetType: (p.targetType ?? null) as SopAction["propagation"][number]["targetType"],
+          channelHint: (p.channelHint ?? null) as SopAction["propagation"][number]["channelHint"],
+          method: p.method ?? "",
+          messageTemplate: p.messageTemplate ?? "",
+        })),
+        resources: (a.resources ?? []).map((r) => ({ name: r.name, quantity: r.quantity ?? null, unit: r.unit ?? "" })),
+        // 예시는 T3Q 문서가 아니라 원문 링크를 만들지 않는다
+        sources: [],
+        alertLevel: null,
       }),
     ),
   };
-  const sop: Sop = { ...responseToSop(res, false), source: "t3q", generatedAt: at(10).toISOString() };
+  const sop: Sop = { ...responseToSop(res), source: "t3q", generatedAt: at(10).toISOString() };
   const byCode = new Map(sop.missions.map((m) => [m.code, m]));
   const ex = s.execution;
   const events: (typeof schema.events.$inferInsert)[] = [];

@@ -46,8 +46,9 @@ function deptMatched(dept?: string): boolean {
 
 /** API-02 모의: 매뉴얼 시드에서 대응단계에 맞는 조치를 추출 */
 export async function mockSopActions(req: SopActionsRequest): Promise<SopActionsResponse> {
-  const step = STEP_BY_CODE[req.context.responseStep] ?? "초기대응";
-  const { source, actions } = selectSeed(req.context.disasterType.name, req.context.responsibleRegion.name, step);
+  const step = STEP_BY_CODE[req.context.responseStep] ?? (req.context.responseStep as ResponseStep) ?? "초기대응";
+  const region = req.context.responsibleRegion ?? req.context.affectedRegions?.[0]?.split(" ")[0] ?? "";
+  const { source, actions } = selectSeed(req.context.disasterType, region, step);
   const missions = new Map<string, SopMission>();
   const out: SopAction[] = actions.map((a, i) => {
     const mc = a.mission?.code ?? `M-${STEP_CODE[stepOf(a)]}`;
@@ -61,47 +62,51 @@ export async function mockSopActions(req: SopActionsRequest): Promise<SopActions
       phase: a.phase === "복구" ? "RECOVERY" : "RESPONSE",
       phaseLabel: stepLabelOf(a),
       responseStep: STEP_CODE[stepOf(a)],
-      condition: a.condition,
-      notes: a.notes,
-      category: a.phase === "복구" ? "DAMAGE" : "RESPONSE",
+      condition: a.condition ?? "",
+      notes: a.notes ?? [],
+      category: a.phase === "복구" ? "DAMAGE" : "NORMAL",
       missionCode: mc,
       orderHint: i + 1,
-      summary: a.content,
+      summary: a.content ?? "",
       organizations: [
         { name: a.lead, role: "LEAD" as const },
         ...a.support.map((n) => ({ name: n, role: "SUPPORT" as const })),
         ...a.collab.map((n) => ({ name: n, role: "COOPERATE" as const })),
       ],
-      detailTasks: [...a.details, ...a.damageMeasures].map((d, k) => ({ seq: k + 1, title: d, content: d })),
+      detailTasks: [...a.details, ...a.damageMeasures].map((d, k) => ({ seq: k + 1, title: d, content: "", note: "" })),
       propagation: a.propagateTo.length
         ? [
             {
               target: a.propagateTo.join(", "),
               targetType: "ORG" as const,
               channelHint: "SMS" as const,
-              messageTemplate: a.propagateMsg || undefined,
+              method: "",
+              messageTemplate: a.propagateMsg || "",
             },
           ]
         : [],
-      resources: a.resources.map((r) => ({ category: "자원", name: r })),
-      sources: a.page ? [{ docId: "seed", docTitle: source, page: a.page }] : [],
+      resources: a.resources.map((r) => ({ name: r, quantity: null, unit: "" })),
+      // 시드는 원문 PDF 가 없다 — 원문 링크를 만들지 않도록 비운다
+      sources: [],
+      alertLevel: null,
     };
   });
   // 실제 연계 응답 지연 흉내
   await new Promise((r) => setTimeout(r, 900));
+  // 부서 행 구분은 부산 풍수해 시드에만 있다 (산불·공통 시드는 판단하지 않음)
+  const busan = source === BUSAN_SOURCE;
   return {
-    meta: meta(),
-    disasterType: req.context.disasterType,
     manual: {
       docId: "seed",
       docTitle: source,
+      version: "",
       scope: "SIDO",
+      region: { name: region, level: "SIDO" },
       stepBasis: "RESPONSE_STEP",
-      // 부서 행 구분은 부산 풍수해 시드에만 있다 (산불·공통 시드는 판단하지 않음)
-      ...(source === BUSAN_SOURCE
-        ? { departments: SEED_DEPTS, departmentMatched: deptMatched(req.context.department) }
-        : {}),
+      departments: busan ? SEED_DEPTS : [],
     },
+    departmentMatched: busan ? deptMatched(req.context.department ?? undefined) : true,
+    warnings: [],
     missions: [...missions.values()],
     actions: out,
   };

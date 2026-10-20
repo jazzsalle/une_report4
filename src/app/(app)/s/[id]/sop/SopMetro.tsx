@@ -28,8 +28,9 @@ export interface MetroPeople {
   targets: Record<string, string[]>;
 }
 
+/** SopFlow laneOf 와 같은 기준 — 매뉴얼 원문 단계명 그대로 */
 function laneOf(m: Mission) {
-  return /^[0-9]단계/.test(m.stage) ? m.stage : m.phase === "복구" ? "4단계 수습·복구" : "직접 추가";
+  return m.stage.trim() ? m.stage.trim() : m.phase === "복구" ? "4단계 수습·복구" : "직접 추가";
 }
 
 const LANE_COLOR: Record<string, string> = {
@@ -325,7 +326,8 @@ function StationView({
 }) {
   const kind = missionKind(s.m);
   const st = s.m.status;
-  const laneColor = LANE_COLOR[s.lane] ?? "#cbd5e1";
+  // 위기경보 단계(심각 단계 등)처럼 표에 없는 단계명은 기본 파랑
+  const laneColor = LANE_COLOR[s.lane] ?? "#4f8cff";
   return (
     <button
       onClick={onClick}

@@ -8,9 +8,9 @@ import { STEP_LABEL } from "@/lib/types";
 import { currentMission, isOnDemand, missionKind } from "@/lib/sop/kind";
 import { fmtTime } from "@/lib/format";
 
-/** 대응단계 묶음 이름 (1단계 → 4단계 → 직접 추가) */
+/** 대응단계 묶음 이름 — 매뉴얼 원문 단계명 그대로(1단계 징후감지, 심각 단계 …), 단계 없는 직접 추가 임무는 끝에 */
 export function laneOf(m: Mission) {
-  return /^[0-9]단계/.test(m.stage) ? m.stage : m.phase === "복구" ? STEP_LABEL.수습복구 : "직접 추가";
+  return m.stage.trim() ? m.stage.trim() : m.phase === "복구" ? STEP_LABEL.수습복구 : "직접 추가";
 }
 const byLane = (a: string, b: string) => (a === "직접 추가" ? 1 : b === "직접 추가" ? -1 : a.localeCompare(b));
 
