@@ -53,7 +53,10 @@ export function LoginForm({
         <Button variant="primary" size="lg" className="w-full" disabled={pending}>
           {pending ? "확인 중" : "로그인"}
         </Button>
-        {demo && <p className="text-center text-[14px] text-mute">시험용 비밀번호 {demo.password}</p>}
+        <div className="space-y-1 text-center text-[14px] text-mute">
+          {demo && <p>시험용 비밀번호 {demo.password}</p>}
+          <p>T3Q 계정 연결 시 로그인 창 삭제 예정</p>
+        </div>
       </form>
     </main>
   );
