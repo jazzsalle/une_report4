@@ -19,8 +19,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="no-print">
-        <Header user={user} orgName={org?.name ?? ""} location={location} fallbackSido={sido} />
-        <WeatherBar weather={weather} sigungu={location?.sigungu ?? ""} />
+        <Header user={user} orgName={org?.name ?? ""} />
+        <WeatherBar weather={weather} location={location} fallbackSido={sido} />
       </div>
       <div className="flex-1">{children}</div>
       <Tour />

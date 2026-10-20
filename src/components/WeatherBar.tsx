@@ -5,6 +5,7 @@ import { ChevronDown, CloudRain, ExternalLink } from "lucide-react";
 import type { WeatherSnapshot } from "@/lib/types";
 import { fmtDateTime } from "@/lib/format";
 import { shortSigungu } from "@/lib/regions";
+import { LocationChip } from "./LocationChip";
 
 const KMA_URL = "https://www.weather.go.kr/w/special-report/overall.do";
 
@@ -17,7 +18,11 @@ const LINKS = [
 
 type Ticker = { name: string; area: string; kind: "warning" | "watch"; here: boolean };
 
-export function WeatherBar({ weather, sigungu }: { weather: WeatherSnapshot; sigungu: string }) {
+type Loc = { sido: string; sigungu: string; src: "gps" | "manual" } | null;
+
+/** 상단 기상특보 바 — 위치 버튼(C-01) 지역의 특보 */
+export function WeatherBar({ weather, location, fallbackSido }: { weather: WeatherSnapshot; location: Loc; fallbackSido: string }) {
+  const sigungu = location?.sigungu ?? "";
   const [open, setOpen] = useState(false);
   const [i, setI] = useState(0);
   const warn = weather.active.some((a) => a.kind === "warning");
@@ -52,16 +57,18 @@ export function WeatherBar({ weather, sigungu }: { weather: WeatherSnapshot; sig
         warn ? "border-danger/20 bg-danger-weak" : has ? "border-warning/20 bg-warning-weak" : "border-primary-line/50 bg-primary-weak",
       )}
     >
-      <div className="flex h-12 items-center pr-6">
+      <div className="flex h-14 items-center pr-6">
+        <div className="flex shrink-0 items-center gap-3 pl-6">
+          <CloudRain size={20} className={warn ? "text-danger" : has ? "text-warning" : "text-primary"} />
+          <span className="font-bold">기상특보</span>
+          <LocationChip location={location} fallbackSido={fallbackSido} />
+        </div>
         <a
           href={KMA_URL}
           target="_blank"
           rel="noreferrer"
-          className="flex h-full min-w-0 flex-1 items-center gap-3 pl-6 pr-3 hover:underline"
+          className="flex h-full min-w-0 flex-1 items-center gap-3 pl-4 pr-3 hover:underline"
         >
-          <CloudRain size={20} className={warn ? "text-danger" : has ? "text-warning" : "text-primary"} />
-          <span className="shrink-0 font-bold">기상특보</span>
-          <span className="shrink-0 text-sub">{weather.stnName}</span>
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
             {cur ? (
               <span key={i} className="flex min-w-0 animate-[fadein_.4s_ease] items-center gap-2">

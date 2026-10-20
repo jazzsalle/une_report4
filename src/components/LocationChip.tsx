@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Crosshair, MapPin } from "lucide-react";
+import { ChevronDown, Crosshair, MapPin } from "lucide-react";
 import { Button, Modal } from "./ui";
 import { clearLocation, locateByGps, setLocation } from "@/app/actions/location";
 import { REGION_TREE } from "@/lib/regions";
@@ -9,7 +9,11 @@ import { REGION_TREE } from "@/lib/regions";
 type Loc = { sido: string; sigungu: string; src: "gps" | "manual" } | null;
 type State = "checking" | "ok" | "fail";
 
-/** 접속 시 브라우저 위치로 시군구를 잡고, 실패하면 직접 설정하게 한다 */
+/**
+ * 기상특보 바의 위치 버튼 (C-01) — 「📍 부산광역시 · 기본 지역 ▾」. 누르면 현재 위치 설정 창.
+ * 기준: 기본 지역(위치 없음, 기관 시도) · 현재 위치(브라우저 위치로 찾음) · 선택 지역(직접 고름).
+ * 접속 시 브라우저 위치로 시군구를 잡는다.
+ */
 export function LocationChip({ location, fallbackSido }: { location: Loc; fallbackSido: string }) {
   const router = useRouter();
   const [state, setState] = useState<State>(location ? "ok" : "checking");
@@ -57,25 +61,21 @@ export function LocationChip({ location, fallbackSido }: { location: Loc; fallba
   }, []);
 
   const node = REGION_TREE.find((s) => s.n === sido);
+  const place = location ? `${location.sido} ${location.sigungu}`.trim() : fallbackSido;
+  const basis = state === "checking" && !location ? "위치 확인 중" : !location ? "기본 지역" : location.src === "gps" ? "현재 위치" : "선택 지역";
 
   return (
     <>
-      {state === "fail" && !location ? (
-        <div className="flex items-center gap-2 text-[16px]">
-          <span className="text-mute">위치 확인 안 됨</span>
-          <Button size="sm" onClick={() => setOpen(true)}>
-            <MapPin size={16} /> 현재 위치 설정
-          </Button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setOpen(true)}
-          className="flex h-9 items-center gap-1.5 rounded-full border border-line px-3.5 text-[16px] font-medium hover:border-primary hover:text-primary"
-        >
-          <MapPin size={17} className="text-primary" />
-          {state === "checking" && !location ? "위치 확인 중" : `${location?.sido ?? ""} ${location?.sigungu ?? ""}`.trim()}
-        </button>
-      )}
+      <button
+        onClick={() => setOpen(true)}
+        aria-label="현재 위치 설정"
+        className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-primary-line bg-white px-3.5 text-[16px] hover:border-primary"
+      >
+        <MapPin size={17} className="text-primary" />
+        <b>{place}</b>
+        <span className="text-[15px] text-sub">· {basis}</span>
+        <ChevronDown size={16} className="text-sub" />
+      </button>
 
       <Modal
         open={open}

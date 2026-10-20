@@ -7,20 +7,15 @@ import { BookOpen, ChevronDown, FileCode2, FileSearch, LogOut, UserRound } from 
 import { AppIcon } from "./BrandMark";
 import { logout } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/types";
-import { LocationChip } from "./LocationChip";
 import { recordPath } from "./BackButton";
 import { MeDialog } from "./MeDialog";
 
 export function Header({
   user,
   orgName,
-  location,
-  fallbackSido,
 }: {
   user: SessionUser;
   orgName: string;
-  location: { sido: string; sigungu: string; src: "gps" | "manual" } | null;
-  fallbackSido: string;
 }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
@@ -63,10 +58,8 @@ export function Header({
             </Link>
           ))}
         </nav>
-        <div className="ml-auto mr-5">
-          <LocationChip location={location} fallbackSido={fallbackSido} />
-        </div>
-        <div className="relative">
+        {/* 위치는 기상특보 바의 위치 버튼으로 (C-01) */}
+        <div className="relative ml-auto">
           <button
             onClick={() => setOpen((v) => !v)}
             className="flex items-center gap-1 text-[17px] font-semibold"
