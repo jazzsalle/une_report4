@@ -8,7 +8,7 @@ import { createReport } from "@/app/actions/situation";
 export function CreateReportButton({ id }: { id: string }) {
   const [pending, start] = useTransition();
   return (
-    <Button variant="primary" disabled={pending} onClick={() => start(() => createReport(id))}>
+    <Button variant="primary" data-tour="report-create" disabled={pending} onClick={() => start(() => createReport(id))}>
       <FileText size={18} /> {pending ? "작성 중" : "상황일지 자동 작성"}
     </Button>
   );

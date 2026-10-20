@@ -26,6 +26,7 @@ type Step = {
 };
 
 const SOP = (c: Ctx) => (c.sid ? `/s/${c.sid}/sop` : undefined);
+const REPORT_TAB = (c: Ctx) => (c.sid ? `/s/${c.sid}/report` : undefined);
 export const TOUR_STEPS: Step[] = [
   {
     path: /^\/new$/,
@@ -131,14 +132,30 @@ export const TOUR_STEPS: Step[] = [
     target: "sop-end",
     title: "실행 종료",
     body: "「실행 종료」를 누르고 확인 창에서 「종료」를 누르세요.",
-    advance: { appear: "report-create" },
+    advance: { appear: "sop-reopen" },
   },
   {
     path: /^\/s\/[^/]+\/sop$/,
     href: SOP,
+    target: "tab-report",
+    title: "상황일지 탭",
+    body: "상황일지를 만들기 전에 기상특보 보고 자료를 챙깁니다. 「상황일지」 탭을 누르세요.",
+    advance: { path: /^\/s\/[^/]+\/report$/ },
+  },
+  {
+    path: /^\/s\/[^/]+\/report$/,
+    href: REPORT_TAB,
+    target: "weather",
+    title: "기상특보 보고",
+    body: "발효 중인 특보, 강수 현황과 전망은 상황을 등록할 때 자동으로 들어왔습니다. 아래 세 칸에는 방재기상정보시스템의 특보·레이더·위성 그림을 끌어다 놓거나 Ctrl+V로 붙입니다. 상황일지를 만들 때 「2. 기상특보」에 들어가니 먼저 넣어 두세요.",
+    advance: "next",
+  },
+  {
+    path: /^\/s\/[^/]+\/report$/,
+    href: REPORT_TAB,
     target: "report-create",
     title: "상황일지 작성",
-    body: "「상황일지 작성」을 누르면 SOP 실행 이력·상황전파·기상특보로 상황일지가 자동으로 만들어집니다.",
+    body: "「상황일지 자동 작성」을 누르면 SOP 실행 이력·상황전파·기상특보로 상황일지가 만들어집니다. 문서명에는 「1보」, 「2보」가 차례로 붙습니다.",
     advance: { path: /^\/reports\/[^/]+$/ },
   },
   {
@@ -163,14 +180,6 @@ export const TOUR_STEPS: Step[] = [
     target: "report-hwp",
     title: "한글 편집",
     body: "웹 한글 편집기로 열어 한글과 같은 모양으로 고치고 저장합니다. 저장본은 내보내기 때 그대로 쓰입니다.",
-    advance: "next",
-  },
-  {
-    path: /^\/s\/[^/]+\/report$/,
-    href: (c) => (c.sid ? `/s/${c.sid}/report` : undefined),
-    target: "weather",
-    title: "기상특보 보고",
-    body: "발효 중인 특보, 강수 현황과 전망이 자동으로 들어갑니다. 아래 세 칸에는 방재기상정보시스템의 특보·레이더·위성 그림을 끌어다 놓거나 Ctrl+V로 붙입니다.",
     advance: "next",
   },
 ];

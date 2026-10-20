@@ -366,14 +366,13 @@ export function SopWorkspace({
                 )}
                 {ended && (
                   <>
-                    <Button disabled={busy} onClick={() => act(() => reopenSop(id))}>
+                    <Button disabled={busy} onClick={() => act(() => reopenSop(id))} data-tour="sop-reopen">
                       <RotateCcw size={18} /> 실행 재개
                     </Button>
                     <Button
                       variant="primary"
                       disabled={busy}
                       onClick={() => start(() => createReport(id))}
-                      data-tour="report-create"
                     >
                       <FileText size={18} /> 상황일지 작성
                     </Button>
