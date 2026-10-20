@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <div className="flex min-h-screen flex-col">
       <div className="no-print">
         <Header user={user} orgName={org?.name ?? ""} />
-        <WeatherBar weather={weather} location={location} fallbackSido={sido} />
+        <WeatherBar weather={weather} location={location} fallbackSido={sido} userId={user.id} />
       </div>
       <div className="flex-1">{children}</div>
       <Tour />

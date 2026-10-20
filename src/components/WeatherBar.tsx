@@ -21,7 +21,17 @@ type Ticker = { name: string; area: string; kind: "warning" | "watch"; here: boo
 type Loc = { sido: string; sigungu: string; src: "gps" | "manual" } | null;
 
 /** 상단 기상특보 바 — 위치 버튼(C-01) 지역의 특보 */
-export function WeatherBar({ weather, location, fallbackSido }: { weather: WeatherSnapshot; location: Loc; fallbackSido: string }) {
+export function WeatherBar({
+  weather,
+  location,
+  fallbackSido,
+  userId,
+}: {
+  weather: WeatherSnapshot;
+  location: Loc;
+  fallbackSido: string;
+  userId: string;
+}) {
   const sigungu = location?.sigungu ?? "";
   const [open, setOpen] = useState(false);
   const [i, setI] = useState(0);
@@ -61,7 +71,7 @@ export function WeatherBar({ weather, location, fallbackSido }: { weather: Weath
         <div className="flex shrink-0 items-center gap-3 pl-6">
           <CloudRain size={20} className={warn ? "text-danger" : has ? "text-warning" : "text-primary"} />
           <span className="font-bold">기상특보</span>
-          <LocationChip location={location} fallbackSido={fallbackSido} />
+          <LocationChip location={location} fallbackSido={fallbackSido} userId={userId} />
         </div>
         <a
           href={KMA_URL}

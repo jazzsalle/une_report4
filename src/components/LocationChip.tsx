@@ -8,15 +8,15 @@ import { REGION_TREE } from "@/lib/regions";
 
 type Loc = { sido: string; sigungu: string; src: "gps" | "manual" } | null;
 type State = "checking" | "ok" | "fail";
-const INTRO_KEY = "r4_loc_intro";
 
 /**
  * 기상특보 바의 위치 버튼 (C-01) — 「📍 부산광역시 · 기본 지역 ▾」. 누르면 현재 위치 설정 창.
  * 기준: 기본 지역(위치 없음, 기관 시도) · 현재 위치(브라우저 위치로 찾음) · 선택 지역(직접 고름).
  * 접속 시 브라우저 위치로 시군구를 잡는다.
- * 새 기기(이 브라우저에 위치 기록이 없음)에서 처음 들어오면 안내와 함께 이 창을 한 번 띄운다.
+ * 이 기기에서 계정마다 처음 들어오면 안내와 함께 이 창을 한 번 띄운다.
  */
-export function LocationChip({ location, fallbackSido }: { location: Loc; fallbackSido: string }) {
+export function LocationChip({ location, fallbackSido, userId }: { location: Loc; fallbackSido: string; userId: string }) {
+  const introKey = `r4_loc_intro:${userId}`;
   const router = useRouter();
   const [state, setState] = useState<State>(location ? "ok" : "checking");
   const [open, setOpen] = useState(false);
@@ -42,7 +42,7 @@ export function LocationChip({ location, fallbackSido }: { location: Loc; fallba
     if (intro) {
       setIntro(false);
       try {
-        localStorage.setItem(INTRO_KEY, "1");
+        localStorage.setItem(introKey, "1");
       } catch {}
     }
   };
@@ -70,14 +70,13 @@ export function LocationChip({ location, fallbackSido }: { location: Loc; fallba
     );
   };
 
-  // 새 기기 첫 접속: 위치 기록이 없고 안내를 본 적이 없으면 창을 띄운다
+  // 이 기기에서 이 계정으로 처음 접속: 안내를 본 적이 없으면 창을 띄운다
   useEffect(() => {
     let seen = true;
     try {
-      seen = localStorage.getItem(INTRO_KEY) === "1";
-      if (!seen && location) localStorage.setItem(INTRO_KEY, "1");
+      seen = localStorage.getItem(introKey) === "1";
     } catch {}
-    if (seen || location) return;
+    if (seen) return;
     const t = setTimeout(() => {
       setIntro(true);
       setOpen(true);
@@ -166,7 +165,7 @@ export function LocationChip({ location, fallbackSido }: { location: Loc; fallba
       >
         {intro && (
           <div className="mb-4 break-keep rounded-md bg-primary-weak px-5 py-4">
-            <p className="font-semibold">이 기기에서 처음 접속했습니다.</p>
+            <p className="font-semibold">이 기기에서 이 계정으로 처음 접속했습니다.</p>
             <p className="mt-1">기상특보를 볼 지역이 지금 계신 곳과 다르면 바꿔 주세요.</p>
             <p className="mt-2 text-[16px]">
               지금: <b>{place}</b> · {basis}
