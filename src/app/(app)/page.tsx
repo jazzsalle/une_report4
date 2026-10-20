@@ -60,6 +60,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                   >
                     <div className="flex gap-2">
                       {s.tutorial && <Badge tone="orange">따라하기</Badge>}
+                      {s.locked && <Badge tone="blue">예시</Badge>}
                       <Badge tone="blue">{s.hazard}</Badge>
                       <LevelBadge level={s.alertLevel} />
                     </div>
@@ -133,9 +134,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                             {s.title}
                             <ChevronRight size={18} />
                           </Link>
-                          {s.tutorial && (
+                          {(s.tutorial || s.locked) && (
                             <span className="ml-2 align-middle">
-                              <Badge tone="orange">따라하기</Badge>
+                              <Badge tone={s.locked ? "blue" : "orange"}>{s.locked ? "예시" : "따라하기"}</Badge>
                             </span>
                           )}
                         </td>
