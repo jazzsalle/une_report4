@@ -194,6 +194,9 @@ export interface ReportSnapshot {
   total: number;
   started: boolean;
   ended: boolean;
+  /** 만들 당시 재난유형·위기경보 — 같으면 「n보」 번호를 이어 붙인다 */
+  hazard?: string;
+  alertLevel?: string;
 }
 
 export interface ReportContent {

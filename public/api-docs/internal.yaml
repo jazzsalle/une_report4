@@ -157,6 +157,7 @@ paths:
         - 현장 응답 링크 토큰은 새로 만듭니다. 예시·따라하기 표시는 떼어 냅니다. 휴지통의 상황일지는 복사하지 않습니다.
         - 상황일지 제목이 원래 상황 제목으로 시작하면 그 부분을 새 제목으로 바꿉니다.
         - 사본에 「문서 복사」 이벤트(원본 제목)를 기록합니다.
+        - SOP 편집 잠금(`sop.firstEndedAt`)은 복사하지 않습니다. 실행 종료된 상황의 사본은 「실행 재개」 후 편집할 수 있습니다.
       requestBody:
         content:
           application/json:
@@ -179,6 +180,17 @@ paths:
     post: { tags: [SOP 생성·실행], summary: endSop — SOP 실행 종료, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=done, 완료/전체 건수 이벤트 기록. 처음 종료면 sop.firstEndedAt 기록(재개해도 남음)" } } }
   /action/situation/reopenSop:
     post: { tags: [SOP 생성·실행], summary: reopenSop — 실행 재개, requestBody: { $ref: "#/components/requestBodies/SituationId" }, responses: { "200": { description: "status=running. SOP 편집 잠금(firstEndedAt)은 풀리지 않음" } } }
+  /action/situation/resetSop:
+    post:
+      tags: [SOP 생성·실행]
+      summary: resetSop — SOP 초기화 (실행 전으로)
+      description: |
+        임무 구성은 두고 실행 전으로 되돌립니다(status=sop). 실행을 한 번 종료한 SOP도 다시 편집할 수 있게 됩니다.
+        - 지움: 임무 상태·착수/완료 시각·조치결과·피해조치·수행 확인·전파 결과, sop.startedAt·endedAt·firstEndedAt, 상황전파·현장 응답(dispatches, 보낸 링크는 열리지 않음), 이력 중 mission·propagate·response와 「SOP 실행 …」
+        - 남김: 작성한 상황일지, 상황 기록(record), 상황정보·기상특보 이력
+        - 「SOP 초기화」 이벤트를 기록합니다. 예시는 거부.
+      requestBody: { $ref: "#/components/requestBodies/SituationId" }
+      responses: { "200": { description: 완료 } }
   /action/situation/saveMission:
     post:
       tags: [SOP 생성·실행]
@@ -277,7 +289,7 @@ paths:
         `src/lib/report/compose.ts` 가 상황정보 + 기상특보·요약 + SOP 실행이력 + 상황 기록으로 본문을 구성합니다.
         기본 목차: 상황 개요 / 기상 현황 / 피해 현황 / 대응 조치 / 상황 전파 / 복구 및 피해 조치 / 향후 계획.
         만들 당시 단계(`content.snapshot` — 대응단계·완료 임무 수·실행 종료 여부)를 함께 저장해 목록에서 같은 이름의 상황일지를 구분합니다(R-06).
-        문서명(`reports.title`)과 문서 안 제목(`content.title`)은 처음엔 둘 다 「상황명 상황일지」.
+        문서명(`reports.title`)과 문서 안 제목(`content.title`)은 둘 다 「상황명 상황일지 n보」. n은 이 상황에서 재난유형·위기경보가 같은 상황일지(휴지통 포함) 수 + 1 (`content.snapshot.hazard`·`alertLevel`로 셈). 문서명은 바꿀 수 없습니다.
         성공 시 `/reports/{rid}` 로 이동.
       requestBody: { $ref: "#/components/requestBodies/SituationId" }
       responses: { "303": { description: 상황일지 편집 화면 이동 } }
@@ -303,15 +315,6 @@ paths:
       summary: getHwpx — 한글 편집기 저장본 가져오기
       requestBody: { $ref: "#/components/requestBodies/ReportId" }
       responses: { "200": { description: base64 문자열 또는 null } }
-  /action/report/renameReport:
-    post:
-      tags: [상황일지]
-      summary: renameReport — 문서명 변경 (목록 「⋯」 → 「이름 변경」)
-      description: 목록·상황일지 관리·내보낸 파일 이름에 쓰는 문서명(reports.title)만 바꿉니다. 문서 안 제목은 그대로. 빈 값이면 `{ error }`.
-      requestBody:
-        content: { application/json: { schema: { type: object, required: [rid, name], properties: { rid: { type: string }, name: { type: string } } } } }
-      responses:
-        "200": { $ref: "#/components/responses/ErrorOnly" }
 
   # ───────── 휴지통 ─────────
   /action/report/trashReport:

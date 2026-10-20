@@ -29,19 +29,6 @@ export async function saveReport(rid: string, content: ReportContent) {
   return { savedAt: new Date().toISOString() };
 }
 
-/** 문서명 변경 (목록 「⋯」 → 「이름 변경」) — 목록·상황일지 관리·내보낸 파일 이름. 문서 안 제목은 그대로 */
-export async function renameReport(rid: string, name: string): Promise<{ error?: string }> {
-  const { r } = await editable(rid);
-  const t = name.trim();
-  if (!t) return { error: "문서명을 입력하세요." };
-  if (t === r.title) return {};
-  await patch(rid, { title: t });
-  revalidatePath("/docs");
-  if (r.situationId) revalidatePath(`/s/${r.situationId}/report`);
-  revalidatePath(`/reports/${rid}`);
-  return {};
-}
-
 /** 서버 액션 한도(4MB) 안쪽 — base64 기준 */
 const HWPX_MAX_BASE64 = 3_900_000;
 

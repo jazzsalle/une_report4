@@ -3,7 +3,7 @@ import { useVisibleRefresh } from "@/lib/use-visible-refresh";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, FileText, Pencil, Play, RotateCcw, Sparkles, Square, Check } from "lucide-react";
+import { BookOpen, Eraser, FileText, Pencil, Play, RotateCcw, Sparkles, Square, Check } from "lucide-react";
 import { Badge, Button, Card, Empty, Modal } from "@/components/ui";
 import type { Mission, Sop } from "@/lib/types";
 import type { ContactsBundle } from "@/lib/data";
@@ -12,6 +12,7 @@ import {
   endSop,
   generateSop,
   reopenSop,
+  resetSop,
   saveMission,
   startSop,
   createReport,
@@ -86,6 +87,7 @@ export function SopWorkspace({
   const [sel, setSel] = useState<string | null>(() => pickFirst(sop?.missions ?? []));
   const [busy, start] = useTransition();
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [adding, setAdding] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -354,6 +356,11 @@ export function SopWorkspace({
                     <Square size={16} /> 실행 종료
                   </Button>
                 )}
+                {sop.startedAt && (
+                  <Button disabled={busy} onClick={() => setConfirmReset(true)}>
+                    <Eraser size={18} /> SOP 초기화
+                  </Button>
+                )}
                 {ended && (
                   <>
                     <Button disabled={busy} onClick={() => act(() => reopenSop(id))}>
@@ -454,6 +461,45 @@ export function SopWorkspace({
         {counts.todo + counts.doing > 0 && (
           <p className="mt-2">진행 중·대기 임무는 상황일지 「7. 향후 계획」에 들어갑니다.</p>
         )}
+      </Modal>
+      {/* SOP 초기화 — 임무 구성은 두고 실행 전으로. 작성한 상황일지는 남는다 */}
+      <Modal
+        open={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        title="SOP 초기화"
+        width={560}
+        footer={
+          <>
+            <Button onClick={() => setConfirmReset(false)}>취소</Button>
+            <Button
+              variant="danger"
+              disabled={busy}
+              onClick={() => {
+                setConfirmReset(false);
+                act(async () => {
+                  await flushSaves();
+                  await resetSop(id);
+                });
+              }}
+            >
+              초기화
+            </Button>
+          </>
+        }
+      >
+        <p className="break-keep text-[18px] font-semibold">SOP를 실행 전으로 되돌립니다. 임무 목록은 그대로 두고, 다시 편집할 수 있습니다.</p>
+        <div className="mt-4 rounded-md bg-danger-weak px-5 py-4">
+          <div className="font-semibold text-danger">지워지는 것</div>
+          <ul className="mt-1 list-disc pl-5">
+            <li>임무 진행 상태 · 수행 확인 · 조치결과</li>
+            <li>상황전파 기록과 현장 응답 (보낸 응답 링크는 더 이상 열리지 않음)</li>
+            <li>수행 이력의 실행 · 임무 · 전파 기록</li>
+          </ul>
+        </div>
+        <div className="mt-3 rounded-md bg-canvas px-5 py-4">
+          <div className="font-semibold">그대로 남는 것</div>
+          <p className="mt-1">작성한 상황일지 · 상황 기록 · 상황 정보 · 기상특보</p>
+        </div>
       </Modal>
 
       <AddMission

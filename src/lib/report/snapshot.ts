@@ -2,7 +2,7 @@ import { STEP_LABEL, type ReportSnapshot, type ResponseStep, type Sop } from "@/
 import { progress } from "@/lib/sop/kind";
 
 /** 상황일지를 자동 작성하는 시점의 대응 단계 */
-export function snapshotOf(s: { responseStep: string; sop: Sop | null }): ReportSnapshot {
+export function snapshotOf(s: { responseStep: string; hazard: string; alertLevel: string; sop: Sop | null }): ReportSnapshot {
   const p = progress(s.sop?.missions ?? []);
   return {
     step: STEP_LABEL[s.responseStep as ResponseStep] ?? s.responseStep,
@@ -10,6 +10,8 @@ export function snapshotOf(s: { responseStep: string; sop: Sop | null }): Report
     total: p.total,
     started: !!s.sop?.startedAt,
     ended: !!s.sop?.endedAt,
+    hazard: s.hazard,
+    alertLevel: s.alertLevel,
   };
 }
 

@@ -1,5 +1,5 @@
 "use server";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -11,7 +11,7 @@ import { ORG_SIDO, orgForSituation } from "@/lib/regions";
 import { sopActions, T3Q_FAILED } from "@/lib/t3q/client";
 import { buildContext, responseToSop } from "@/lib/sop/convert";
 import { recipientIds } from "@/lib/sop/recipients";
-import { orderMissions, patchMission, patchSopHead, putMission, removeMission } from "@/lib/sop/store";
+import { orderMissions, patchMission, patchSopHead, putMission, removeMission, resetSopRun } from "@/lib/sop/store";
 import { composeReport } from "@/lib/report/compose";
 import { snapshotOf } from "@/lib/report/snapshot";
 import { progress } from "@/lib/sop/kind";
@@ -241,6 +241,25 @@ export async function reopenSop(id: string) {
   revalidatePath(`/s/${id}`, "layout");
 }
 
+/**
+ * SOP 초기화 — 임무 구성은 두고 실행 전으로 되돌린다. 실행을 한 번 종료한 SOP도 다시 편집할 수 있게 된다.
+ * 지움: 임무 진행·기록, 상황전파·현장 응답(보낸 링크는 더 이상 열리지 않음), 수행 이력의 실행·임무·전파 기록.
+ * 남김: 작성한 상황일지, 상황 기록, 상황정보·기상특보 이력
+ */
+export async function resetSop(id: string) {
+  const { u, s } = await editable(id);
+  if (!s.sop) return;
+  if (s.locked) throw new Error("예시 문서는 초기화할 수 없습니다.");
+  await resetSopRun(id);
+  const db = await getDb();
+  await db.delete(schema.dispatches).where(eq(schema.dispatches.situationId, id));
+  await db.execute(sql`delete from events where situation_id = ${id}
+    and (type in ('mission', 'propagate', 'response') or (type = 'sop' and title like 'SOP 실행%'))`);
+  await touch(id, { status: "sop" });
+  await addEvent(id, { type: "sop", title: "SOP 초기화", body: "실행 전으로 되돌림", userName: u.name });
+  revalidatePath(`/s/${id}`, "layout");
+}
+
 const STATUS_TEXT: Record<Mission["status"], string> = { todo: "대기", doing: "착수", done: "완료", skipped: "생략" };
 
 /** 실행을 한 번 종료하면 실행 재개 뒤에도 SOP 편집(임무 추가·삭제·순서) 불가 (P-04). 임무 상세 기록은 종료 후에도 가능 */
@@ -415,6 +434,18 @@ export async function createReport(id: string) {
     // 만들 당시 단계 (R-06) — 같은 이름의 상황일지를 목록에서 구분
     snapshot: snapshotOf(s),
   };
+  // 문서명 「… 상황일지 n보」 — 재난유형·위기경보가 같은 상황일지끼리 번호를 잇는다(휴지통 것 포함, 번호 겹침 방지)
+  const [{ n }] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(schema.reports)
+    .where(
+      and(
+        eq(schema.reports.situationId, id),
+        sql`${schema.reports.content}->'snapshot'->>'hazard' = ${s.hazard}`,
+        sql`${schema.reports.content}->'snapshot'->>'alertLevel' = ${s.alertLevel}`,
+      ),
+    );
+  content.title = `${content.title} ${n + 1}보`;
   const rid = nanoid(10);
   await db.insert(schema.reports).values({
     id: rid,
@@ -445,6 +476,7 @@ export async function renameSituation(id: string, title: string): Promise<{ erro
  * 기상 그림·한글 파일이 커서 서버로 옮기지 않고 DB 안에서 한 문장으로 복사한다(한 문장이라 중간에 실패해도 반쪽 사본이 남지 않는다).
  * 현장 응답 링크(토큰)는 새로 만들어 원본 링크로 사본이 바뀌지 않게 하고, 예시·따라하기 표시는 떼어 낸다.
  * 상황일지 제목이 원래 상황 제목으로 시작하면 그 부분을 새 제목으로 바꾼다.
+ * SOP 편집 잠금(firstEndedAt)은 복사하지 않는다 — 사본은 「실행 재개」 후 편집할 수 있다.
  */
 export async function copySituation(id: string, title: string): Promise<{ error?: string }> {
   const u = await requireUser();
@@ -463,7 +495,7 @@ export async function copySituation(id: string, title: string): Promise<{ error?
       insert into situations (id, org_id, owner_id, title, kind, hazard, alert_level, response_step, sido, areas, dept,
         tutorial, locked, period_start, period_end, current_status, weather, weather_images, sop, status, created_at, updated_at)
       select ${nid}::text, org_id, ${u.id}::text, ${t}::text, kind, hazard, alert_level, response_step, sido, areas, dept,
-        false, false, period_start, period_end, current_status, weather, weather_images, sop, status, now(), now()
+        false, false, period_start, period_end, current_status, weather, weather_images, sop - 'firstEndedAt', status, now(), now()
       from situations where id = ${id}
     ),
     dis as (

@@ -10,6 +10,7 @@ import { Card, CardHead, Empty } from "@/components/ui";
 import { snapshotLabel } from "@/lib/report/snapshot";
 import { ReportActions } from "@/app/(app)/docs/ReportActions";
 import { ORG_SIDO } from "@/lib/regions";
+import { progress } from "@/lib/sop/kind";
 import { CreateReportButton } from "./CreateReportButton";
 import { WeatherReport } from "./WeatherReport";
 
@@ -24,7 +25,8 @@ export default async function SituationReports({ params }: PageProps<"/s/[id]/re
     .from(schema.reports)
     .where(and(eq(schema.reports.situationId, id), isNull(schema.reports.deletedAt)))
     .orderBy(desc(schema.reports.updatedAt));
-  const ms = s.sop?.missions ?? [];
+  // 상황일지 「임무 n/n 완료 시점」과 같은 기준 (실행하지 않은 필요시 임무 제외)
+  const p = progress(s.sop?.missions ?? []);
 
   // 왼쪽 보고 자료 · 기상특보, 오른쪽 상황일지 목록 (C-06)
   return (
@@ -47,7 +49,7 @@ export default async function SituationReports({ params }: PageProps<"/s/[id]/re
           <div className="mx-6 mt-5 break-keep rounded-md bg-warning-weak px-5 py-4 text-warning">
             <div className="font-semibold">
               {s.sop?.startedAt
-                ? `SOP 실행 중 · 완료 ${ms.filter((m) => m.status === "done").length}/${ms.length}`
+                ? `SOP 실행 중 · 완료 ${p.done}/${p.total}`
                 : "SOP 실행 전"}
             </div>
             <div className="mt-1">지금 작성하면 진행 중·대기 임무는 「7. 향후 계획」에 들어갑니다.</div>
