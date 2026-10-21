@@ -1,6 +1,6 @@
 /**
  * T3Q 연계 API 계약.
- * API-02 SOP는 T3Q 납품본(API-SOP v2, 2026-10-19 · etc/T3Q_API/3…/MOIS_API-SOP_v2_openapi.json)이 정본이다.
+ * API-02 SOP는 T3Q 납품본(API-SOP v2, 2026-10-21 수정본 · etc/T3Q_API/6…/(261021)MOIS_API-SOP_v2_openapi.json)이 정본이다.
  * API-03 인증은 아직 T3Q가 제공하지 않았다 — docs/T3Q_API_요청서.md 의 요청안 그대로. (API-04 연락망은 철회 — 연락망은 엑셀·직접 입력)
  * 계약을 바꾸면 public/api-docs/t3q.yaml · docs/T3Q_API_요청서.md 를 함께 고친다.
  */
@@ -164,6 +164,8 @@ export interface SopManual {
   stepBasis: "RESPONSE_STEP" | "ALERT_LEVEL";
   /** 실제로 고른 부서 칸·주관부서 원문 */
   departments: string[];
+  /** (10-21) 매뉴얼 종류 — 중앙은 표준 → 실무 순으로 고른다 */
+  manualKind: "표준" | "실무" | "현장조치" | "기타";
 }
 
 export interface ExtractionWarning {

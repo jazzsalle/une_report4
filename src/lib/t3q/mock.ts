@@ -89,6 +89,7 @@ export async function mockSopActions(req: SopActionsRequest): Promise<SopActions
       region: { name: region, level: "SIDO" },
       stepBasis: "RESPONSE_STEP",
       departments: busan ? SEED_DEPTS : [],
+      manualKind: "현장조치",
     },
     departmentMatched: busan ? deptMatched(req.context.department ?? undefined) : true,
     warnings: [],

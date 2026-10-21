@@ -180,9 +180,11 @@ async function buildSop(s: Parameters<typeof buildContext>[0] & { tutorial: bool
     const res = await sopActions({ context: buildContext(s) }, { seedOnly: s.tutorial });
     // 지역(시군구·시도·교육청) 매뉴얼이 없어 T3Q가 중앙부처 매뉴얼로 넘어간 경우 (2026-10-20 결정)
     // - 위기관리 표준매뉴얼: 지자체 칸의 공통 역할 — 도(道) 담당자처럼 지역 매뉴얼이 없는 경우를 위해 허용하되 화면에 알린다
-    // - 위기대응 실무매뉴얼 등: 그 부처 직원의 절차라 지자체 SOP로 쓰면 틀린 SOP가 된다 — 만들지 않는다
+    // - 위기대응 실무매뉴얼·기타(주요상황 대응매뉴얼 등): 그 부처 직원의 절차라 지자체 SOP로 쓰면 틀린 SOP가 된다 — 만들지 않는다
+    // 종류는 응답 manual.manualKind(10-21 추가)로, 없으면 제목으로 판단
     const central = res.manual?.scope === "CENTRAL";
-    const standard = central && /표준\s*매뉴얼/.test(res.manual.docTitle);
+    const kind = res.manual?.manualKind ?? (/표준\s*매뉴얼/.test(res.manual?.docTitle ?? "") ? "표준" : undefined);
+    const standard = central && kind === "표준";
     if (central && !standard)
       return `${s.sido || "이 지역"}의 「${s.hazard}」 행동매뉴얼이 T3Q에 없습니다. 지역 매뉴얼이 등록되면 SOP를 만들 수 있습니다.`;
     const sop = { ...responseToSop(res), ...(standard ? { centralStandard: true } : {}) };

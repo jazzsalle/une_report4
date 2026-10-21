@@ -8,7 +8,7 @@ info:
 
     | API | 상태 | 우리가 보내는 것 | T3Q가 돌려줄 것 |
     |---|---|---|---|
-    | API-02 SOP 콘텐츠 | **T3Q 납품 (API-SOP v2, 2026-10-19) — 이 문서의 정본은 T3Q OpenAPI** | 재난유형·발생지역·**대응단계**·**담당부서** (위기경보는 위기경보 매뉴얼에서만) | 고른 매뉴얼 + 그 대응단계의 임무·조치·세부행동·기관·전파대상·필요자원·근거 쪽 |
+    | API-02 SOP 콘텐츠 | **T3Q 납품 (API-SOP v2, 2026-10-19 · 10-21 수정본) — 이 문서의 정본은 T3Q OpenAPI** | 재난유형·발생지역·**대응단계**·**담당부서** (위기경보는 위기경보 매뉴얼에서만) | 고른 매뉴얼 + 그 대응단계의 임무·조치·세부행동·기관·전파대상·필요자원·근거 쪽 |
     | API-03 사용자 인증 | 요청안 (T3Q 미제공) | T3Q 링크에 붙은 1회용 토큰 | 토큰 확인 결과 + 사용자 정보 |
 
     **API-02 (납품본) 공통 규칙** — T3Q 재난안전계획서 API와 같음
@@ -54,7 +54,7 @@ security:
   - bearer: []
 paths:
   /reports/sop/actions:
-    servers: &id001
+    servers:
     - url: https://plf.mois-disaster.t3q.ai/model-api/{apiId}
       description: API-02 납품본 (T3Q API-SOP v2)
       variables:
@@ -65,7 +65,7 @@ paths:
       - API-02 SOP 콘텐츠
       operationId: sopActions
       summary: 상황정보 → 고른 매뉴얼의 요청 단계·부서 임무/조치
-      description: "응답 키는 협력사 API-02 정의를 따르고, `actions[].phase`·`orderHint`·`alertLevel`·`sources[].pdfIndex`·`manual.scope/region/stepBasis/departments`는 추가 필드다.\n\n- 매뉴얼 선택: 재난유형 → 발생 시군구 매뉴얼(시군구가 여럿이면 건너뜀) → 시도 → 중앙. 같은 기관의 매뉴얼이 여러 판이면 최신판. 학교시설은 시도 교육청 → 중앙(교육부 우선). 없으면 404 NOT_FOUND.\n- 기관 매뉴얼: `responsibleRegion`이 행정구역이 아니라 기관명(예: `국가유산청`, 옛 이름 `문화재청`)이면 발생지역보다 먼저 그 기관의 중앙(CENTRAL) 매뉴얼을 고른다(예: `disasterType=산불`, `responsibleRegion=국가유산청`, `department=안전방재과` → 국가유산청 「산불 재난」 위기대응 실무매뉴얼). 기관 자체 조치 매뉴얼은 지역 요청에서는 고르지 않는다. 매뉴얼 보유 기관이 아닌 이름은 422, 기관은 있으나 요청 재난유형의 매뉴얼이 없으면 404.\n- 단계: stepBasis=RESPONSE_STEP이면 responseStep, ALERT_LEVEL이면 alertLevel(없으면 responseStep). 부서(R19): 그 부서가 든 부서 칸의 조치만. 없으면 초기대응부서 행 + `departmentMatched=false`(warnings에 OTHER). 조치는 선택한 매뉴얼 1종의 기재 순서(`orderHint`)를 따른다.\n- 개인정보(R17): 응답에 실명·전화번호를 싣지 않는다(발견하면 지우고 warnings에 OTHER).\n- 원문·쪽: `manual.docId`(= `sources[].docId`)로 `GET /documents/{id}/download`를 부르면 매뉴얼 PDF를 받는다. `sources[].page`는 매뉴얼에 인쇄된 쪽번호(쪽 머리글·바닥글에서 추정; 없으면 쪽 순번)라 표기용이고, 뷰어 이동은 `pdfIndex`(PDF 쪽 인덱스, 0부터)로 `GET /documents/{docId}/download?disposition=inline#page={pdfIndex + 1}`이다(보고서 API `references[].page`와 같은 쪽 = `pdfIndex + 1`).\n- R8·R17·R19·R25는 귀측 「매뉴얼 ↔ JSON 대응 설명서」(mapping.html)의 규칙 번호다.\n\n예(지역 매뉴얼):\n\n```\ncurl -sS -X POST \"https://plf.mois-disaster.t3q.ai/model-api/{apiId}/reports/sop/actions\" \\\n  -H 'Content-Type: application/json' -H 'X-Request-ID: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c' \\\n  -d '{\"context\": {\"disasterType\": \"태풍/호우\", \"affectedRegions\": [\"부산광역시\"], \"responsibleRegion\": \"부산광역시\", \"responseStep\": \"SIGN_DETECTION\", \"department\": \"자연재난과\", \"alertLevel\": \"관심\", \"currentSituation\": \"태풍 북상에 따른 풍수해 징후 감지\", \"title\": \"\", \"workType\": \"\", \"period\": \"\"}}'\n```\n\n예(기관 매뉴얼):\n\n```\ncurl -sS -X POST \"https://plf.mois-disaster.t3q.ai/model-api/{apiId}/reports/sop/actions\" \\\n  -H 'Content-Type: application/json' -H 'X-Request-ID: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c' \\\n  -d '{\"context\": {\"disasterType\": \"산불\", \"affectedRegions\": [], \"responsibleRegion\": \"국가유산청\", \"responseStep\": \"EMERGENCY_RESPONSE\", \"department\": \"안전방재과\", \"alertLevel\": \"심각\", \"currentSituation\": \"국가유산 인근지역 산불 발생\", \"title\": \"\", \"workType\": \"\", \"period\": \"\"}}'\n```"
+      description: "응답 키는 협력사 API-02 정의를 따르고, `actions[].phase`·`orderHint`·`alertLevel`·`sources[].pdfIndex`·`manual.scope/region/stepBasis/departments/manualKind`는 추가 필드다.\n\n- 매뉴얼 선택: 재난유형 → 발생 시군구 매뉴얼(시군구가 여럿이면 건너뜀) → 시도 → 중앙. 같은 기관의 매뉴얼이 여러 판이면 매뉴얼 종류(표준·실무·현장조치)별로 최신판만 두고, 중앙은 위기관리 표준매뉴얼 → 위기대응 실무매뉴얼 순. 학교시설은 시도 교육청 → 중앙(교육부 우선). 없으면 404 NOT_FOUND.\n- 기관 매뉴얼: `responsibleRegion`이 행정구역이 아니라 기관명(예: `국가유산청`, 옛 이름 `문화재청`)이면 발생지역보다 먼저 그 기관의 중앙(CENTRAL) 매뉴얼을 고른다(예: `disasterType=산불`, `responsibleRegion=국가유산청`, `department=안전방재과` → 국가유산청 「산불 재난」 위기대응 실무매뉴얼). 기관 자체 조치 매뉴얼은 지역 요청에서는 고르지 않는다. 매뉴얼 보유 기관이 아닌 이름은 422, 기관은 있으나 요청 재난유형의 매뉴얼이 없으면 404.\n- 단계: stepBasis=RESPONSE_STEP이면 responseStep, ALERT_LEVEL이면 alertLevel(없으면 responseStep). 부서(R19): 그 부서가 든 부서 칸의 조치만. 없으면 초기대응부서 행 + `departmentMatched=false`(warnings에 OTHER). 조치는 선택한 매뉴얼 1종의 기재 순서(`orderHint`)를 따른다.\n- 개인정보(R17): 응답에 실명·전화번호를 싣지 않는다(발견하면 지우고 warnings에 OTHER).\n- 원문·쪽: `manual.docId`(= `sources[].docId`)로 `GET /documents/{id}/download`를 부르면 매뉴얼 PDF를 받는다. `sources[].page`는 매뉴얼에 인쇄된 쪽번호(쪽 머리글·바닥글에서 추정; 없으면 쪽 순번)라 표기용이고, 뷰어 이동은 `pdfIndex`(PDF 쪽 인덱스, 0부터)로 `GET /documents/{docId}/download?disposition=inline#page={pdfIndex + 1}`이다(보고서 API `references[].page`와 같은 쪽 = `pdfIndex + 1`).\n- R8·R17·R19·R25는 귀측 「매뉴얼 ↔ JSON 대응 설명서」(mapping.html)의 규칙 번호다.\n\n예(지역 매뉴얼):\n\n```\ncurl -sS -X POST \"https://plf.mois-disaster.t3q.ai/model-api/{apiId}/reports/sop/actions\" \\\n  -H 'Content-Type: application/json' -H 'X-Request-ID: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c' \\\n  -d '{\"context\": {\"disasterType\": \"태풍/호우\", \"affectedRegions\": [\"부산광역시\"], \"responsibleRegion\": \"부산광역시\", \"responseStep\": \"SIGN_DETECTION\", \"department\": \"자연재난과\", \"alertLevel\": \"관심\", \"currentSituation\": \"태풍 북상에 따른 풍수해 징후 감지\", \"title\": \"\", \"workType\": \"\", \"period\": \"\"}}'\n```\n\n예(기관 매뉴얼):\n\n```\ncurl -sS -X POST \"https://plf.mois-disaster.t3q.ai/model-api/{apiId}/reports/sop/actions\" \\\n  -H 'Content-Type: application/json' -H 'X-Request-ID: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c' \\\n  -d '{\"context\": {\"disasterType\": \"산불\", \"affectedRegions\": [], \"responsibleRegion\": \"국가유산청\", \"responseStep\": \"EMERGENCY_RESPONSE\", \"department\": \"안전방재과\", \"alertLevel\": \"심각\", \"currentSituation\": \"국가유산 인근지역 산불 발생\", \"title\": \"\", \"workType\": \"\", \"period\": \"\"}}'\n```"
       parameters:
       - $ref: '#/components/parameters/XRequestId'
       requestBody:
@@ -131,6 +131,7 @@ paths:
                       departments:
                       - 재난상황실
                       - 자연재난과
+                      manualKind: 현장조치
                     departmentMatched: true
                     warnings:
                     - code: OTHER
@@ -803,6 +804,7 @@ paths:
                       stepBasis: RESPONSE_STEP
                       departments:
                       - 안전방재과
+                      manualKind: 실무
                     departmentMatched: true
                     warnings: []
                     missions:
@@ -1135,7 +1137,12 @@ paths:
           $ref: '#/components/responses/ServiceUnavailable'
       security: []
   /documents/{id}/download:
-    servers: *id001
+    servers:
+    - url: https://plf.mois-disaster.t3q.ai/model-api/{apiId}
+      description: API-02 납품본 (T3Q API-SOP v2)
+      variables:
+        apiId:
+          default: 4920a
     get:
       tags:
       - API-02 SOP 콘텐츠
@@ -1600,6 +1607,7 @@ components:
       - region
       - stepBasis
       - departments
+      - manualKind
       properties:
         docId:
           type: string
@@ -1640,6 +1648,14 @@ components:
           items:
             type: string
           description: 응답 조치의 부서(없으면 부서 칸) 원문
+        manualKind:
+          type: string
+          enum:
+          - 표준
+          - 실무
+          - 현장조치
+          - 기타
+          description: '매뉴얼 종류: 표준(위기관리 표준매뉴얼)·실무(위기대응 실무매뉴얼)·현장조치(현장조치 행동매뉴얼)·기타. 지역 매뉴얼이 없어 중앙 매뉴얼을 고를 때는 표준매뉴얼을 실무매뉴얼보다 먼저 고른다'
     SopWarning:
       type: object
       required:

@@ -305,6 +305,7 @@ async function makeSample(db: DB, s: Sample, owner: typeof schema.users.$inferSe
       region: { name: s.manual.region ?? s.scenario.sido, level: "SIDO" },
       stepBasis: "RESPONSE_STEP",
       departments: [],
+      manualKind: s.manual.scope === "CENTRAL" ? "기타" : "현장조치",
     },
     departmentMatched: true,
     warnings: [],

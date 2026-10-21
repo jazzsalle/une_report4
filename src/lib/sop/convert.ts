@@ -107,8 +107,9 @@ function detailText(d: SopAction["detailTasks"][number]) {
 
 /** T3Q 응답(API-SOP v2, 조치 목록+상세) → SOP 임무 목록. source 는 호출부가 정한다 */
 export function responseToSop(res: SopActionsResponse): Sop {
-  // 주관 기관이 없는 조치는 T3Q가 고른 부서 칸(예: 교육청 상황총괄반)을 주관으로
-  const rowOrg = res.manual?.departments?.[0] ?? "";
+  // 표준매뉴얼 조치에 주관이 없으면 고른 칸 이름(예: 지자체)을 주관으로. 현장조치 매뉴얼의 departments는
+  // 여러 부서 칸·머리글(「주관부서」)이 섞여 있어 주관으로 쓰면 틀린다 — 비워 둔다
+  const rowOrg = res.manual?.manualKind === "표준" ? (res.manual.departments?.[0] ?? "") : "";
   const groupOf = new Map(res.missions.map((g) => [g.missionCode, { code: g.missionCode, name: g.missionName }]));
   const missions: Mission[] = res.actions
     .slice()
