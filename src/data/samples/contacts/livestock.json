@@ -1,0 +1,290 @@
+[
+  {
+    "category": "AGENCY",
+    "org": "울주경찰서",
+    "dept": "112종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "온산소방서",
+    "dept": "119재난대응과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "중부소방서",
+    "dept": "119재난대응과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "육군 제7765부대",
+    "dept": "1대대 군수과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "KT 언양지점",
+    "dept": "업무지원팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전력공사 울산지사",
+    "dept": "배전운영부",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "대한적십자사",
+    "dept": "구호봉사팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "가축위생방역지원본부",
+    "dept": "동부사무소",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "울산광역시 동물위생시험소",
+    "dept": "동물위생과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "OOO-OOO-OOOO~5",
+    "page": 24
+  },
+  {
+    "category": "AGENCY",
+    "org": "울산축협",
+    "dept": "지도경제팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "농협울산지역본부",
+    "dept": "지도경제팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "AGENCY",
+    "org": "울산수의사회",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "축수산과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "OOO-OOO-OOOO~7",
+    "page": 21
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "안전총괄과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 11
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "당직실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 21
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "보건소",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 12
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "울산광역시",
+    "dept": "상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "OOO-OOO-OOOO~6",
+    "page": 21
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "울산광역시",
+    "dept": "농축산과",
+    "title": "과장",
+    "name": "정○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 11
+  },
+  {
+    "category": "HIGHER",
+    "org": "농림축산식품부",
+    "dept": "조류인플루엔자방역과",
+    "title": "과장",
+    "name": "이○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 11
+  }
+]

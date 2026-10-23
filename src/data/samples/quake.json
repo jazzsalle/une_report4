@@ -1,0 +1,697 @@
+{
+  "key": "quake",
+  "hazard": "지진",
+  "manual": {
+    "docTitle": "울주군 지진·지진해일 현장조치 행동매뉴얼 (2021.6.)",
+    "scope": "SIGUNGU",
+    "region": "울산광역시 울주군",
+    "version": "2021.6."
+  },
+  "scenario": {
+    "titleCore": "울주군 지진 발생 대응",
+    "sido": "울산광역시",
+    "areas": [
+      "울주군"
+    ],
+    "alertLevel": "경계",
+    "step": "초기대응",
+    "dept": "안전총괄과",
+    "currentStatus": "오늘 09:12 울주군 서생면 남서쪽 8km 지역에서 규모 4.6 지진이 발생해 울주군 최대진도 Ⅴ가 관측되었다. 서생면·온산읍에서 주택 외벽 균열과 담장 붕괴 신고 20여 건이 접수되었고, 인명피해 여부를 확인하고 있다.",
+    "weather": {
+      "active": [],
+      "preliminary": [],
+      "infoLines": []
+    }
+  },
+  "missions": [
+    {
+      "missionCode": "4",
+      "missionName": "상황접수 및 파악"
+    },
+    {
+      "missionCode": "5",
+      "missionName": "상황전파 및 보고"
+    },
+    {
+      "missionCode": "6",
+      "missionName": "현장출동 및 초기대응 조치"
+    },
+    {
+      "missionCode": "7",
+      "missionName": "재난안전상황실(지대본 상황실) 가동"
+    },
+    {
+      "missionCode": "27",
+      "missionName": "현장응급의료소 운영"
+    },
+    {
+      "missionCode": "40",
+      "missionName": "주민대피"
+    },
+    {
+      "missionCode": "47",
+      "missionName": "언론대응"
+    }
+  ],
+  "actions": [
+    {
+      "actionCode": "4-1",
+      "actionName": "상황접수",
+      "missionCode": "4",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "⇨ 당직실 및 재난안전상황실에서는 징후 접수 즉시 안전총괄과 담당자에게 접수내용 통보"
+      ],
+      "summary": "지진 발생 즉시 안전총괄과·재난안전상황실·당직실 등으로 들어온 상황을 접수하고 담당자에게 통보한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과(재난안전상황실)",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "119종합상황실(중부·온산)",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "지진발생 즉시 안전총괄과·재난안전상황실·당직실·시 재난안전상황실·119종합상황실 경로로 접수"
+        },
+        {
+          "seq": 2,
+          "title": "당직실·재난안전상황실은 접수 즉시 안전총괄과 담당자에게 통보"
+        },
+        {
+          "seq": 3,
+          "title": "접수시간, 접수자, 신고자 인적사항(주소·성명·연락처) 확인"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 31
+    },
+    {
+      "actionCode": "4-2",
+      "actionName": "상황파악",
+      "missionCode": "4",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 접수내용은 6하 원칙에 의거 상세하게 작성"
+      ],
+      "summary": "발생 일시·장소·원인과 피해 현황, 추가피해 가능성을 파악한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과(재난안전상황실)",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "발생일자·시간, 발생장소 및 원인 확인"
+        },
+        {
+          "seq": 2,
+          "title": "피해발생 현황(사상자 수 등) 파악"
+        },
+        {
+          "seq": 3,
+          "title": "현장조치 사항 및 추가피해 발생 가능성 확인"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 31
+    },
+    {
+      "actionCode": "5-1",
+      "actionName": "상황보고",
+      "missionCode": "5",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 소관부서장 보고 원칙"
+      ],
+      "summary": "군 지휘부와 울산광역시·행정안전부 상황실에 즉시 보고한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과(재난안전상황실)",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "보고시간: 최단시간(즉시)"
+        },
+        {
+          "seq": 2,
+          "title": "내부 보고: 군수, 부군수, 안전환경국장, 안전총괄과장, 총무과장"
+        },
+        {
+          "seq": 3,
+          "title": "상급기관 보고: 울산광역시 상황실, 행정안전부 상황실"
+        },
+        {
+          "seq": 4,
+          "title": "보고내용: 발생일시·장소·원인, 피해현황, 현장조치, 추가피해 가능성"
+        },
+        {
+          "seq": 5,
+          "title": "보고방법: 先 유·무선, 後 문서(전자문서, NDMS 등)"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "군 지휘부(군수·부군수·안전환경국장)",
+          "targetType": "ROLE",
+          "channelHint": "PHONE",
+          "method": "先 유·무선, 後 문서",
+          "messageTemplate": "[울주군 재난안전상황실] 지진 발생 일시·장소, 피해발생 현황, 현장조치 사항, 추가피해 가능성을 보고드립니다."
+        },
+        {
+          "target": "울산광역시 상황실·행정안전부 상황실",
+          "targetType": "ORG",
+          "channelHint": "PHONE",
+          "method": "先 유·무선, 後 문서(전자문서, NDMS 등)",
+          "messageTemplate": "[울주군] 지진 발생 일시·장소·원인, 피해발생 현황(사상자 수 등), 현장조치 사항을 보고합니다."
+        }
+      ],
+      "resources": [],
+      "page": 31
+    },
+    {
+      "actionCode": "5-2",
+      "actionName": "상황전파",
+      "missionCode": "5",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 단, 긴급사항의 경우 선 구두보고 및 관련기관 전파"
+      ],
+      "summary": "상황실에서 소관부서로, 소관부서에서 유관기관으로 지진 상황을 전파한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과(재난안전상황실)",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "육군제7765부대",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "KT울산지사",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "전파시간: 최단시간(즉시)"
+        },
+        {
+          "seq": 2,
+          "title": "상황실 → 소관부서(안전총괄과) 전파"
+        },
+        {
+          "seq": 3,
+          "title": "소관부서 → 유관기관(7765부대·강남교육지원청·KT·한전·전기안전공사·가스안전공사·경동도시가스) 전파(β시간 + 60분)"
+        },
+        {
+          "seq": 4,
+          "title": "전파방법: 유·무선, 팩스 등"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "안전총괄과(소관부서)",
+          "targetType": "ORG",
+          "channelHint": "PHONE",
+          "method": "유·무선, 팩스 등",
+          "messageTemplate": "[울주군 재난안전상황실] 지진 발생 일시·장소, 피해발생 현황, 현장조치 사항을 전파합니다."
+        },
+        {
+          "target": "유관기관(7765부대·강남교육지원청·KT·한전·가스안전공사 등)",
+          "targetType": "ORG",
+          "channelHint": "SMS",
+          "method": "유·무선, 팩스 등",
+          "messageTemplate": "[울주군 재난안전대책본부] 관내 지진 발생, 발생장소·피해현황·현장조치 사항을 공유하니 기관별 대응에 협조 바랍니다."
+        }
+      ],
+      "resources": [],
+      "page": 32
+    },
+    {
+      "actionCode": "6-1",
+      "actionName": "현장출동 지시 및 요청",
+      "missionCode": "6",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "초기대응반을 현장에 출동시키고 소방·경찰·한전 등 유관기관에 현장출동을 요청한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "한국전기안전공사",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "한국전력공사",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "초기대응반(읍·면장, 안전총괄과 직원 등) 구성 및 현장출동 지시"
+        },
+        {
+          "seq": 2,
+          "title": "초기대응반 임무: 사고원인·피해상황 파악, 장비·인력 동원, 현장 안전 확보, 통신체계 구성"
+        },
+        {
+          "seq": 3,
+          "title": "초기대응반 현장상황 보고 지시(사고원인, 피해상황, 현장조치, 임무처리결과)"
+        },
+        {
+          "seq": 4,
+          "title": "소방서·경찰서·한전·전기안전공사·가스안전공사 등 현장출동 요청"
+        },
+        {
+          "seq": 5,
+          "title": "필요시 단체장·부단체장, 주관부서장 현장이동"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "초기대응반"
+        },
+        {
+          "category": "인력",
+          "name": "지역자율방재단"
+        }
+      ],
+      "page": 32
+    },
+    {
+      "actionCode": "6-2",
+      "actionName": "긴급 현장지원 요청",
+      "missionCode": "6",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "가스·전기 차단 등 2차 피해 방지, 주민대피·현장통제, 응급의료소 설치, 전문가 자문을 요청한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "한국가스안전공사",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "KT",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "가스·전기 차단 등 2차 피해 방지 요청(가스안전공사·한전·경동도시가스·전기안전공사·KT·7765부대)"
+        },
+        {
+          "seq": 2,
+          "title": "울주경찰서에 주민대피 및 현장통제(police line, 비상로 확보) 지원 요청"
+        },
+        {
+          "seq": 3,
+          "title": "울주보건소에 현장응급의료소 설치 요청"
+        },
+        {
+          "seq": 4,
+          "title": "민간전문분야(안전관리자문단 등) 건축·토목 자문 요청"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "군 긴급구조 인력 및 장비"
+        }
+      ],
+      "page": 33
+    },
+    {
+      "actionCode": "7-3",
+      "actionName": "재난상황 수시 보고 및 전파·공유",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "발생 상황과 현장조치 사항을 군 지휘부와 실과장에게 수시로 보고·공유한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "중부·온산소방서",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "보고내용: 발생일시, 발생장소·원인, 피해발생 현황, 현장조치 사항"
+        },
+        {
+          "seq": 2,
+          "title": "보고대상: 군수, 부군수, 안전환경국장, 관련 실과장"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "군수·부군수·안전환경국장 및 관련 실과장",
+          "targetType": "ROLE",
+          "channelHint": "SMS",
+          "messageTemplate": "[울주군 재난안전상황실] 지진 상황 수시보고: 발생일시·장소, 피해현황(사상자 수 등), 현장조치 사항."
+        }
+      ],
+      "resources": [],
+      "page": 34
+    },
+    {
+      "actionCode": "7-5",
+      "actionName": "상황판단회의 개최",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 상황에 따라 부군수가 상황판단회의 및 대책회의 주재"
+      ],
+      "summary": "부군수 주재 상황판단회의에서 비상기구 운영, 긴급조치, 지원요청 사항을 결정한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "회의주재: 부단체장(부군수), 참석: 군수·국장·관련 실과장"
+        },
+        {
+          "seq": 2,
+          "title": "비상기구(통지본·지대본) 운영 여부 결정, (필요시) 위기경보단계 결정"
+        },
+        {
+          "seq": 3,
+          "title": "현장연락관 임명, 인명피해 최소화·2차 피해 방지 긴급조치 결정"
+        },
+        {
+          "seq": 4,
+          "title": "구조구급·유관기관·상급기관 지원요청 사항 검토"
+        },
+        {
+          "seq": 5,
+          "title": "회의결과 조치·지시사항을 관련 실과 및 해당기관에 전파"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 35
+    },
+    {
+      "actionCode": "7-6",
+      "actionName": "관계기관 대책회의 준비 및 개최",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "condition": "필요시",
+      "notes": [
+        "※ 상황에 따라 부군수가 상황판단회의 및 대책회의 주재"
+      ],
+      "summary": "필요시 군수 주재 관계기관 대책회의를 열어 비상기구 운영과 위기경보단계를 협의한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "회의주재: 군수(상황에 따라 부군수)"
+        },
+        {
+          "seq": 2,
+          "title": "비상기구(통지본·지대본) 운영 여부 결정"
+        },
+        {
+          "seq": 3,
+          "title": "(필요시) 위기경보단계 결정"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 36
+    },
+    {
+      "actionCode": "27-1",
+      "actionName": "현장응급의료소 설치",
+      "missionCode": "27",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "condition": "필요시",
+      "summary": "현장응급의료지원반을 소집하고 안전하고 접근이 쉬운 장소에 현장응급의료소를 설치한다.",
+      "organizations": [
+        {
+          "name": "보건소",
+          "role": "LEAD"
+        },
+        {
+          "name": "응급의료기관 등",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "현장응급의료지원반 소집 및 비상연락체계 유지"
+        },
+        {
+          "seq": 2,
+          "title": "시·도, 관할 보건소, 응급의료기관 등 관계기관에 상황 전파"
+        },
+        {
+          "seq": 3,
+          "title": "의료장비·소모품·약물 준비, 운송수단 및 무전기(5대 이상) 확보"
+        },
+        {
+          "seq": 4,
+          "title": "설치장소 선정: 안전성·접근성·신축성·용이성·근접성 고려"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "장비",
+          "name": "무전기",
+          "quantity": 5,
+          "unit": "대 이상"
+        },
+        {
+          "category": "물자",
+          "name": "의료장비·소모품·약물"
+        },
+        {
+          "category": "장비",
+          "name": "현장응급의료지원반 운송수단"
+        }
+      ],
+      "page": 39
+    },
+    {
+      "actionCode": "40-6",
+      "actionName": "대피명령 지시 및 실시",
+      "missionCode": "40",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "현장책임관(읍면장)에게 대피명령을 지시하고 유관기관 협조체계를 가동해 주민을 대피시킨다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "재난총괄담당관이 현장책임관(읍면장)에게 대피명령 지시, 마을별 현장대피 담당자 지정"
+        },
+        {
+          "seq": 2,
+          "title": "대피 협조체계 가동: 군부대 인력·장비, 경찰 치안·통행제한, 적십자 구호 준비, 교육지원청 학교시설 개방 요청"
+        },
+        {
+          "seq": 3,
+          "title": "긴급재난문자·방송·SNS·마을방송·확성기 등 모든 수단으로 대피명령 안내"
+        },
+        {
+          "seq": 4,
+          "title": "재난방송 및 민방위 경보 발령 요청, 대피상황 지속 파악"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "대피명령 발령지역 주민",
+          "targetType": "PUBLIC",
+          "channelHint": "BROADCAST",
+          "method": "긴급재난문자(CBS), 방송, SNS, 마을방송, 확성기 등",
+          "messageTemplate": "식별된 위험요인 또는 재난·사고 상황을 알리고, 지정된 대피장소를 함께 안내하여 자발적으로 대피장소로 이동하도록 유도"
+        }
+      ],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "마을별 현장대피 담당자(대피 안내요원)"
+        },
+        {
+          "category": "장비",
+          "name": "수송차량(버스 등)"
+        }
+      ],
+      "page": 42
+    },
+    {
+      "actionCode": "47-2",
+      "actionName": "보도자료 작성 및 배포",
+      "missionCode": "47",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "사고상황·대응상황·주민 당부사항을 담은 보도자료를 언론 마감시간 전에 배포한다.",
+      "organizations": [
+        {
+          "name": "총무과",
+          "role": "LEAD"
+        },
+        {
+          "name": "언론사 등",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "배포일시·담당자를 명확히 기입"
+        },
+        {
+          "seq": 2,
+          "title": "사고상황 요약, 대응상황·수습복구 계획, 주민 당부사항 작성"
+        },
+        {
+          "seq": 3,
+          "title": "언론 마감시간(조간 오후5시, 석간 오전10시) 이전 배포"
+        },
+        {
+          "seq": 4,
+          "title": "방송은 화면 제작 시간 고려, 주기 배포 시 보도시점 명확히"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "지역 언론사",
+          "targetType": "ORG",
+          "channelHint": "BROADCAST",
+          "method": "보도자료 배포",
+          "messageTemplate": "울주군에서는 사고대책본부를 설치하고 유관기관과 긴밀한 협조 하에 수습에 최선을 다하고 있으니 인근 주민은 동요하지 마시고, 인접도로가 통제되고 있으니 우회로를 이용해주시기 바랍니다."
+        }
+      ],
+      "resources": [],
+      "page": 56
+    }
+  ],
+  "execution": {
+    "doneCodes": [
+      "4-1",
+      "4-2",
+      "5-1",
+      "5-2",
+      "6-1"
+    ],
+    "doingCode": "6-2",
+    "results": {
+      "4-1": "09:13 기상청 지진정보 수신 및 119종합상황실 신고 접수, 안전총괄과 지진 담당자에게 즉시 통보함.",
+      "4-2": "서생면·온산읍 주택 외벽 균열 14건, 담장 붕괴 6건 확인. 현재까지 인명피해 없음, 여진 가능성 있음.",
+      "5-1": "09:25 군수·부군수·안전환경국장 유선 보고, 울산광역시·행정안전부 상황실 유선 보고 후 NDMS 문서 보고.",
+      "5-2": "09:35 7765부대·강남교육지원청·KT·한전·가스안전공사 등 유관기관에 발생상황 문자 및 유선 전파 완료.",
+      "6-1": "서생면장·온산읍장과 안전총괄과 직원으로 초기대응반 2개조 편성, 10:00 현장 도착하여 피해 확인 중."
+    },
+    "propagateCode": "5-2",
+    "propagateMessage": "[울주군 재난안전대책본부] 09:12 서생면 남서쪽 8km 지역 규모 4.6 지진 발생, 서생면·온산읍 주택 균열·담장 붕괴 20여 건 신고. 한전·가스안전공사는 피해지역 전기·가스 시설 긴급점검을, 강남교육지원청은 관내 학교 시설 안전 확인을 11시까지 실시하고 결과를 회신해 주시기 바랍니다.",
+    "fieldNotes": [
+      "서생면: 진하리 주택 3동 외벽 균열, 거주자 이웃집 임시 대피, 출입 통제선 설치",
+      "온산읍: 덕신리 담장 붕괴 2건, 보행로 통제 후 잔해 정리 중",
+      "한국가스안전공사: 서생면 피해지역 가스 누출 점검 결과 이상 없음"
+    ]
+  }
+}

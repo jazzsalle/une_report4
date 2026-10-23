@@ -1,0 +1,691 @@
+{
+  "key": "heat",
+  "hazard": "폭염",
+  "manual": {
+    "docTitle": "울주군 폭염 현장조치 행동매뉴얼 (2021.6.)",
+    "scope": "SIGUNGU",
+    "region": "울산광역시 울주군",
+    "version": "2021.6."
+  },
+  "scenario": {
+    "titleCore": "울주군 폭염경보 대응",
+    "sido": "울산광역시",
+    "areas": [
+      "울주군"
+    ],
+    "alertLevel": "경계",
+    "step": "초기대응",
+    "dept": "안전총괄과",
+    "currentStatus": "울주군 전역에 폭염경보가 발효되어 낮 최고기온 35℃ 이상이 사흘째 이어지고 있다. 오늘 14시경 언양읍 밭에서 일하던 80대 주민이 어지럼증을 호소해 119로 병원에 이송되었고, 읍·면에서 무더위쉼터 운영과 취약계층 안부 확인을 진행 중이다.",
+    "weather": {
+      "active": [
+        {
+          "name": "폭염경보",
+          "areas": "울산(울주군)",
+          "kind": "warning"
+        }
+      ],
+      "preliminary": [],
+      "infoLines": [
+        "(현황) 울주군 폭염경보 발효 중, 낮 최고기온 35~37℃",
+        "(전망) 당분간 일 최고기온 35℃ 이상 지속, 열대야 예상"
+      ]
+    }
+  },
+  "missions": [
+    {
+      "missionCode": "4",
+      "missionName": "상황접수 및 파악"
+    },
+    {
+      "missionCode": "5",
+      "missionName": "상황전파 및 보고"
+    },
+    {
+      "missionCode": "6",
+      "missionName": "현장출동 및 초기 대응 조치"
+    },
+    {
+      "missionCode": "7",
+      "missionName": "재난안전상황실 가동"
+    },
+    {
+      "missionCode": "47",
+      "missionName": "언론대응"
+    }
+  ],
+  "actions": [
+    {
+      "actionCode": "4-1",
+      "actionName": "상황 접수",
+      "missionCode": "4",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "⇨ 당직실 및 재난안전상황실에서는 징후 접수 즉시 안전총괄과 폭염 재난 담당자에게 접수내용 통보"
+      ],
+      "summary": "안전총괄과·재난종합상황실·당직실 등으로 들어온 폭염 상황을 접수하고 담당자에게 즉시 통보한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과(당직실)",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "안전총괄과·재난종합상황실·시 재난종합상황실·119종합상황실·당직실 경로로 상황 접수(α시간)"
+        },
+        {
+          "seq": 2,
+          "title": "당직실·재난안전상황실은 접수 즉시 안전총괄과 폭염 담당자에게 통보"
+        },
+        {
+          "seq": 3,
+          "title": "접수시간, 접수자, 신고자 인적사항(주소·성명·연락처) 확인"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 20
+    },
+    {
+      "actionCode": "4-2",
+      "actionName": "상황 파악",
+      "missionCode": "4",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 접수내용은 6하 원칙에 의거 상세하게 작성"
+      ],
+      "summary": "발생 일시·장소·원인과 피해 현황, 현장조치 사항을 파악한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과(당직실)",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "발생일자·시간, 발생장소 및 원인 확인"
+        },
+        {
+          "seq": 2,
+          "title": "피해발생 현황(사상자 수 등) 파악"
+        },
+        {
+          "seq": 3,
+          "title": "현장조치 사항 및 피해 확대 가능성 확인"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 20
+    },
+    {
+      "actionCode": "5-1",
+      "actionName": "상황보고",
+      "missionCode": "5",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 단, 긴급사항의 경우 선 구두보고 및 관련기관 전파"
+      ],
+      "summary": "상황실에서 소관부서와 읍·면사무소에 기상특보·사건사고 현황·부서별 조치사항을 즉시 전파한다.",
+      "organizations": [
+        {
+          "name": "재난관리과(재난안전상황실)",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과(당직실)",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "119종합상황실",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "전파시간: β시간 + 최단시간(즉시)"
+        },
+        {
+          "seq": 2,
+          "title": "상황실 → 소관부서(복지정책과·노인장애인과·환경자원과·보건소 등) 전파"
+        },
+        {
+          "seq": 3,
+          "title": "안전총괄과 → 12개 읍·면사무소 전파"
+        },
+        {
+          "seq": 4,
+          "title": "전파내용: 기상특보상황, 사건사고 현황, 부서별 조치사항"
+        },
+        {
+          "seq": 5,
+          "title": "전파방법: 유·무선, 팩스 등"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "소관부서(복지정책과·노인장애인과·환경자원과·보건소 등)",
+          "targetType": "ORG",
+          "channelHint": "PHONE",
+          "method": "유·무선, 팩스 등",
+          "messageTemplate": "[울주군 재난안전상황실] 기상특보상황, 사건사고 현황(발생일시·장소·원인·피해·현장조치), 부서별 조치사항을 전파합니다."
+        },
+        {
+          "target": "12개 읍·면사무소",
+          "targetType": "ORG",
+          "channelHint": "PHONE",
+          "method": "유·무선, 팩스 등",
+          "messageTemplate": "[울주군 안전총괄과] 기상특보상황과 사건사고 현황을 전파하니 읍·면별 조치사항을 확인하여 주시기 바랍니다."
+        }
+      ],
+      "resources": [],
+      "page": 20
+    },
+    {
+      "actionCode": "5-2",
+      "actionName": "상황 전파",
+      "missionCode": "5",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 소관부서장 보고 원칙",
+        "※ 단, 긴급사항의 경우 선 구두보고 및 관련기관 전파"
+      ],
+      "summary": "군 지휘부와 울산광역시·행정안전부 상황실에 즉시 보고하고, 필요시 유관기관에 전파한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과(당직실)",
+          "role": "SUPPORT"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "보고시간: β시간 + 최단시간(즉시)"
+        },
+        {
+          "seq": 2,
+          "title": "내부 보고: 군수, 부군수, 안전환경국장, 안전총괄과장, 총무과장"
+        },
+        {
+          "seq": 3,
+          "title": "상급기관 보고: 울산광역시 상황실, 행정안전부 상황실"
+        },
+        {
+          "seq": 4,
+          "title": "필요시 유관기관(경찰서·소방서·KT·한전·군부대·교육지원청·가스안전공사 등) 전파"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "군 지휘부(군수·부군수·안전환경국장)",
+          "targetType": "ROLE",
+          "channelHint": "PHONE",
+          "method": "유·무선, 팩스 등",
+          "messageTemplate": "[울주군 안전총괄과] 폭염 관련 발생 일시·장소, 피해 현황, 현장조치 사항을 보고드립니다."
+        },
+        {
+          "target": "울산광역시 상황실",
+          "targetType": "ORG",
+          "channelHint": "PHONE",
+          "method": "유·무선, 팩스 등",
+          "messageTemplate": "[울주군] 폭염 상황 발생 일시·장소·원인, 피해발생 현황, 현장조치 사항, 추가피해 확대 가능성을 보고합니다."
+        },
+        {
+          "target": "유관기관(울주경찰서·중부/온산소방서·한전·KT 등)",
+          "targetType": "ORG",
+          "channelHint": "PHONE",
+          "method": "유·무선, 팩스 등",
+          "messageTemplate": "[울주군 재난안전대책본부] 폭염 상황과 사건사고 현황을 공유하니 기관별 대응에 협조 바랍니다."
+        }
+      ],
+      "resources": [],
+      "page": 21
+    },
+    {
+      "actionCode": "6-1",
+      "actionName": "현장 출동 지시 및 요청",
+      "missionCode": "6",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "초기대응반을 구성해 현장에 출동시키고 재난관리책임기관의 현장출동을 요청한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "13개 분야 협업부서",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "재난관리책임기관",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "초기대응반(읍·면장, 주관부서 직원 등) 구성 및 현장출동 지시"
+        },
+        {
+          "seq": 2,
+          "title": "초기대응반 임무: 취약시설 점검·정비, 장비·인력 신속 동원, 신속한 상황전파"
+        },
+        {
+          "seq": 3,
+          "title": "초기대응반 현장상황 보고 지시(상황실·주관부서·안전총괄과)"
+        },
+        {
+          "seq": 4,
+          "title": "소방서·경찰서·한국전력공사·전기안전공사·가스안전공사 등 현장출동 요청"
+        },
+        {
+          "seq": 5,
+          "title": "필요시 단체장·부단체장, 주관부서장 현장이동"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "초기대응반"
+        },
+        {
+          "category": "인력",
+          "name": "지역자율방재단"
+        }
+      ],
+      "page": 22
+    },
+    {
+      "actionCode": "6-2",
+      "actionName": "긴급 현장 지원 요청",
+      "missionCode": "6",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "2차 피해 방지, 주민대피·현장통제, 현장응급의료소 설치 등을 협업기관에 요청한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "13개 분야 협업부서",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "한국가스안전공사",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "한국전력공사(울산지사)",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "한국전기안전공사(울산지사)",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "KT(언양지점)",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "육군 제7765부대",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "울주보건소",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "가스·전기 차단 등 2차 피해 방지 지원 요청(가스안전공사·한전·경동도시가스·전기안전공사·KT·7765부대)"
+        },
+        {
+          "seq": 2,
+          "title": "울주경찰서에 주민대피 및 현장통제 지원 요청"
+        },
+        {
+          "seq": 3,
+          "title": "울주보건소에 현장응급의료소 설치 요청"
+        },
+        {
+          "seq": 4,
+          "title": "민간전문분야(안전관리자문단 등) 지원 요청"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "군 긴급구조 인력 및 장비"
+        },
+        {
+          "category": "시설",
+          "name": "현장응급의료소"
+        }
+      ],
+      "page": 22
+    },
+    {
+      "actionCode": "7-1",
+      "actionName": "재난상황실 가동",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "전 부서·읍면과 유관기관의 피해사항 및 대처상황을 파악한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "13개 분야 협업부서",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "재난관리책임기관",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "전 부서·전 읍면에 관내 피해사항 및 대처사항 보고 지시(가로서식)"
+        },
+        {
+          "seq": 2,
+          "title": "보고항목: 장소, 피해일시·원인·내용, 조치사항, 현장사진"
+        },
+        {
+          "seq": 3,
+          "title": "소방서·경찰서·한전·가스·상수도 등 기관별 상황실 피해사항 접수(전화·팩스)"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 23
+    },
+    {
+      "actionCode": "7-3",
+      "actionName": "재난상황 수시 보고 및 전파-공유",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "발생 상황과 현장조치 사항을 군수·부군수와 실과장에게 수시로 보고·공유한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "13개 분야 협업부서",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "재난관리책임기관",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "보고내용: 발생일시, 발생장소·원인, 피해발생 현황, 현장조치 사항"
+        },
+        {
+          "seq": 2,
+          "title": "보고대상: 군수, 부군수, 안전환경국장, 관련 실과장"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "군수·부군수·안전환경국장 및 관련 실과장",
+          "targetType": "ROLE",
+          "channelHint": "SMS",
+          "messageTemplate": "[울주군 재난안전상황실] 폭염 상황 수시보고: 발생일시·장소, 피해현황(사상자 수 등), 현장조치 사항."
+        }
+      ],
+      "resources": [],
+      "page": 24
+    },
+    {
+      "actionCode": "7-4",
+      "actionName": "필요자원 파악 및 지원요청",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "응급대응 장비 보유현황을 파악하고 부족하면 인근 지자체·중앙기관에 응원을 요청한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "13개 분야 협업부서",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "재난관리책임기관",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "응급대응 중장비·기타장비 현황 파악(서식)"
+        },
+        {
+          "seq": 2,
+          "title": "관할 보유자원 소진·부족 시 인근 시군구에 응원 요청"
+        },
+        {
+          "seq": 3,
+          "title": "자치단체간 응원협정, 대한건설기계협회·한국열관리협회 등 MOU 활용"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "장비",
+          "name": "탱크트럭"
+        },
+        {
+          "category": "장비",
+          "name": "도로관리차량"
+        },
+        {
+          "category": "물자",
+          "name": "천막"
+        }
+      ],
+      "page": 24
+    },
+    {
+      "actionCode": "7-5",
+      "actionName": "상황판단회의 개최",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 상황에 따라 부군수가 상황판단회의 및 대책회의 주재"
+      ],
+      "summary": "군수 주재 상황판단회의를 열어 비상근무 단계와 부서별 조치사항을 결정하고 결과를 전파한다.",
+      "organizations": [
+        {
+          "name": "재난관리과",
+          "role": "LEAD"
+        },
+        {
+          "name": "13개분야 협업부서 및 구·군",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "재난관리책임기관",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "상황판단회의 개최계획 보고(기상상황, 참석대상 규모, 주재자)"
+        },
+        {
+          "seq": 2,
+          "title": "회의자료 작성: 기상상황·폭염 지속기간, 추진사항, 피해 및 조치내용"
+        },
+        {
+          "seq": 3,
+          "title": "비상근무 단계, 비상지원본부 운영, 지대본 회의 개최 여부 결정"
+        },
+        {
+          "seq": 4,
+          "title": "회의결과 조치·지시사항을 관련 실과 및 해당기관에 전파"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "시설",
+          "name": "재난안전상황실(회의장소)"
+        }
+      ],
+      "page": 24
+    },
+    {
+      "actionCode": "7-9",
+      "actionName": "비상기구(지대본) 가동 준비",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "위기단계 격상에 대비해 지역재난안전대책본부를 즉시 가동할 수 있도록 준비한다.",
+      "organizations": [
+        {
+          "name": "안전총괄과",
+          "role": "LEAD"
+        },
+        {
+          "name": "13개 분야 협업부서",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "재난관리책임기관",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "경계·심각 단계에 대비한 지대본 운영 사전 준비"
+        },
+        {
+          "seq": 2,
+          "title": "지휘부(군수·부군수·국장) 및 소관부서 통보, 비상소집체계 유지"
+        },
+        {
+          "seq": 3,
+          "title": "관계기관 대책회의 준비 및 필요시 개최(수자원공사·경찰서·소방서·군부대 등)"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 26
+    },
+    {
+      "actionCode": "47-2",
+      "actionName": "보도자료 작성 및 배포",
+      "missionCode": "47",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "재난상황·대응상황·주민 당부사항을 담은 보도자료를 언론 마감시간 전에 배포한다.",
+      "organizations": [
+        {
+          "name": "총무과",
+          "role": "LEAD"
+        },
+        {
+          "name": "언론사 등",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "배포일시·담당자를 명확히 기입"
+        },
+        {
+          "seq": 2,
+          "title": "재난상황 요약, 대응상황·수습복구 계획, 주민 당부사항 작성"
+        },
+        {
+          "seq": 3,
+          "title": "언론 마감시간(조간 오후5시, 석간 오전10시) 이전 배포"
+        },
+        {
+          "seq": 4,
+          "title": "방송은 화면 제작 시간 고려, 주기 배포 시 보도시점 명확히"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "지역 언론사",
+          "targetType": "ORG",
+          "channelHint": "BROADCAST",
+          "method": "보도자료 배포",
+          "messageTemplate": "00월 00일 00지역에 폭염 '000'가 발표되었습니다. 해당지역 주민 및 노약자는 야외활동을 자제하여 주시기 바랍니다."
+        }
+      ],
+      "resources": [],
+      "page": 29
+    }
+  ],
+  "execution": {
+    "doneCodes": [
+      "4-1",
+      "4-2",
+      "5-1",
+      "5-2",
+      "6-1"
+    ],
+    "doingCode": "6-2",
+    "results": {
+      "4-1": "14:05 언양읍 온열질환 의심환자 발생을 119종합상황실로부터 접수, 안전총괄과 폭염 담당자에게 통보함.",
+      "4-2": "80대 남성 1명 밭일 중 어지럼증 호소, 울산대병원 이송. 추가 환자 없음, 언양읍 무더위쉼터 12곳 정상 운영 확인.",
+      "5-1": "14:20 복지정책과·노인장애인과·보건소 등 소관부서와 12개 읍·면에 특보 현황과 환자 발생 상황 전파 완료.",
+      "5-2": "14:30 군수·부군수·안전환경국장 구두보고, 울산광역시 상황실에 유선 보고 후 팩스 송부.",
+      "6-1": "언양읍장과 안전총괄과 직원으로 초기대응반 편성, 15:00 현장 도착하여 무더위쉼터·논밭 작업자 계도 시작."
+    },
+    "propagateCode": "5-1",
+    "propagateMessage": "[울주군 재난안전상황실] 14:05 언양읍에서 밭일 중이던 주민 1명이 온열질환 의심으로 병원 이송되었습니다. 폭염경보가 이어지고 있으니 각 읍·면은 무더위쉼터 개방시간을 연장하고 홀로 사는 어르신 안부 확인을 16시까지 마친 뒤 결과를 회신해 주시기 바랍니다.",
+    "fieldNotes": [
+      "언양읍: 무더위쉼터 12곳 개방, 냉방기 정상 가동, 이용자 47명 확인",
+      "상북면: 마을방송으로 낮 시간 논밭 작업 자제 안내 3회 실시",
+      "노인장애인과: 독거노인 생활지원사 통해 312가구 안부 확인 완료, 이상 없음"
+    ]
+  }
+}

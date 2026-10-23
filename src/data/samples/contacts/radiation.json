@@ -1,0 +1,213 @@
+[
+  {
+    "category": "HIGHER",
+    "org": "행정안전부",
+    "dept": "중앙재난안전상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  },
+  {
+    "category": "HIGHER",
+    "org": "원자력안전위원회",
+    "dept": "방재환경과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOO-OOOO",
+      "OO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOOO-OOOO"
+    ],
+    "note": "주관기관",
+    "page": 35
+  },
+  {
+    "category": "HIGHER",
+    "org": "식품의약품안전처",
+    "dept": "위해예방정책과",
+    "title": "과장",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 34
+  },
+  {
+    "category": "AGENCY",
+    "org": "행정안전부",
+    "dept": "환경재난대응과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "소방청",
+    "dept": "대응총괄과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "국방부",
+    "dept": "합참화생방과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "기상청",
+    "dept": "예보정책과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "원자력안전기술원",
+    "dept": "원자력비상대책실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "주간 / 야간",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국원자력의학원",
+    "dept": "국가방사선비상진료센터",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO",
+      "OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOOO-OOOO"
+    ],
+    "note": "OO-OOOO-OOOO 24시간 사고접수, OOOO-OOOO 대국민 방사선건강영향 상담",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "해양수산부",
+    "dept": "해양환경정책과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "농림축산식품부",
+    "dept": "농축산물위생품질관리팀",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "환경부",
+    "dept": "물이용기획과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO",
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  },
+  {
+    "category": "AGENCY",
+    "org": "보건복지부",
+    "dept": "응급의료과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 35
+  }
+]

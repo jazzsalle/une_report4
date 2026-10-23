@@ -1,0 +1,270 @@
+[
+  {
+    "category": "HIGHER",
+    "org": "질병관리청",
+    "dept": "종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 89
+  },
+  {
+    "category": "HIGHER",
+    "org": "보건복지부",
+    "dept": "질병정책과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 89
+  },
+  {
+    "category": "HIGHER",
+    "org": "국토교통부",
+    "dept": "철도안전정책과(철도반)",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 95
+  },
+  {
+    "category": "HIGHER",
+    "org": "국토교통부",
+    "dept": "교통정책총괄과(종합상황반)",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 95
+  },
+  {
+    "category": "HIGHER",
+    "org": "행정안전부",
+    "dept": "보건사회재난대응과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 89
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국철도공사",
+    "dept": "안전계획처",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 95
+  },
+  {
+    "category": "AGENCY",
+    "org": "국가철도공단",
+    "dept": "안전총괄처",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 95
+  },
+  {
+    "category": "AGENCY",
+    "org": "소방청",
+    "dept": "소방상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 91
+  },
+  {
+    "category": "AGENCY",
+    "org": "경찰청",
+    "dept": "112치안종합상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 91
+  },
+  {
+    "category": "AGENCY",
+    "org": "강남구보건소",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "수서관리역 관할",
+    "page": 97
+  },
+  {
+    "category": "AGENCY",
+    "org": "송파구보건소",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "수서관리역 인근",
+    "page": 97
+  },
+  {
+    "category": "AGENCY",
+    "org": "화성보건소",
+    "dept": "",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "동탄역 관할",
+    "page": 97
+  },
+  {
+    "category": "AGENCY",
+    "org": "질병관리청",
+    "dept": "콜센터",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 97
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "서울특별시",
+    "dept": "감염병관리과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 92
+  },
+  {
+    "category": "INTERNAL",
+    "org": "(주)SR",
+    "dept": "산업재난안전처",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOOO-OOOO"
+    ],
+    "note": "",
+    "page": 96
+  },
+  {
+    "category": "INTERNAL",
+    "org": "(주)SR",
+    "dept": "운영상황센터",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOOO-OOOO"
+    ],
+    "note": "",
+    "page": 96
+  },
+  {
+    "category": "INTERNAL",
+    "org": "(주)SR",
+    "dept": "영업운영처",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 96
+  },
+  {
+    "category": "INTERNAL",
+    "org": "(주)SR",
+    "dept": "수서관리역",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OO-OOOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OO-OOOO-OOOO"
+    ],
+    "note": "",
+    "page": 96
+  }
+]

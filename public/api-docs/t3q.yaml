@@ -1,0 +1,1982 @@
+openapi: 3.1.0
+info:
+  title: T3Q 연계 API 요청서
+  version: "2.0.0"
+  description: |
+    **재난상황일지 생성도구 ↔ T3Q** 연계 API 규격입니다.
+    (기상요약 API-01은 v1.6에서 폐지 — 번호는 유지합니다.)
+
+    | API | 상태 | 우리가 보내는 것 | T3Q가 돌려줄 것 |
+    |---|---|---|---|
+    | API-02 SOP 콘텐츠 | **T3Q 납품 (API-SOP v2, 2026-10-19 · 10-21 수정본) — 이 문서의 정본은 T3Q OpenAPI** | 재난유형·발생지역·**대응단계**·**담당부서** (위기경보는 위기경보 매뉴얼에서만) | 고른 매뉴얼 + 그 대응단계의 임무·조치·세부행동·기관·전파대상·필요자원·근거 쪽 |
+    | API-03 사용자 인증 | 요청안 (T3Q 미제공) | T3Q 링크에 붙은 1회용 토큰 | 토큰 확인 결과 + 사용자 정보 |
+
+    **API-02 (납품본) 공통 규칙** — T3Q 재난안전계획서 API와 같음
+    - 주소 `https://plf.mois-disaster.t3q.ai/model-api/4920a` (우리 앱 환경변수 `T3Q_SOP_URL`, 켜기 `T3Q_SOP_MODE=live`)
+    - 인증 없음 (bearer 예약). `X-Request-ID`(선택, 128자 이하)는 응답 헤더·`error.requestId`로 돌아옴
+    - 재난유형은 기준정보 라벨 10종(폭염, 태풍/호우, 지진, 황사, 산불, 감염병, 가축질병, 다중밀집건축물붕괴대형사고, 정부주요시설, 학교시설) 또는 코드. 위기경보·대응단계도 한글·코드 모두
+    - 선택 항목은 생략·null·빈 문자열 모두 미지정. 모르는 키는 무시하고 `warnings[]`에 `IGNORED_FIELD`
+    - 오류 `{error:{code,message,retryable,retryAfter,requestId}}` — 422 입력 오류, 404 맞는 매뉴얼 없음, 429 `retryAfter` 5초
+
+    **API-03 (요청안) 공통 규칙**
+    - 인증: `Authorization: Bearer <서비스 토큰>`, 요청 헤더 `X-Request-Id`(UUID)를 응답 `meta.requestId`로
+    - 문자셋 UTF-8, 시각은 ISO 8601 + KST
+
+    **매뉴얼 ↔ JSON 대응 설명서**: [/api-docs/mapping.html](/api-docs/mapping.html) — 추출 규칙(SOP R1~R25)과 우리 화면 적용 모습.
+
+    상세 설명 문서: `docs/T3Q_API_요청서.md`
+servers:
+  - url: "{T3Q_BASE_URL}/t3q/v1"
+    description: API-03·04 요청안
+    variables:
+      T3Q_BASE_URL:
+        default: https://t3q.example.go.kr
+        description: T3Q 측이 알려줄 주소 (환경변수 T3Q_BASE_URL)
+tags:
+  - name: API-02 SOP 콘텐츠
+  - name: API-03 사용자 인증
+    description: |
+      **T3Q 플랫폼에서 링크로 바로 들어오는 로그인**입니다. 사용자는 상황일지 도구에 따로 로그인하지 않습니다.
+
+      **흐름**
+      1. 사용자가 T3Q 플랫폼에서 「재난상황일지」 링크 클릭
+      2. T3Q가 1회용 토큰을 만들어 브라우저를 아래 주소로 보냄
+         `https://unereport4.vercel.app/sso/t3q?token={1회용 토큰}&next={선택: 이동할 화면, 기본 /}`
+      3. 우리 서버가 `POST /auth/verify` 로 토큰을 확인하고 사용자 정보를 받음
+      4. 우리 계정과 연결(처음이면 자동 생성) → 로그인 화면 없이 업무 화면으로 이동
+
+      **T3Q에 요청하는 조건**
+      - 토큰은 **1회용**, 유효시간 **5분 이내**, 확인 후 즉시 폐기
+      - 기관은 **행정표준기관코드**(`orgCode`)로 주세요 — 부산광역시 `6260000`, 경상북도 `6470000`
+      - `userId`는 바뀌지 않는 고유값이어야 합니다 (같은 사람 = 같은 userId)
+      - 권한(`roles`)은 `USER` / `MANAGER` 만 반영합니다. 전체관리 권한은 우리 쪽에서만 부여합니다.
+security:
+  - bearer: []
+paths:
+  /reports/sop/actions:
+    servers:
+    - url: https://plf.mois-disaster.t3q.ai/model-api/{apiId}
+      description: API-02 납품본 (T3Q API-SOP v2)
+      variables:
+        apiId:
+          default: 4920a
+    post:
+      tags:
+      - API-02 SOP 콘텐츠
+      operationId: sopActions
+      summary: 상황정보 → 고른 매뉴얼의 요청 단계·부서 임무/조치
+      description: "응답 키는 협력사 API-02 정의를 따르고, `actions[].phase`·`orderHint`·`alertLevel`·`sources[].pdfIndex`·`manual.scope/region/stepBasis/departments/manualKind`는 추가 필드다.\n\n- 매뉴얼 선택: 재난유형 → 발생 시군구 매뉴얼(시군구가 여럿이면 건너뜀) → 시도 → 중앙. 같은 기관의 매뉴얼이 여러 판이면 매뉴얼 종류(표준·실무·현장조치)별로 최신판만 두고, 중앙은 위기관리 표준매뉴얼 → 위기대응 실무매뉴얼 순. 학교시설은 시도 교육청 → 중앙(교육부 우선). 없으면 404 NOT_FOUND.\n- 기관 매뉴얼: `responsibleRegion`이 행정구역이 아니라 기관명(예: `국가유산청`, 옛 이름 `문화재청`)이면 발생지역보다 먼저 그 기관의 중앙(CENTRAL) 매뉴얼을 고른다(예: `disasterType=산불`, `responsibleRegion=국가유산청`, `department=안전방재과` → 국가유산청 「산불 재난」 위기대응 실무매뉴얼). 기관 자체 조치 매뉴얼은 지역 요청에서는 고르지 않는다. 매뉴얼 보유 기관이 아닌 이름은 422, 기관은 있으나 요청 재난유형의 매뉴얼이 없으면 404.\n- 단계: stepBasis=RESPONSE_STEP이면 responseStep, ALERT_LEVEL이면 alertLevel(없으면 responseStep). 부서(R19): 그 부서가 든 부서 칸의 조치만. 없으면 초기대응부서 행 + `departmentMatched=false`(warnings에 OTHER). 조치는 선택한 매뉴얼 1종의 기재 순서(`orderHint`)를 따른다.\n- 개인정보(R17): 응답에 실명·전화번호를 싣지 않는다(발견하면 지우고 warnings에 OTHER).\n- 원문·쪽: `manual.docId`(= `sources[].docId`)로 `GET /documents/{id}/download`를 부르면 매뉴얼 PDF를 받는다. `sources[].page`는 매뉴얼에 인쇄된 쪽번호(쪽 머리글·바닥글에서 추정; 없으면 쪽 순번)라 표기용이고, 뷰어 이동은 `pdfIndex`(PDF 쪽 인덱스, 0부터)로 `GET /documents/{docId}/download?disposition=inline#page={pdfIndex + 1}`이다(보고서 API `references[].page`와 같은 쪽 = `pdfIndex + 1`).\n- R8·R17·R19·R25는 귀측 「매뉴얼 ↔ JSON 대응 설명서」(mapping.html)의 규칙 번호다.\n\n예(지역 매뉴얼):\n\n```\ncurl -sS -X POST \"https://plf.mois-disaster.t3q.ai/model-api/{apiId}/reports/sop/actions\" \\\n  -H 'Content-Type: application/json' -H 'X-Request-ID: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c' \\\n  -d '{\"context\": {\"disasterType\": \"태풍/호우\", \"affectedRegions\": [\"부산광역시\"], \"responsibleRegion\": \"부산광역시\", \"responseStep\": \"SIGN_DETECTION\", \"department\": \"자연재난과\", \"alertLevel\": \"관심\", \"currentSituation\": \"태풍 북상에 따른 풍수해 징후 감지\", \"title\": \"\", \"workType\": \"\", \"period\": \"\"}}'\n```\n\n예(기관 매뉴얼):\n\n```\ncurl -sS -X POST \"https://plf.mois-disaster.t3q.ai/model-api/{apiId}/reports/sop/actions\" \\\n  -H 'Content-Type: application/json' -H 'X-Request-ID: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c' \\\n  -d '{\"context\": {\"disasterType\": \"산불\", \"affectedRegions\": [], \"responsibleRegion\": \"국가유산청\", \"responseStep\": \"EMERGENCY_RESPONSE\", \"department\": \"안전방재과\", \"alertLevel\": \"심각\", \"currentSituation\": \"국가유산 인근지역 산불 발생\", \"title\": \"\", \"workType\": \"\", \"period\": \"\"}}'\n```"
+      parameters:
+      - $ref: '#/components/parameters/XRequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SopActionsRequest'
+            examples:
+              flood_busan:
+                summary: 풍수해(부산광역시 현장조치 행동매뉴얼 2026.7.) · 1단계 징후감지 · 자연재난과
+                value:
+                  context:
+                    disasterType: 태풍/호우
+                    affectedRegions:
+                    - 부산광역시
+                    responsibleRegion: 부산광역시
+                    responseStep: SIGN_DETECTION
+                    department: 자연재난과
+                    alertLevel: 관심
+                    currentSituation: 태풍 북상에 따른 풍수해 징후 감지
+                    title: ''
+                    workType: ''
+                    period: ''
+              wildfire_nha:
+                summary: 산불(국가유산청 위기대응 실무매뉴얼 2025.12.) · 심각(비상대응) · 안전방재과
+                value:
+                  context:
+                    disasterType: 산불
+                    affectedRegions: []
+                    responsibleRegion: 국가유산청
+                    responseStep: EMERGENCY_RESPONSE
+                    department: 안전방재과
+                    alertLevel: 심각
+                    currentSituation: 국가유산 인근지역 산불 발생
+                    title: ''
+                    workType: ''
+                    period: ''
+      responses:
+        '200':
+          description: SOP 콘텐츠
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SopActionsResponse'
+              examples:
+                flood_busan:
+                  summary: 풍수해(부산광역시 현장조치 행동매뉴얼 2026.7.) · 1단계 징후감지 · 자연재난과
+                  value:
+                    manual:
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                      version: 2026.7.
+                      scope: SIDO
+                      region:
+                        name: 부산광역시
+                        level: SIDO
+                        code: '2600000000'
+                      stepBasis: RESPONSE_STEP
+                      departments:
+                      - 재난상황실
+                      - 자연재난과
+                      manualKind: 현장조치
+                    departmentMatched: true
+                    warnings:
+                    - code: OTHER
+                      message: 징후감지 단계에서 코드 번호가 없는 항목 94줄은 조치로 만들지 않았습니다(R25).
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      page: 34
+                    - code: UNMATCHED_TABLE
+                      message: 번호가 없는 묶음 「기상상황 확인」은 하위 조치 코드가 없어 조치로 만들지 않았습니다(R25).
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      page: 34
+                    - code: UNMATCHED_TABLE
+                      message: 번호가 없는 묶음 「조치사항 지시」은 하위 조치 코드가 없어 조치로 만들지 않았습니다(R25).
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      page: 34
+                    - code: UNMATCHED_TABLE
+                      message: 번호가 없는 묶음 「상황판단 및 대책회의 주재」은 하위 조치 코드가 없어 조치로 만들지 않았습니다(R25).
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      page: 34
+                    - code: UNMATCHED_TABLE
+                      message: 번호가 없는 묶음 「주요 피해현황 보고」은 하위 조치 코드가 없어 조치로 만들지 않았습니다(R25).
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      page: 34
+                    - code: UNMATCHED_TABLE
+                      message: 번호가 없는 묶음 「피해복구 대책회의」은 하위 조치 코드가 없어 조치로 만들지 않았습니다(R25).
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      page: 34
+                    - code: UNMATCHED_TABLE
+                      message: 번호가 없는 묶음 「주요 피해지역 현장방문」은 하위 조치 코드가 없어 조치로 만들지 않았습니다(R25).
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      page: 34
+                    - code: UNMATCHED_TABLE
+                      message: 번호가 없는 묶음 「담화문 발표/특별재난구역 선포 추진」은 하위 조치 코드가 없어 조치로 만들지 않았습니다(R25).
+                      docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                      page: 34
+                    missions:
+                    - missionCode: '1'
+                      missionName: 기상특보(태풍정보·호우예비특보·적설예보) 접수
+                      responseStep: SIGN_DETECTION
+                      actionCodes:
+                      - 1-1
+                    - missionCode: '2'
+                      missionName: 기상특보(태풍정보·호우예비특보·적설예보) 보고·전파
+                      responseStep: SIGN_DETECTION
+                      actionCodes:
+                      - 2-1
+                      - 2-2
+                    - missionCode: '3'
+                      missionName: 기상특보(태풍정보·호우예비특보·강풍주의보·적설예보) 대응
+                      responseStep: SIGN_DETECTION
+                      actionCodes:
+                      - 3-1
+                      - 3-2
+                      - 3-3,3-4
+                      - 3-5
+                      - 3-6
+                      - 3-7
+                      - 3-8
+                      - 3-9
+                      - 3-10
+                    actions:
+                    - actionCode: 1-1
+                      actionName: 기상정보 모니터링
+                      missionCode: '1'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 기상정보 수시 확인
+                      detailTasks:
+                      - seq: 1
+                        title: 기상자문관, 방재기상정보시스템, 태풍연구센터 등 활용
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: 레이더 및 위성영상, 태풍경로 수시 확인
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 재난안전상황실
+                        role: LEAD
+                      - name: 자연재난과
+                        role: SUPPORT
+                      - name: 기상청(기상자문관)
+                        role: COOPERATE
+                      propagation: []
+                      resources: []
+                      notes:
+                      - 방재기상플랫폼(https://dmdw.kma.go.kr)
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 41
+                        pdfIndex: 46
+                      phase: RESPONSE
+                      orderHint: 1
+                      alertLevel: null
+                    - actionCode: 2-1
+                      actionName: 기상특보 상황보고(시장, 부시장)
+                      missionCode: '2'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 기상특보 시장·부시장 보고
+                      detailTasks:
+                      - seq: 1
+                        title: 기상특보 상황보고
+                        content: '기상특보 현황 중심 간략한 1장 보고서 작성·보고
+
+                          (자연재난과장→시장 / 자연재난팀장→행정부시장)
+
+                          (내용)기상특보 현황, 실·국·본부장 대책회의 계획 등 방침 결정'
+                        note: 붙임 2-1-①
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 재난안전상황실
+                        role: SUPPORT
+                      propagation: []
+                      resources: []
+                      notes:
+                      - SMS 별도통보
+                      - 기상특보 발표내용 휴대전화(SMS) 통보(재난안전상황실→시장, 부시장)
+                      - 주말 또는 공휴일, 일과 이후에 기상특보가 발표될 경우 상황판단회의 개최 여부 결정
+                      - 긴급한 상황에서의 상황판단회의 방법
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 42
+                        pdfIndex: 47
+                      phase: RESPONSE
+                      orderHint: 2
+                      alertLevel: null
+                    - actionCode: 2-2
+                      actionName: 기상특보 전파(시민, 유관기관)
+                      missionCode: '2'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 기상특보 다양한 수단 통한 전파
+                      detailTasks:
+                      - seq: 1
+                        title: 지역방송(One-Click), 홈페이지, SNS, UMS, 경보방송
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: (교통·재해·시정홍보)전광판, 버스정보시스템(BIT)
+                        content: ''
+                        note: ''
+                      - seq: 3
+                        title: 긴급통신수단(PS-LTE 또는 단톡방) 활용한 유관기관 기상특보 공유
+                        content: ''
+                        note: ''
+                      - seq: 4
+                        title: 전자팩스 아파트 관리사무소 발송(내부방송)
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 홍보담당관
+                        role: SUPPORT
+                      - name: 공보담당관
+                        role: SUPPORT
+                      - name: 미디어담당관
+                        role: SUPPORT
+                      - name: 교통정보서비스센터
+                        role: COOPERATE
+                      - name: 부산시설공단
+                        role: COOPERATE
+                      - name: 부산교통공사
+                        role: COOPERATE
+                      propagation:
+                      - method: 'UMS: 휴대전화 문자메시지(SMS) 발송'
+                        target: 공무원, 기자, 시민(신청자)
+                        targetType: PUBLIC
+                        channelHint: SMS
+                        messageTemplate: '○월 ○일 ○시 (태풍, 호우) (예비특보, 주의보, 경보)가 발효
+
+                          됨에 따라, 시설물, 어선·선박 관리 등 안전사고가 없도록 주의
+
+                          하시기 바랍니다.'
+                      - method: 'One-Click: TV 자막방송 요청→방송자막 처리'
+                        target: KBS, MBC, KNN 등 7개 방송사
+                        targetType: ORG
+                        channelHint: BROADCAST
+                        messageTemplate: '○월 ○일 ○시 (태풍, 호우) (예비특보, 주의보, 경보)가 발효
+
+                          됨에 따라, 시설물, 어선·선박 관리 등 안전사고가 없도록 주의
+
+                          하시기 바랍니다.'
+                      - method: '문자전광판: 재해·홍보·교통 전광판 문자 표출'
+                        target: 시민(기상특보·행동요령 전파)
+                        targetType: PUBLIC
+                        channelHint: BROADCAST
+                        messageTemplate: ''
+                      - method: 'BIT: 버스정보시스템내 문자 표출'
+                        target: 시민(기상특보·행동요령 전파)
+                        targetType: PUBLIC
+                        channelHint: BROADCAST
+                        messageTemplate: '○월 ○일 ○시 (태풍, 호우) (예비특보, 주의보, 경보)가 발효
+
+                          됨에 따라, 시설물, 어선·선박 관리 등 안전사고가 없도록 주의
+
+                          하시기 바랍니다.'
+                      - method: '재난경보방송: 민방위경보시설·경고방송장치'
+                        target: 시민(기상특보·행동요령 전파)
+                        targetType: PUBLIC
+                        channelHint: BROADCAST
+                        messageTemplate: ''
+                      - method: '전자팩스: 아파트관리소 팩스→내부방송 실시'
+                        target: 시민(기상특보·행동요령 전파)
+                        targetType: PUBLIC
+                        channelHint: PHONE
+                        messageTemplate: '○월 ○일 ○시 (태풍, 호우) (예비특보, 주의보, 경보)가 발효
+
+                          됨에 따라, 시설물, 어선·선박 관리 등 안전사고가 없도록 주의
+
+                          하시기 바랍니다.'
+                      - method: '인터넷: 홈페이지, SNS(블로그, 페이스북 등)'
+                        target: 시민(기상특보·행동요령 전파)
+                        targetType: PUBLIC
+                        channelHint: BROADCAST
+                        messageTemplate: ''
+                      - method: '긴급통신수단: 공동 주파수 활용(무전내용 공유)'
+                        target: 경찰청, 소방본부 등 15개 기관
+                        targetType: ORG
+                        channelHint: PHONE
+                        messageTemplate: ''
+                      resources:
+                      - name: UMS
+                        quantity: null
+                        unit: ''
+                      - name: One-Click
+                        quantity: null
+                        unit: ''
+                      - name: 문자전광판
+                        quantity: null
+                        unit: ''
+                      - name: BIT
+                        quantity: null
+                        unit: ''
+                      - name: 재난경보방송
+                        quantity: null
+                        unit: ''
+                      - name: 전자팩스
+                        quantity: null
+                        unit: ''
+                      - name: 인터넷
+                        quantity: null
+                        unit: ''
+                      - name: 긴급통신수단
+                        quantity: null
+                        unit: ''
+                      notes:
+                      - 긴급재난문자(CBS)는 행정안전부에서 재난유형·지역에 따라 발송
+                      - 유관기관(부산교통공사, 부산시설공단)에는 홍보요청 공문 별도 통보
+                      - 기상상황(태풍·호우 강도 등)에 따라 선택적으로 홍보매체 활용하여 기상상황 전파
+                      - 홈페이지와 SNS에는 풍수해 유형별 시민행동요령 파일 첨부(미디어담당관)
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 44
+                        pdfIndex: 49
+                      phase: RESPONSE
+                      orderHint: 3
+                      alertLevel: null
+                    - actionCode: 3-1
+                      actionName: (초기)상황판단회의 개최
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 상황판단회의 개최 준비·진행·정리
+                      detailTasks:
+                      - seq: 1
+                        title: (호우예비특보) 호우 지원부서(12) 팀장(자연재난과장)
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: (강풍주의보) 강풍 지원부서(10) 팀장(자연재난과장)
+                        content: ''
+                        note: ''
+                      - seq: 3
+                        title: (적설예보) 대설 지원부서(4) 팀장(자연재난과장)
+                        content: ''
+                        note: ''
+                      - seq: 4
+                        title: (필요시)비상근무 사전예고(행정포털, SMS 통보)
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 재난안전상황실
+                        role: SUPPORT
+                      - name: 기상특보별 지원부서
+                        role: SUPPORT
+                      - name: 기상청(기상자문관)
+                        role: COOPERATE
+                      - name: 소방재난본부
+                        role: COOPERATE
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 45
+                        pdfIndex: 50
+                      phase: RESPONSE
+                      orderHint: 4
+                      alertLevel: null
+                    - actionCode: 3-2
+                      actionName: 기상특보에 따른 대응 지시
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 구·군, 전부서, 유관기관 전파, 대응지시
+                      detailTasks:
+                      - seq: 1
+                        title: 구·군, 부서별, 유관기관별 조치사항 매뉴얼에 따른 이행
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: 주간(공문), 야간(NDMS, SMS, Fax)
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 재난안전상황실
+                        role: LEAD
+                      - name: 자연재난과
+                        role: SUPPORT
+                      - name: 전부서
+                        role: SUPPORT
+                      - name: 구·군
+                        role: COOPERATE
+                      - name: 유관기관
+                        role: COOPERATE
+                      propagation: []
+                      resources: []
+                      notes:
+                      - 방재기상플랫폼(https://dmdw.kma.go.kr)
+                      - 민원인으로부터접수를받은당사자는즉시재난소관부서(기관)으로접수내용전달
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 46
+                        pdfIndex: 51
+                      phase: RESPONSE
+                      orderHint: 5
+                      alertLevel: null
+                    - actionCode: 3-3,3-4
+                      actionName: 비상연락체계 확인
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 유관기관, 방재시설 담당자, 재대본 근무자 등 / 재대본 비상근무자, 전직원 비상연락망 확인
+                      detailTasks:
+                      - seq: 1
+                        title: 유관기관, 방재시설물 담당자, 재대본 비상근무자 확인
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 재난안전상황실
+                        role: SUPPORT
+                      - name: 재대본 근무부서
+                        role: SUPPORT
+                      - name: 재난안전대책본부 근무 유관기관
+                        role: COOPERATE
+                      - name: 전부서
+                        role: SUPPORT
+                      - name: 유관기관
+                        role: COOPERATE
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 49
+                        pdfIndex: 54
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 50
+                        pdfIndex: 55
+                      phase: RESPONSE
+                      orderHint: 6
+                      alertLevel: null
+                    - actionCode: 3-5
+                      actionName: 비상근무(시민안전실) 실시
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 상황판단회의 결과에 따른 재대본 가동
+                      detailTasks:
+                      - seq: 1
+                        title: 상황관리(자연재난과 2, 재난상황실 3) 근무(SMS 응소명령)
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: 상황관리 및 상황보고(자료 취합·보고)
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 재난안전상황실
+                        role: SUPPORT
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 51
+                        pdfIndex: 56
+                      phase: RESPONSE
+                      orderHint: 7
+                      alertLevel: null
+                    - actionCode: 3-6
+                      actionName: 관련기관 대비태세 확인
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 구·군 영상회의, 유관기관 지원체계 확인
+                      detailTasks:
+                      - seq: 1
+                        title: 구·군 재난담당과장 영상회의(자연재난과장)
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: 유관기관 지원체계 확인(공문, 팩스 발송)
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 재난안전상황실
+                        role: SUPPORT
+                      - name: 구·군
+                        role: COOPERATE
+                      - name: 유관기관
+                        role: COOPERATE
+                      propagation: []
+                      resources: []
+                      notes:
+                      - 영상회의 가능 기관 구·군 영상회의 시 참가
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 52
+                        pdfIndex: 57
+                      phase: RESPONSE
+                      orderHint: 8
+                      alertLevel: null
+                    - actionCode: 3-7
+                      actionName: 재해취약지 등 안전점검 지시
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 소관부서, 구·군, 행정지원 책임관 점검 등
+                      detailTasks:
+                      - seq: 1
+                        title: 재해취약지 구·군, 현장행정지원 책임관 중복점검
+                        content: 재해취약지 점검결과 복명서 제출(지역담당팀장)
+                        note: ''
+                      - seq: 2
+                        title: 방재시설물(펌프장,수문,유수지,예·경보시설등) 점검, 사전배수
+                        content: ''
+                        note: ''
+                      - seq: 3
+                        title: 부서별 소관시설(산사태 우려지, 공사장, 대형간판 등) 점검
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 업무소관 부서
+                        role: SUPPORT
+                      - name: 행정지원 책임관 지정부서
+                        role: SUPPORT
+                      - name: 구·군
+                        role: COOPERATE
+                      propagation: []
+                      resources: []
+                      notes:
+                      - 기상청 방재기상플랫폼(https://dmdw.kma.go.kr), 날씨알리미(앱), 스마트통보, 팩스, 이메일, 문자 등
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 54
+                        pdfIndex: 59
+                      phase: RESPONSE
+                      orderHint: 9
+                      alertLevel: null
+                    - actionCode: 3-8
+                      actionName: 재난자원 점검 지시
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 수방자재·응급복구장비 점검, 비축량 파악
+                      detailTasks:
+                      - seq: 1
+                        title: 수방·제설자재, 응급복구장비 가동 확인, 비축량·연료 파악
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: 재해구호물품, 의약품, 방역물자, 방제물자 등 확인
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 복지정책과
+                        role: SUPPORT
+                      - name: 보건위생과
+                        role: SUPPORT
+                      - name: 건설안전사업소
+                        role: SUPPORT
+                      - name: 구·군
+                        role: COOPERATE
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 59
+                        pdfIndex: 64
+                      phase: RESPONSE
+                      orderHint: 10
+                      alertLevel: null
+                    - actionCode: 3-9
+                      actionName: 피해조사단 교육
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: 태풍 한반도 북상 우려시
+                      summary: 피해조사단(60명) 사전교육
+                      detailTasks:
+                      - seq: 1
+                        title: 신속한 재난피해조사 위한 조사단(60명) 사전 교육
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 피해조사단 구성 부서
+                        role: SUPPORT
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 61
+                        pdfIndex: 66
+                      phase: RESPONSE
+                      orderHint: 11
+                      alertLevel: null
+                    - actionCode: 3-10
+                      actionName: 기상특보 대응상황 행정안전부 보고
+                      missionCode: '3'
+                      responseStep: SIGN_DETECTION
+                      phaseLabel: 1단계 징후감지
+                      category: NORMAL
+                      condition: ''
+                      summary: 기상특보 조치사항 행정안전부 보고
+                      detailTasks:
+                      - seq: 1
+                        title: 구·군→재난안전상황실, 재대본→행정안전부
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 재난안전상황실
+                        role: LEAD
+                      - name: 자연재난과
+                        role: LEAD
+                      - name: 구·군
+                        role: COOPERATE
+                      propagation: []
+                      resources: []
+                      notes:
+                      - 재대본 구성 전 재난안전상황실에서 보고
+                      sources:
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 34
+                        pdfIndex: 39
+                      - docId: ccb995a9-dd0f-4011-9616-b1504ee68817
+                        docTitle: 부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼
+                        page: 63
+                        pdfIndex: 68
+                      phase: RESPONSE
+                      orderHint: 12
+                      alertLevel: null
+                wildfire_nha:
+                  summary: 산불(국가유산청 위기대응 실무매뉴얼 2025.12.) · 심각(비상대응) · 안전방재과
+                  value:
+                    manual:
+                      docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                      docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                      version: 2025.12.
+                      scope: CENTRAL
+                      region:
+                        name: 국가유산청
+                        level: CENTRAL
+                      stepBasis: RESPONSE_STEP
+                      departments:
+                      - 안전방재과
+                      manualKind: 실무
+                    departmentMatched: true
+                    warnings: []
+                    missions:
+                    - missionCode: 가
+                      missionName: 초동대응
+                      responseStep: EMERGENCY_RESPONSE
+                      actionCodes:
+                      - 가-1
+                      - 가-2
+                      - 가-3
+                    - missionCode: 나
+                      missionName: 대응 조직 구성·운영
+                      responseStep: EMERGENCY_RESPONSE
+                      actionCodes:
+                      - 나-1
+                      - 나-2
+                      - 나-3
+                      - 나-6
+                    actions:
+                    - actionCode: 가-1
+                      actionName: 국가유산 인근지역 산불 발생상황 접수 및 보고·전파
+                      missionCode: 가
+                      responseStep: EMERGENCY_RESPONSE
+                      phaseLabel: 심각 단계
+                      category: NORMAL
+                      condition: ''
+                      summary: ''
+                      detailTasks:
+                      - seq: 1
+                        title: (상황접수) 산림청 또는 지자체로부터 국가유산 인근지역 산불 발생상황 접수
+                        content: ''
+                        note: 산림청(산불상황관제시스템) 확인, 산림청및지자체유선보고등으로상황접수
+                      - seq: 2
+                        title: (보고·전파)
+                        content: '(주간) 담당사무관(안전방재과) → 안전방재과장, 유산정책국장, 청장·차장 동시보고
+
+                          (야간) 당직근무자 → 담당사무관(안전방재과), 안전방재과장, 운영지원과장, 청장·차장 동시보고'
+                        note: ''
+                      organizations:
+                      - name: 안전방재과
+                        role: LEAD
+                      propagation:
+                      - method: (주간) 담당사무관(안전방재과) 동시보고
+                        target: 안전방재과장, 유산정책국장, 청장·차장
+                        targetType: ROLE
+                        channelHint: null
+                        messageTemplate: ''
+                      - method: (야간) 당직근무자 동시보고
+                        target: 담당사무관(안전방재과), 안전방재과장, 운영지원과장, 청장·차장
+                        targetType: ROLE
+                        channelHint: null
+                        messageTemplate: ''
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 90
+                        pdfIndex: 101
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 91
+                        pdfIndex: 102
+                      phase: RESPONSE
+                      orderHint: 1
+                      alertLevel: null
+                    - actionCode: 가-2
+                      actionName: 비상연락체계 구축 및 초동조치
+                      missionCode: 가
+                      responseStep: EMERGENCY_RESPONSE
+                      phaseLabel: 심각 단계
+                      category: NORMAL
+                      condition: ''
+                      summary: ''
+                      detailTasks:
+                      - seq: 1
+                        title: (비상연락체계 구축) 지자체(산불피해 발생 시·군·구 재난안전대책본부 및 시·군·구 국가유산부서) 유관기관(재난수습에 필요한 유관기관) 등 비상연락체계 구축
+                        content: 현장연락관(안전경비원, 지역문화유산돌봄센터, 현장지원반 및 지자체 담당자 등)을 지정하고 비상연락체계를 구축하여 재난발생상황, 대응조치, 지원필요 사항 등 파악
+                        note: 비상연락수단은유 무선, FAX, 휴대폰, SNS 등매체활용(재난안전통신망포함)
+                      - seq: 2
+                        title: (초동조치) 현장지원반 구성·파견, 방재설비 작동점검, 관람객 등 대피, 동산 문화유산 소산 준비 등
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 안전방재과
+                        role: LEAD
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 90
+                        pdfIndex: 101
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 91
+                        pdfIndex: 102
+                      phase: RESPONSE
+                      orderHint: 2
+                      alertLevel: null
+                    - actionCode: 가-3
+                      actionName: 상황판단회의 개최 (중수본 가동 전)
+                      missionCode: 가
+                      responseStep: EMERGENCY_RESPONSE
+                      phaseLabel: 심각 단계
+                      category: NORMAL
+                      condition: ''
+                      summary: ''
+                      detailTasks:
+                      - seq: 1
+                        title: (목적) 산불 재난의 위험수준, 진행상황, 확산정도 등을 판단하여 현지조사단 파견 및 중앙사고수습본부 가동 여부 결정
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: (주재) 유산정책국장 (부재 시 안전방재과장)
+                        content: ''
+                        note: ''
+                      - seq: 3
+                        title: (참석대상) 안전방재과장, 소관부서 담당과장
+                        content: ''
+                        note: ''
+                      - seq: 4
+                        title: (회의내용) ① 산불진행 상황, 산불 인근지역 국가유산현황, 기상여건, 방재시설 현황, 안전경비원 유무, 지역문화유산돌봄센터 파견 등 상황 공유 ② 현장지원반, 현지조사단 구성·파견 및 중앙사고수습본부 가동 여부 결정 ③ 국가유산 피해 최소화를 위한 초동조치사항 점검 등
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 유산정책국장
+                        role: LEAD
+                      - name: 안전방재과장
+                        role: SUPPORT
+                      - name: 소관부서 담당과장
+                        role: SUPPORT
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 90
+                        pdfIndex: 101
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 91
+                        pdfIndex: 102
+                      phase: RESPONSE
+                      orderHint: 3
+                      alertLevel: null
+                    - actionCode: 나-1
+                      actionName: 중앙사고수습본부(중수본) 가동·운영
+                      missionCode: 나
+                      responseStep: EMERGENCY_RESPONSE
+                      phaseLabel: 심각 단계
+                      category: NORMAL
+                      condition: ''
+                      summary: ''
+                      detailTasks:
+                      - seq: 1
+                        title: 중앙사고수습본부장은 국가유산청장, 부본부장은 국가유산청 차장으로 함
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: 신속한 대응이 가능하도록 실무반 구성·운영
+                        content: '초동대응에 핵심적인 역할을 수행하는 실무반은 상황발생 초기단계부터 비상소집하여 실무반을 신속히 구성·운영
+
+                          기타 실무반은 산불재난 진행 상황에 따라 탄력적으로 구성·운영'
+                        note: '초동대응반 : 총괄상황반(안전방재과), 언론대응반(대변인), 현지조사단(국립 문화유산연구원), 해당 국가유산 소관과'
+                      organizations:
+                      - name: 안전방재과
+                        role: LEAD
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 90
+                        pdfIndex: 101
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 92
+                        pdfIndex: 103
+                      phase: RESPONSE
+                      orderHint: 4
+                      alertLevel: null
+                    - actionCode: 나-2
+                      actionName: 상황판단회의 개최 (중수본 가동 후)
+                      missionCode: 나
+                      responseStep: EMERGENCY_RESPONSE
+                      phaseLabel: 심각 단계
+                      category: NORMAL
+                      condition: ''
+                      summary: ''
+                      detailTasks:
+                      - seq: 1
+                        title: (목적) 산불·화재 재난의 위험수준, 진행상황, 확산정도 등을 판단하고 피해 예상 국가유산 보호를 위한 대책마련
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: (주재) 청장 (부재 시 차장)
+                        content: ''
+                        note: ''
+                      - seq: 3
+                        title: (참석대상) 국가유산청 차장, 총괄담당관, 안전방재과장, 대변인, 해당 국가유산 담당과장, 관련전문가 등
+                        content: ''
+                        note: ''
+                      - seq: 4
+                        title: (회의내용) ① 산불진행 상황, 기상여건, 산불 인근지역 국가유산 현황, 방재자원 투입 현황 등 상황 공유 ② 건축물 등 운반이 어려운 국가유산 및 운반이 가능한 동산 문화유산(편액, 주련 등 건축 문화유산의 부속물 포함)의 보호대책 ③ 국가유산 피해 최소화를 위한 지자체 및 유관기관 협조요청사항 등
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 청장
+                        role: LEAD
+                      - name: 국가유산청 차장
+                        role: SUPPORT
+                      - name: 총괄담당관
+                        role: SUPPORT
+                      - name: 안전방재과장
+                        role: SUPPORT
+                      - name: 대변인
+                        role: SUPPORT
+                      - name: 해당 국가유산 담당과장
+                        role: SUPPORT
+                      - name: 관련전문가
+                        role: SUPPORT
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 90
+                        pdfIndex: 101
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 92
+                        pdfIndex: 103
+                      phase: RESPONSE
+                      orderHint: 5
+                      alertLevel: null
+                    - actionCode: 나-3
+                      actionName: 국가유산 피해현황 파악 및 상황 보고서 작성
+                      missionCode: 나
+                      responseStep: EMERGENCY_RESPONSE
+                      phaseLabel: 심각 단계
+                      category: NORMAL
+                      condition: ''
+                      summary: ''
+                      detailTasks:
+                      - seq: 1
+                        title: 시·군·구 국가유산담당부서를 통하여 국가유산 피해상황, 대응 조치 상황 파악
+                        content: 현지조사단을 통하여 현장 상황을 파악하고 중요 지시사항 전달
+                        note: 산불 및 화재 진압이 완료된 경우 발생원인, 피해현황, 보고전파, 대응조치, 응급조치 지원 필요사항 등을 조사
+                      - seq: 2
+                        title: (상황보고서 작성) 피해현황, 대응조치(보고·전파, 방재자원 투입 등), 향후 조치계획 등을 포함
+                        content: ''
+                        note: ''
+                      organizations:
+                      - name: 안전방재과
+                        role: LEAD
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 90
+                        pdfIndex: 101
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 92
+                        pdfIndex: 103
+                      phase: RESPONSE
+                      orderHint: 6
+                      alertLevel: null
+                    - actionCode: 나-6
+                      actionName: 중앙재난안전대책본부(중대본) 파견 근무자 편성
+                      missionCode: 나
+                      responseStep: EMERGENCY_RESPONSE
+                      phaseLabel: 심각 단계
+                      category: NORMAL
+                      condition: ''
+                      summary: ''
+                      detailTasks:
+                      - seq: 1
+                        title: (파견자) 국가유산청 직원 1명 ＊중대본에서 파견 근무 요청 시 파견
+                        content: ''
+                        note: ''
+                      - seq: 2
+                        title: (주요업무) 중대본과 국가유산청 재난안전상황실(안전방재과)간 협력 체계 구축
+                        content: '국가유산 피해현황 공유 및 국가유산 관련 언론보도 모니터링
+
+                          국가유산 재난 수습에 필요한 협조사항 전달 및 건의'
+                        note: ''
+                      - seq: 3
+                        title: (근무자 편성) 중대본 24시간 파견 근무를 위한 근무자 편성
+                        content: '최초 근무자 : 안전방재과 직원 비상근무 즉시 투입
+
+                          중대본 파견근무가 길어질 경우 국가유산청 각 소관과로부터 비상근무 인력 각 2명씩 지원 요청 후 근무자 편성'
+                        note: ''
+                      organizations:
+                      - name: 안전방재과
+                        role: LEAD
+                      propagation: []
+                      resources: []
+                      notes: []
+                      sources:
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 90
+                        pdfIndex: 101
+                      - docId: 9f0d8b13-345a-445b-84fc-7d7eb18049ea
+                        docTitle: 국가유산청 「산불 재난」 위기대응 실무매뉴얼
+                        page: 93
+                        pdfIndex: 104
+                      phase: RESPONSE
+                      orderHint: 7
+                      alertLevel: null
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '422':
+          $ref: '#/components/responses/InvalidRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      security: []
+  /documents/{id}/download:
+    servers:
+    - url: https://plf.mois-disaster.t3q.ai/model-api/{apiId}
+      description: API-02 납품본 (T3Q API-SOP v2)
+      variables:
+        apiId:
+          default: 4920a
+    get:
+      tags:
+      - API-02 SOP 콘텐츠
+      operationId: downloadDocument
+      summary: 매뉴얼 원문 파일
+      description: '`manual.docId`(= `sources[].docId`)를 `id`로 넘겨 매뉴얼 원문(PDF)을 받는다. 보고서 API의 같은 엔드포인트(`references[].fileId`·`download`)와 동일한 URL이다. `disposition=inline`은 PDF에만 적용되며 URL 끝에 `#page=N`을 붙여 쪽으로 이동할 수 있다. 이때 N은 `sources[].pdfIndex + 1`(PDF 쪽 인덱스는 0부터, 뷰어 쪽은 1부터)이며 `sources[].page`(인쇄 쪽번호)가 아니다.'
+      parameters:
+      - $ref: '#/components/parameters/DocumentId'
+      - $ref: '#/components/parameters/Disposition'
+      - $ref: '#/components/parameters/XRequestId'
+      responses:
+        '200':
+          description: 매뉴얼 원문 파일
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestId'
+            Content-Disposition:
+              schema:
+                type: string
+              description: '`attachment; filename*=UTF-8''''...` 또는 `inline; ...`'
+            Content-Length:
+              schema:
+                type: integer
+                format: int64
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/InvalidRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      security: []
+
+  /auth/verify:
+    post:
+      tags: [API-03 사용자 인증]
+      summary: 링크 토큰 확인 → 사용자 정보
+      description: 우리 서버(`/sso/t3q`)가 서버 간 통신으로 호출합니다. 브라우저에서 직접 호출하지 않습니다.
+      operationId: authVerify
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthVerifyRequest" }
+            example: { token: "t3q-ott-8f2b0c7e4a1d4b6f9e3c" }
+      responses:
+        "200":
+          description: 확인된 사용자
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthVerifyResponse" }
+              example:
+                meta: { requestId: 3b7f0c2e-1d4a-4e8b-9c6f-2a5d7e9b1c04, traceId: t3q-auth-20261005-000101, generatedAt: "2026-10-05T09:00:03+09:00" }
+                user:
+                  userId: U2026000123
+                  loginId: hong.gildong
+                  name: 홍길동
+                  orgCode: "6260000"
+                  orgName: 부산광역시
+                  deptName: 시민안전실 자연재난과
+                  position: 주무관
+                  email: hong@busan.go.kr
+                  roles: [USER]
+                expiresAt: "2026-10-05T17:00:00+09:00"
+        "401":
+          description: 토큰 없음·만료·이미 사용됨
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/T3QError" }
+              example:
+                error: { code: INVALID_TOKEN, message: 만료되었거나 이미 사용된 토큰입니다. }
+                meta: { requestId: 3b7f0c2e-1d4a-4e8b-9c6f-2a5d7e9b1c04, traceId: t3q-auth-20261005-000102 }
+        "5XX": { $ref: "#/components/responses/Error" }
+
+  /health:
+    servers:
+    - url: https://plf.mois-disaster.t3q.ai/model-api/{apiId}
+      description: API-02 납품본 (T3Q API-SOP v2)
+      variables:
+        apiId:
+          default: 4920a
+    get:
+      tags:
+      - API-02 SOP 콘텐츠
+      operationId: health
+      summary: 상태 확인
+      description: 운영용 기동 확인. 보고서 API와 한 배포라 응답도 같다(`app`은 배포 이름). prefix 없이 `/health`와 `/`로도 응답한다.
+      responses:
+        '200':
+          description: 정상
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                app: 재난안전 보고서 생성 API v2
+                version: 2.0.0
+                status: ok
+      security: []
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      description: T3Q 측이 발급하는 서비스 계정 토큰
+  parameters:
+    Disposition:
+      name: disposition
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - attachment
+        - inline
+        default: attachment
+      description: '`attachment`(기본) 내려받기, `inline` 브라우저 PDF 뷰어로 열기(PDF에만 적용)'
+    DocumentId:
+      name: id
+      in: path
+      required: true
+      description: 매뉴얼 문서 ID(`manual.docId` = `sources[].docId`). 보고서 API의 청크 ID·파일 ID도 같은 자리에 쓴다
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+    XRequestId:
+      name: X-Request-ID
+      in: header
+      required: false
+      description: 요청 추적 ID
+      schema:
+        type: string
+        maxLength: 128
+    RequestId:
+      name: X-Request-Id
+      in: header
+      required: true
+      description: 요청 추적용 UUID. 응답 meta.requestId 로 그대로 반환
+      schema: { type: string, format: uuid }
+  responses:
+    ServiceUnavailable:
+      description: '서비스 불가 (`SERVICE_UNAVAILABLE`): 매뉴얼 저장소 설정 누락·연결 실패(다운로드는 문서 저장소 설정 누락)'
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: SERVICE_UNAVAILABLE
+              message: SOP 매뉴얼 저장소에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.
+              retryable: true
+              retryAfter: null
+              requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+    PayloadTooLarge:
+      description: 본문 1 MiB 초과 (`PAYLOAD_TOO_LARGE`)
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: PAYLOAD_TOO_LARGE
+              message: 요청 본문이 너무 큽니다(최대 1 MiB).
+              retryable: false
+              retryAfter: null
+              requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+    InvalidRequest:
+      description: '요청 위반 (`INVALID_REQUEST`): 잘못된 JSON·본문이 객체가 아님·필수 누락·허용값 밖(재난유형 10종 밖 포함)·`responsibleRegion`을 행정구역이나 매뉴얼 보유 기관으로 해석할 수 없음·기관명과 행정구역 `code`가 함께 옴(모순). 다운로드는 `id`·`disposition` 형식 위반'
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            unknownDisasterType:
+              summary: 재난유형 10종 밖(disasterType=`기타`)
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: 'context.disasterType: 허용되지 않는 값 ''기타''입니다. 허용값: 폭염, 태풍/호우, 지진, 황사, 산불, 감염병, 가축질병, 다중밀집건축물붕괴대형사고, 정부주요시설, 학교시설'
+                  retryable: false
+                  retryAfter: null
+                  requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+            enum:
+              summary: 허용값 밖(responseStep=`NORMAL`)
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: 'context.responseStep: 허용되지 않는 값 ''NORMAL''입니다. 허용값: SIGN_DETECTION, INITIAL_RESPONSE, EMERGENCY_RESPONSE, RECOVERY'
+                  retryable: false
+                  retryAfter: null
+                  requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+            missingContext:
+              summary: '`context` 없음'
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: 'context: 필수 값입니다.'
+                  retryable: false
+                  retryAfter: null
+                  requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+            unknownAgency:
+              summary: 기관명 오류(responsibleRegion=`아무기관`)
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: 'context.responsibleRegion: 행정구역이나 매뉴얼 보유 기관으로 해석할 수 없습니다: ''아무기관'''
+                  retryable: false
+                  retryAfter: null
+                  requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+    RateLimited:
+      description: 요청 한도 초과 (`RATE_LIMIT`). SOP는 `retryAfter` 5초(보고서 API는 30초)
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/XRequestId'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: RATE_LIMIT
+              message: 요청 한도를 초과했습니다. 5초 후 다시 시도해 주세요.
+              retryable: true
+              retryAfter: 5
+              requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+    NotFound:
+      description: 요청 조건에 맞는 매뉴얼 없음 (`NOT_FOUND`). 기관 요청이면 그 기관의 요청 재난유형 매뉴얼이 없음. 다운로드는 `id`에 해당하는 문서·파일 없음
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: NOT_FOUND
+              message: 요청 조건에 맞는 매뉴얼이 없습니다.
+              retryable: false
+              retryAfter: null
+              requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+    InternalError:
+      description: 서버 오류 (`UNKNOWN`)
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: UNKNOWN
+              message: 처리 중 오류가 발생했습니다.
+              retryable: false
+              retryAfter: null
+              requestId: 8a1f0c2e-5b7d-4f0e-9c1a-2d3e4f5a6b7c
+    Error:
+      description: 오류
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/T3QError" }
+          example:
+            error: { code: NO_DOCUMENT, message: 재난유형·지역에 맞는 매뉴얼이 없습니다. }
+            meta: { requestId: a9f2c1d4-0e6b-4d71-8c3a-6b2f9e7d1c55, traceId: t3q-sop-20260716-000457 }
+  headers:
+    RetryAfter:
+      description: 재시도까지 대기 초
+      schema:
+        type: integer
+        minimum: 0
+    XRequestId:
+      schema:
+        type: string
+  schemas:
+    SopActionsRequest:
+      type: object
+      required:
+      - context
+      description: 요청 본문. 상황정보를 `context` 하나에 담는다. 그 밖의 최상위 키는 무시하고 `IGNORED_FIELD` 경고로 알린다.
+      properties:
+        context:
+          $ref: '#/components/schemas/SopContext'
+    SopContext:
+      type: object
+      required:
+      - disasterType
+      - responseStep
+      description: '상황정보. `responsibleRegion`·`affectedRegions` 중 하나는 값이 있어야 한다(둘 다 미지정이면 422). `currentSituation`·`title`·`workType`·`period`·`situationId`·`baseTime`은 참고용으로 받기만 하고 매뉴얼 선택에 쓰지 않는다. 형식은 협력사 API-02 Swagger와 같으며(`period` `{start, end}` date-time, `baseTime` date-time, `workType` REAL|DRILL), 형식이 어긋나도 422가 아니라 `IGNORED_FIELD`(message = 키 경로, 예: `context.period.start`)로 알리고 무시한다. 그 밖의 키는 무시하고 `IGNORED_FIELD`(message 예: `context.foo`).'
+      anyOf:
+      - required:
+        - responsibleRegion
+      - required:
+        - affectedRegions
+      properties:
+        disasterType:
+          type: string
+          enum:
+          - 폭염
+          - 태풍/호우
+          - 지진
+          - 황사
+          - 산불
+          - 감염병
+          - 가축질병
+          - 다중밀집건축물붕괴대형사고
+          - 정부주요시설
+          - 학교시설
+          - HEAT_WAVE
+          - TYPHOON_HEAVY_RAIN
+          - EARTHQUAKE
+          - YELLOW_DUST
+          - WILDFIRE
+          - INFECTIOUS_DISEASE
+          - LIVESTOCK_DISEASE
+          - CROWDED_BUILDING_COLLAPSE
+          - GOV_MAJOR_FACILITY
+          - SCHOOL_FACILITY
+          description: '재난유형 10종의 표시 이름 또는 코드: `폭염`(HEAT_WAVE), `태풍/호우`(TYPHOON_HEAVY_RAIN), `지진`(EARTHQUAKE), `황사`(YELLOW_DUST), `산불`(WILDFIRE), `감염병`(INFECTIOUS_DISEASE), `가축질병`(LIVESTOCK_DISEASE), `다중밀집건축물붕괴대형사고`(CROWDED_BUILDING_COLLAPSE), `정부주요시설`(GOV_MAJOR_FACILITY), `학교시설`(SCHOOL_FACILITY). 허용값은 이 enum 값이며, 공백·구분기호 차이는 서버가 정규화해 받지만 스키마 enum은 정확한 값만 허용한다. `기타`·`대형화재`·`공연장·경기장·지역축제`·코드 `ETC` 등 그 밖의 값은 422 INVALID_REQUEST'
+        affectedRegions:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: '발생지역 이름 목록(시도부터 전체 표기 권장). 예: `부산광역시`, `부산광역시 해운대구 우동`, 별칭 `부산시`·`부산`. 시군구가 하나면 그 시군구 매뉴얼, 여럿이면 시도 매뉴얼. 시도를 정할 수 없는 이름은 422'
+        responsibleRegion:
+          type: string
+          nullable: true
+          description: '관할지역 이름 또는 기관명. 이름이 행정구역(시도·시군구)으로 해석되지 않으면 중앙부처 기관명으로 본다: 공백·가운뎃점 무시, 별칭 `문화재청`→`국가유산청`, 매뉴얼 기관명과 정확히 같거나 `본체(부서)` 꼴 기관명의 본체와 같으면 일치(괄호 안 부서명·접두 일치는 기관으로 보지 않음). 기관명이면 발생지역보다 먼저 그 기관의 매뉴얼을 고른다. 매뉴얼 보유 기관이 아니면 422 INVALID_REQUEST, 기관은 있으나 요청 재난유형의 매뉴얼이 없으면 404 NOT_FOUND'
+        responseStep:
+          type: string
+          enum:
+          - SIGN_DETECTION
+          - INITIAL_RESPONSE
+          - EMERGENCY_RESPONSE
+          - RECOVERY
+          - 징후감지
+          - 초기대응
+          - 비상대응
+          - 수습복구
+          description: 대응단계 코드 또는 한글. 허용값은 이 enum 값이며, 공백·구분기호 차이는 서버가 정규화해 받지만 스키마 enum은 정확한 값만 허용한다. 허용값 밖이면 422
+        alertLevel:
+          type: string
+          nullable: true
+          enum:
+          - 관심
+          - 주의
+          - 경계
+          - 심각
+          - INTEREST
+          - CAUTION
+          - ALERT
+          - SERIOUS
+          - null
+          description: (선택) 위기경보 — 한글 또는 코드. 허용값은 이 enum 값이며, 공백·구분기호 차이는 서버가 정규화해 받지만 스키마 enum은 정확한 값만 허용한다. 생략·null은 미지정(빈 문자열은 스키마상 유효하지 않지만 서버가 미지정으로 처리한다. 신규 연동은 생략 또는 null). 매뉴얼 단계가 위기경보로 나뉜 경우(stepBasis=ALERT_LEVEL)에만 단계 선택에 쓴다
+        department:
+          type: string
+          nullable: true
+          description: (선택) 담당부서 원문(R19). 띄어쓰기·가운뎃점 무시, 상위 조직 접두 허용(`시민안전실 자연재난과`). 미지정이면 그 단계의 조치 전부
+        currentSituation:
+          type: string
+          nullable: true
+          description: (참고용) 현재상황 자유 텍스트. 사실로 취급하지 않는다
+        title:
+          type: string
+          nullable: true
+          description: (참고용) 상황 제목
+        workType:
+          type: string
+          nullable: true
+          enum:
+          - REAL
+          - DRILL
+          - ''
+          - null
+          description: '(참고용) 업무유형: `REAL` 실제재난, `DRILL` 안전한국훈련(협력사 Swagger WorkType). 생략·null·빈 문자열은 미지정. 그 밖의 값은 `IGNORED_FIELD`(`context.workType`)'
+        period:
+          nullable: true
+          description: (참고용) 대응 기간. `{start, end}` 객체(각각 date-time, `end` 없음·null은 종료 미정). 생략·null·빈 문자열은 미지정. 객체의 그 밖의 키나 date-time이 아닌 값은 `IGNORED_FIELD`(`context.period.<키>`), 객체·빈 문자열이 아닌 값은 `IGNORED_FIELD`(`context.period`)
+          anyOf:
+          - type: object
+            properties:
+              start:
+                type: string
+                nullable: true
+                format: date-time
+              end:
+                type: string
+                nullable: true
+                format: date-time
+          - type: string
+            enum:
+            - ''
+            description: 빈 문자열 = 미지정(협력사 정본 요청 형태)
+        situationId:
+          type: string
+          nullable: true
+          description: (참고용) 호출 측 상황 ID
+        baseTime:
+          type: string
+          nullable: true
+          format: date-time
+          description: (참고용) 기준시각. date-time이 아니면 `IGNORED_FIELD`(`context.baseTime`)
+    SopActionsResponse:
+      type: object
+      required:
+      - manual
+      - departmentMatched
+      - warnings
+      - missions
+      - actions
+      properties:
+        manual:
+          $ref: '#/components/schemas/SopManual'
+        departmentMatched:
+          type: boolean
+          description: 요청 부서의 행이 이 단계에 있었는지. false면 초기대응부서(총괄) 행으로 대신함
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/SopWarning'
+        missions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SopMission'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SopAction'
+    SopManual:
+      type: object
+      required:
+      - docId
+      - docTitle
+      - version
+      - scope
+      - region
+      - stepBasis
+      - departments
+      - manualKind
+      properties:
+        docId:
+          type: string
+          description: 매뉴얼 문서 ID. 보고서 API `references[].fileId`와 같은 체계의 값이며, 원문 PDF는 `GET /documents/{id}/download`의 `id`에 이 값을 그대로 넣어 받는다
+        docTitle:
+          type: string
+          description: '기관명 + 매뉴얼 제목(예: `부산광역시 「풍수해(태풍·호우·대설) 재난」 현장조치 행동매뉴얼`). 제목에 기관명이 이미 있으면 덧붙이지 않는다'
+        version:
+          type: string
+          description: '판·기준일 원문(예: 2026.7.)'
+        scope:
+          type: string
+          enum:
+          - SIGUNGU
+          - SIDO
+          - CENTRAL
+          - OTHER
+          description: 매뉴얼 범위(선택 근거). OTHER는 시도 교육청(학교시설만)
+        region:
+          type: object
+          properties:
+            code:
+              type: string
+              description: 법정동 코드 10자리(시도·시군구 매뉴얼). 중앙 매뉴얼은 없음
+            name:
+              type: string
+            level:
+              type: string
+              description: 'SIDO·SIGUNGU·OTHER(시도 교육청) 또는 CENTRAL(중앙부처·기관 매뉴얼: name = 매뉴얼 기관명 원문)'
+        stepBasis:
+          type: string
+          enum:
+          - RESPONSE_STEP
+          - ALERT_LEVEL
+          description: '매뉴얼 단계 구분: 대응단계 또는 위기경보'
+        departments:
+          type: array
+          items:
+            type: string
+          description: 응답 조치의 부서(없으면 부서 칸) 원문
+        manualKind:
+          type: string
+          enum:
+          - 표준
+          - 실무
+          - 현장조치
+          - 기타
+          description: '매뉴얼 종류: 표준(위기관리 표준매뉴얼)·실무(위기대응 실무매뉴얼)·현장조치(현장조치 행동매뉴얼)·기타. 지역 매뉴얼이 없어 중앙 매뉴얼을 고를 때는 표준매뉴얼을 실무매뉴얼보다 먼저 고른다'
+    SopWarning:
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          enum:
+          - NO_LOCAL_ACTIONS
+          - AMBIGUOUS_STEP
+          - AMBIGUOUS_CODE
+          - IMAGE_PAGE
+          - UNMATCHED_TABLE
+          - OTHER
+          - IGNORED_FIELD
+          - TRUNCATED
+          description: '매뉴얼 처리 경고 6종(NO_LOCAL_ACTIONS·AMBIGUOUS_STEP·AMBIGUOUS_CODE·IMAGE_PAGE·UNMATCHED_TABLE·OTHER) / IGNORED_FIELD: 무시한 요청 키(message = 키 경로) / TRUNCATED: 조치 상한 초과로 잘림'
+        message:
+          type: string
+        docId:
+          type: string
+          description: 경고가 난 매뉴얼(매뉴얼 처리 경고만). `manual.docId`와 같은 값
+        page:
+          type: integer
+          description: 매뉴얼 인쇄 쪽번호(`sources[].page`와 같은 뜻)
+        actionCode:
+          type: string
+    SopMission:
+      type: object
+      required:
+      - missionCode
+      - missionName
+      - responseStep
+      - actionCodes
+      properties:
+        missionCode:
+          type: string
+        missionName:
+          type: string
+        responseStep:
+          type: string
+          enum:
+          - SIGN_DETECTION
+          - INITIAL_RESPONSE
+          - EMERGENCY_RESPONSE
+          - RECOVERY
+        actionCodes:
+          type: array
+          items:
+            type: string
+          description: 응답에 든 조치만
+        functionCode:
+          type: string
+        functionName:
+          type: string
+        leadOrg:
+          type: string
+    SopAction:
+      type: object
+      required:
+      - actionCode
+      - actionName
+      - missionCode
+      - responseStep
+      - phaseLabel
+      - category
+      - condition
+      - summary
+      - detailTasks
+      - organizations
+      - propagation
+      - resources
+      - notes
+      - sources
+      - phase
+      - orderHint
+      - alertLevel
+      properties:
+        actionCode:
+          type: string
+          description: 매뉴얼 코드 그대로(여러 코드가 한 줄이면 `3-3,3-4`)
+        actionName:
+          type: string
+        missionCode:
+          type: string
+        responseStep:
+          type: string
+          enum:
+          - SIGN_DETECTION
+          - INITIAL_RESPONSE
+          - EMERGENCY_RESPONSE
+          - RECOVERY
+        phaseLabel:
+          type: string
+          description: 매뉴얼 원문 단계명
+        category:
+          type: string
+          enum:
+          - NORMAL
+          - DAMAGE
+          description: 1~3단계 NORMAL, 4단계 수습·복구 DAMAGE
+        condition:
+          type: string
+          description: 조치 전체에 붙은 조건 원문(R8). 있으면 「필요시 임무」
+        summary:
+          type: string
+        detailTasks:
+          type: array
+          items:
+            type: object
+            properties:
+              seq:
+                type: integer
+              title:
+                type: string
+              content:
+                type: string
+              note:
+                type: string
+        organizations:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              role:
+                type: string
+                enum:
+                - LEAD
+                - SUPPORT
+                - COOPERATE
+        propagation:
+          type: array
+          items:
+            type: object
+            properties:
+              method:
+                type: string
+              target:
+                type: string
+              targetType:
+                type: string
+                nullable: true
+                enum:
+                - ORG
+                - ROLE
+                - PUBLIC
+                - null
+              channelHint:
+                type: string
+                nullable: true
+                enum:
+                - SMS
+                - EMAIL
+                - BROADCAST
+                - PHONE
+                - ''
+                - null
+              messageTemplate:
+                type: string
+        resources:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              quantity:
+                type: number
+                nullable: true
+              unit:
+                type: string
+        notes:
+          type: array
+          items:
+            type: string
+        sources:
+          type: array
+          items:
+            type: object
+            properties:
+              docId:
+                type: string
+                description: '`manual.docId`와 같은 값(원문 다운로드 `id`)'
+              docTitle:
+                type: string
+                description: '`manual.docTitle`과 같은 표기'
+              page:
+                type: integer
+                description: 매뉴얼에 인쇄된 쪽번호(쪽 머리글·바닥글에서 추정한 값; 쪽번호가 없는 PDF는 쪽 순번). 사람이 읽는 표기(`p.34`)용이며 PDF 뷰어 이동에는 쓰지 않는다(표지·목차 때문에 PDF 쪽과 어긋난다)
+              pdfIndex:
+                type: integer
+                description: PDF 쪽 인덱스(0부터). 원문 위치 이동은 `GET /documents/{docId}/download?disposition=inline#page={pdfIndex + 1}`. 보고서 API `references[].page`는 1부터 세므로 그와 같은 쪽은 `pdfIndex + 1`이다
+        phase:
+          type: string
+          enum:
+          - RESPONSE
+          - RECOVERY
+          description: 1~3단계 RESPONSE, 4단계 RECOVERY
+        orderHint:
+          type: integer
+          description: 응답 안의 매뉴얼 기재 순서(1부터)
+        alertLevel:
+          type: string
+          nullable: true
+          description: 위기경보 매뉴얼(ALERT_LEVEL)의 조치 경보단계. 그 외 null
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+    ErrorObject:
+      type: object
+      required:
+      - code
+      - message
+      - retryable
+      - retryAfter
+      - requestId
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+          description: 사용자 표시용 문장. `INVALID_REQUEST`면 문제 필드 경로와 허용값을 포함한다.
+        retryable:
+          type: boolean
+          description: 재시도 가치가 있는지
+        retryAfter:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: 대기 초. `RATE_LIMIT`에서는 항상 정수(상류가 값을 주지 않으면 30), 그 외 코드에서는 null.
+        requestId:
+          type: string
+          description: '`X-Request-ID`와 같은 값. 문의 시 함께 전달.'
+    ErrorCode:
+      type: string
+      description: 'INVALID_REQUEST(422): 스키마·매개변수 위반 / PAYLOAD_TOO_LARGE(413): 본문 1 MiB 초과 / NOT_FOUND(404): 문서·파일 없음 / RATE_LIMIT(429): 요청 한도 초과, `retryAfter` 초 후 재시도 / CTX_OVERFLOW(422): 모델 컨텍스트 초과, 절·블록 분할 필요 / SAFETY_FILTER(422): 모델이 생성 거부, 지시 순화 필요 / TIMEOUT(504): 응답 지연 / NETWORK(502): 업스트림 연결 실패 / LLM_ERROR(502): LLM 오류 / GENERATION_FAILED(502): 결과 형식 실패·빈 결과 / SERVICE_UNAVAILABLE(503): 설정 누락·의존 서비스 불가 / UNKNOWN(500): 그 외'
+      enum:
+      - INVALID_REQUEST
+      - PAYLOAD_TOO_LARGE
+      - NOT_FOUND
+      - RATE_LIMIT
+      - CTX_OVERFLOW
+      - SAFETY_FILTER
+      - TIMEOUT
+      - NETWORK
+      - LLM_ERROR
+      - GENERATION_FAILED
+      - SERVICE_UNAVAILABLE
+      - UNKNOWN
+    HealthResponse:
+      type: object
+      required:
+      - app
+      - version
+      - status
+      properties:
+        app:
+          type: string
+        version:
+          type: string
+          example: 2.0.0
+        status:
+          type: string
+          enum:
+          - ok
+    T3QMeta:
+      type: object
+      required: [requestId, traceId, generatedAt]
+      properties:
+        requestId: { type: string }
+        traceId: { type: string, description: T3Q 내부 추적 ID }
+        generatedAt: { type: string, format: date-time }
+        model: { type: string, description: 참고 표시용 모델명 }
+        mock: { type: boolean }
+        elapsedMs: { type: integer }
+    T3QError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              enum: [INVALID_REQUEST, UNAUTHORIZED, INVALID_TOKEN, NO_DOCUMENT, NO_ALERT_CONTEXT, RATE_LIMITED, INTERNAL_ERROR, MODEL_UNAVAILABLE, TIMEOUT]
+            message: { type: string }
+            detail: {}
+        meta:
+          type: object
+          properties:
+            requestId: { type: string }
+            traceId: { type: string }
+
+    AuthVerifyRequest:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string, description: T3Q 링크에 붙은 1회용 토큰 }
+    T3QUser:
+      type: object
+      required: [userId, name, orgName]
+      properties:
+        userId: { type: string, description: 변하지 않는 사용자 고유값 }
+        loginId: { type: string, description: T3Q 로그인 아이디 (참고) }
+        name: { type: string }
+        orgCode: { type: string, description: "행정표준기관코드 — 부산광역시 6260000 · 경상북도 6470000" }
+        orgName: { type: string }
+        deptName: { type: string, description: "부서 (예: 시민안전실 자연재난과)" }
+        position: { type: string, description: 직위 }
+        email: { type: string }
+        roles: { type: array, items: { type: string, enum: [USER, MANAGER, ADMIN] }, description: "USER 일반 · MANAGER 기관관리 (ADMIN은 반영하지 않음)" }
+    AuthVerifyResponse:
+      type: object
+      required: [meta, user]
+      properties:
+        meta: { $ref: "#/components/schemas/T3QMeta" }
+        user: { $ref: "#/components/schemas/T3QUser" }
+        expiresAt: { type: string, format: date-time, description: T3Q 세션 만료 시각 }

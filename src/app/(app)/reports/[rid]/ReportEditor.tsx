@@ -1,0 +1,541 @@
+"use client";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import clsx from "clsx";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronRight,
+  Download,
+  FilePenLine,
+  Pencil,
+  Plus,
+  Printer,
+  Save,
+  Trash2,
+} from "lucide-react";
+import { nanoid } from "nanoid";
+import { Button, Modal } from "@/components/ui";
+import type { ReportContent, ReportSection } from "@/lib/types";
+import { saveReport, trashReport, getHwpx } from "@/app/actions/report";
+import { subtitleOf, safeFilename } from "@/lib/export/blocks";
+import { DocBlocks } from "@/components/DocView";
+import { downloadBytes, exportDocx, exportHwpx, base64ToBytes } from "@/lib/export/client";
+import { fmtTime } from "@/lib/format";
+
+const HwpEditor = dynamic(() => import("./HwpEditor").then((m) => m.HwpEditor), { ssr: false });
+
+export function ReportEditor({
+  id,
+  situationId,
+  situationTitle,
+  name,
+  initial,
+  hasHwpx: hasHwpxInit,
+  hwpxSavedAt: hwpxSavedInit,
+  editable,
+  locked,
+}: {
+  id: string;
+  situationId: string | null;
+  /** 상위 상황 이름 — 경로 「상황명 › 상황일지」 */
+  situationTitle: string | null;
+  /** 문서명 — 목록·내보낸 파일 이름 (문서 안 제목과 따로, R-12) */
+  name: string;
+  initial: ReportContent;
+  hasHwpx: boolean;
+  hwpxSavedAt: string | null;
+  editable: boolean;
+  /** 예시 문서 — 삭제 버튼 없음 */
+  locked?: boolean;
+}) {
+  const router = useRouter();
+  const [c, setC] = useState<ReportContent>(initial);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [hwp, setHwp] = useState(false);
+  const [hwpx, setHwpx] = useState({ has: hasHwpxInit, at: hwpxSavedInit });
+  const [exportOpen, setExportOpen] = useState(false);
+  const [confirm, setConfirm] = useState(false);
+  const [busy, start] = useTransition();
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** 저장 대기 중인 본문 — 화면을 떠날 때 이것을 저장한다 */
+  const pendingRef = useRef<ReportContent | null>(null);
+  const ro = !editable;
+
+  const update = (next: ReportContent) => {
+    setC(next);
+    setDirty(true);
+    pendingRef.current = next;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      pendingRef.current = null;
+      const r = await saveReport(id, next);
+      setSavedAt(r.savedAt);
+      setDirty(false);
+    }, 1000);
+  };
+  const flush = async () => {
+    if (timer.current) clearTimeout(timer.current);
+    const next = pendingRef.current;
+    if (next) {
+      pendingRef.current = null;
+      const r = await saveReport(id, next);
+      setSavedAt(r.savedAt);
+      setDirty(false);
+    }
+  };
+  // 「뒤로」 없이 떠날 때(상단 메뉴·경로 링크·탭 전환·창 닫기) 남은 수정을 저장한다 (C-04)
+  useEffect(() => {
+    const save = () => {
+      const next = pendingRef.current;
+      if (!next) return;
+      if (timer.current) clearTimeout(timer.current);
+      pendingRef.current = null;
+      void saveReport(id, next);
+    };
+    const onClick = (e: MouseEvent) => {
+      if ((e.target as Element | null)?.closest?.("a[href]")) save();
+    };
+    const onHide = () => document.visibilityState === "hidden" && save();
+    document.addEventListener("click", onClick, true);
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", save);
+    return () => {
+      document.removeEventListener("click", onClick, true);
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", save);
+      save();
+    };
+  }, [id]);
+
+  const setSection = (sid: string, patch: Partial<ReportSection>) =>
+    update({ ...c, sections: c.sections.map((s) => (s.id === sid ? { ...s, ...patch } : s)) });
+  const move = (i: number, d: -1 | 1) => {
+    const arr = [...c.sections];
+    const j = i + d;
+    if (j < 0 || j >= arr.length) return;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    update({ ...c, sections: arr });
+  };
+  const addSection = () => {
+    const s = { id: nanoid(6), title: "새 목차", body: "□ " };
+    update({ ...c, sections: [...c.sections, s] });
+    setEditing(s.id);
+  };
+
+  const filename = safeFilename(name);
+  const doExport = async (kind: "hwpx" | "docx" | "pdf") => {
+    setExportOpen(false);
+    await flush();
+    if (kind === "hwpx") {
+      const saved = hwpx.has ? await getHwpx(id) : null;
+      if (saved) downloadBytes(base64ToBytes(saved), `${filename}.hwpx`, "application/hwp+zip");
+      else await exportHwpx(c, filename);
+    } else if (kind === "docx") {
+      await exportDocx(c, filename);
+    } else {
+      window.print();
+    }
+  };
+
+  if (hwp) {
+    return (
+      <HwpEditor
+        reportId={id}
+        content={c}
+        filename={filename}
+        editable={!ro}
+        onClose={(saved) => {
+          setHwp(false);
+          if (saved) setHwpx({ has: true, at: saved });
+        }}
+      />
+    );
+  }
+
+  return (
+    <div>
+      {/* 도구 영역 */}
+      <div className="no-print border-b border-line bg-white px-6">
+        <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 pt-3">
+          {/* 상위 상황 경로: 상황명을 누르면 그 상황의 상황일지 탭 */}
+          {situationId && situationTitle && (
+            <>
+              <Link
+                href={`/s/${situationId}/report`}
+                onClick={() => void flush()}
+                className="max-w-[40ch] truncate text-[17px] text-sub hover:text-primary hover:underline"
+              >
+                {situationTitle}
+              </Link>
+              <ChevronRight size={18} className="shrink-0 text-mute" />
+            </>
+          )}
+          <span className="mr-2 text-[19px] font-bold">{name}</span>
+        </div>
+        <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-2 py-3">
+          <Button size="sm" variant="ghost" data-tour="report-hwp" onClick={async () => (await flush(), setHwp(true))}>
+            <FilePenLine size={17} /> 한글 편집
+            {hwpx.has && <span className="ml-1 whitespace-nowrap rounded bg-primary-weak px-1.5 text-[13px] text-primary">저장본</span>}
+          </Button>
+          {/* 오른쪽: 저장·인쇄·내보내기 (편집 화면이라 주 버튼 없음) */}
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[15px] text-mute">
+              {dirty ? "저장 중" : savedAt ? `${fmtTime(savedAt).split(" ")[1]} 저장됨` : ""}
+            </span>
+            {!ro && (
+              <Button size="sm" variant="ghost" onClick={() => flush()}>
+                <Save size={17} /> 저장
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => window.print()}>
+              <Printer size={17} /> 인쇄
+            </Button>
+            <div className="relative">
+              <Button size="sm" variant="ghost" data-tour="report-export" onClick={() => setExportOpen((v) => !v)}>
+                <Download size={17} /> 내보내기 <ChevronDown size={16} />
+              </Button>
+              {exportOpen && (
+                <div
+                  className="card absolute right-0 top-11 z-30 w-44 overflow-hidden border border-line-weak py-1"
+                  onMouseLeave={() => setExportOpen(false)}
+                >
+                  {(
+                    [
+                      ["hwpx", "한글 (HWPX)"],
+                      ["docx", "워드 (DOCX)"],
+                      ["pdf", "PDF"],
+                    ] as const
+                  ).map(([k, l]) => (
+                    <button key={k} onClick={() => doExport(k)} className="block w-full px-4 py-3 text-left hover:bg-canvas">
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {editable && !locked && (
+              <Button size="sm" variant="ghost" onClick={() => setConfirm(true)}>
+                <Trash2 size={17} /> 삭제
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto grid max-w-[1680px] gap-6 px-6 py-6 lg:grid-cols-[340px_1fr]">
+        {/* 목차 */}
+        <aside className="no-print card h-fit lg:sticky lg:top-4" data-tour="report-toc">
+          <div className="flex items-center justify-between border-b border-line-weak px-5 py-4">
+            <h2 className="text-[19px] font-bold">목차</h2>
+            {!ro && (
+              <Button size="sm" variant="ghost" onClick={addSection}>
+                <Plus size={17} /> 추가
+              </Button>
+            )}
+          </div>
+          <ol className="py-2">
+            {c.sections.map((s, i) => (
+              <li
+                key={s.id}
+                className={clsx(
+                  "group flex items-center gap-2 px-5 py-2.5",
+                  editing === s.id ? "bg-primary-weak" : "hover:bg-canvas",
+                )}
+              >
+                <a href={`#sec-${s.id}`} className="min-w-0 flex-1 truncate" onClick={() => !ro && setEditing(s.id)}>
+                  {i + 1}. {s.title}
+                </a>
+                {!ro && (
+                  <span className="invisible flex gap-0.5 group-hover:visible">
+                    <IconBtn onClick={() => move(i, -1)} label="위로">
+                      <ArrowUp size={16} />
+                    </IconBtn>
+                    <IconBtn onClick={() => move(i, 1)} label="아래로">
+                      <ArrowDown size={16} />
+                    </IconBtn>
+                    <IconBtn
+                      onClick={() => update({ ...c, sections: c.sections.filter((x) => x.id !== s.id) })}
+                      label="삭제"
+                    >
+                      <Trash2 size={16} />
+                    </IconBtn>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+          {hwpx.has && hwpx.at && (
+            <div className="border-t border-line-weak px-5 py-3 text-[15px] text-sub">
+              한글 편집 저장본 {fmtTime(hwpx.at)}
+            </div>
+          )}
+        </aside>
+
+        {/* 문서 */}
+        <div>
+          {hwpx.has && (
+            <p className="no-print mx-auto mb-4 max-w-[900px] rounded-md border border-line bg-canvas px-5 py-3 text-[17px]">
+              여기서 고친 내용은 한글(HWPX) 파일에 들어가지 않습니다
+            </p>
+          )}
+          <article className="print-area card mx-auto max-w-[900px] px-[72px] py-[64px] font-[serif]">
+            <DocHeader c={c} ro={ro} onChange={update} />
+            {c.sections.map((s, i) => (
+              <section key={s.id} id={`sec-${s.id}`} className="mt-8 scroll-mt-6">
+                {editing === s.id && !ro ? (
+                  <SectionEdit
+                    no={i + 1}
+                    s={s}
+                    onChange={(p) => setSection(s.id, p)}
+                    onDone={() => setEditing(null)}
+                  />
+                ) : (
+                  <div
+                    className={clsx("group relative rounded-md", !ro && "cursor-text hover:bg-primary-weak/40 hover:outline hover:outline-1 hover:outline-primary-line")}
+                    onClick={() => !ro && setEditing(s.id)}
+                  >
+                    {!ro && (
+                      <span className="no-print absolute -right-2 -top-2 hidden rounded bg-white p-1 text-primary shadow group-hover:block">
+                        <Pencil size={16} />
+                      </span>
+                    )}
+                    <SectionView no={i + 1} s={s} />
+                  </div>
+                )}
+              </section>
+            ))}
+          </article>
+        </div>
+      </div>
+
+      <Modal
+        open={confirm}
+        onClose={() => setConfirm(false)}
+        title="상황일지 삭제"
+        width={480}
+        footer={
+          <>
+            <Button onClick={() => setConfirm(false)}>취소</Button>
+            <Button
+              variant="danger"
+              disabled={busy}
+              onClick={() =>
+                start(async () => {
+                  // 지울 문서는 남은 수정을 저장하지 않는다
+                  if (timer.current) clearTimeout(timer.current);
+                  pendingRef.current = null;
+                  await trashReport(id);
+                  setConfirm(false);
+                  router.push(situationId ? `/s/${situationId}/report` : "/docs");
+                })
+              }
+            >
+              휴지통으로
+            </Button>
+          </>
+        }
+      >
+        <p className="text-[18px] leading-relaxed">휴지통에서 7일간 보관 후 삭제됩니다.</p>
+      </Modal>
+    </div>
+  );
+}
+
+function IconBtn({ onClick, label, children }: { onClick: () => void; label: string; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} aria-label={label} className="rounded p-1 text-sub hover:bg-white hover:text-ink">
+      {children}
+    </button>
+  );
+}
+
+function DocHeader({ c, ro, onChange }: { c: ReportContent; ro: boolean; onChange: (c: ReportContent) => void }) {
+  return (
+    <header className="text-center">
+      {ro ? (
+        <h1 className="text-[28px] font-bold" style={{ fontFamily: "'HY견고딕', 'Pretendard GOV', sans-serif" }}>
+          {c.title}
+        </h1>
+      ) : (
+        <input
+          className="w-full rounded border border-transparent text-center text-[28px] font-bold outline-none hover:border-line focus:border-primary"
+          style={{ fontFamily: "'HY견고딕', 'Pretendard GOV', sans-serif" }}
+          value={c.title}
+          onChange={(e) => onChange({ ...c, title: e.target.value })}
+        />
+      )}
+      <div className="mt-3 flex items-center justify-center gap-2 text-[19px]">
+        {ro ? (
+          <span>{subtitleOf(c)}</span>
+        ) : (
+          <>
+            <span>{subtitleOf({ ...c, dept: "", reporter: "" })} ·</span>
+            <input
+              className="w-40 rounded border border-transparent text-center outline-none hover:border-line focus:border-primary"
+              value={c.dept}
+              placeholder="부서"
+              onChange={(e) => onChange({ ...c, dept: e.target.value })}
+            />
+            <span>·</span>
+            <input
+              className="w-28 rounded border border-transparent text-center outline-none hover:border-line focus:border-primary"
+              value={c.reporter}
+              placeholder="보고자"
+              onChange={(e) => onChange({ ...c, reporter: e.target.value })}
+            />
+          </>
+        )}
+      </div>
+    </header>
+  );
+}
+
+function SectionView({ no, s }: { no: number; s: ReportSection }) {
+  return <DocBlocks s={s} no={no} />;
+}
+
+function SectionEdit({
+  no,
+  s,
+  onChange,
+  onDone,
+}: {
+  no: number;
+  s: ReportSection;
+  onChange: (p: Partial<ReportSection>) => void;
+  onDone: () => void;
+}) {
+  // 편집을 시작할 때의 내용 — 「취소」로 되돌린다
+  const [orig] = useState(s);
+  const insert = (sym: string) => onChange({ body: s.body.replace(/\s*$/, "") + `\n${sym} ` });
+  return (
+    <div className="no-print rounded-lg border-2 border-primary bg-white p-4 font-sans">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="text-[19px] font-bold">{no}.</span>
+        <input className="input h-11 font-bold" value={s.title} onChange={(e) => onChange({ title: e.target.value })} />
+      </div>
+      <div className="mb-2 flex gap-1.5">
+        {["□", "○", "-", "·"].map((sym) => (
+          <button
+            key={sym}
+            onClick={() => insert(sym)}
+            className="h-9 w-10 rounded border border-line text-[17px] hover:border-primary"
+            aria-label={`${sym} 추가`}
+          >
+            {sym}
+          </button>
+        ))}
+      </div>
+      <textarea
+        autoFocus
+        rows={Math.min(18, Math.max(5, s.body.split("\n").length + 1))}
+        className="input font-[serif] leading-[1.8]"
+        value={s.body}
+        onChange={(e) => onChange({ body: e.target.value })}
+      />
+      {s.table && (
+        <TableEdit table={s.table} onChange={(t) => onChange({ table: t })} />
+      )}
+      <div className="mt-3 flex justify-between">
+        {!s.table ? (
+          <Button size="sm" variant="ghost" onClick={() => onChange({ table: { head: ["구분", "내용"], rows: [["", ""]] } })}>
+            <Plus size={16} /> 표 추가
+          </Button>
+        ) : (
+          <Button size="sm" variant="ghost" onClick={() => onChange({ table: undefined })}>
+            <Trash2 size={16} /> 표 삭제
+          </Button>
+        )}
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => {
+              onChange({ title: orig.title, body: orig.body, table: orig.table });
+              onDone();
+            }}
+          >
+            취소
+          </Button>
+          <Button size="sm" variant="primary" onClick={onDone}>
+            완료
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TableEdit({
+  table,
+  onChange,
+}: {
+  table: NonNullable<ReportSection["table"]>;
+  onChange: (t: NonNullable<ReportSection["table"]>) => void;
+}) {
+  const cell = "w-full border-0 bg-transparent px-2 py-1.5 outline-none focus:bg-primary-weak";
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table className="w-full border-collapse text-[15px]">
+        <thead>
+          <tr>
+            {table.head.map((h, j) => (
+              <th key={j} className="border border-line bg-[#dfe6f7] p-0">
+                <input
+                  className={clsx(cell, "text-center font-bold")}
+                  value={h}
+                  onChange={(e) => onChange({ ...table, head: table.head.map((x, k) => (k === j ? e.target.value : x)) })}
+                />
+              </th>
+            ))}
+            <th className="w-10" />
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((r, i) => (
+            <tr key={i}>
+              {table.head.map((_, j) => (
+                <td key={j} className="border border-line p-0">
+                  <input
+                    className={cell}
+                    value={r[j] ?? ""}
+                    onChange={(e) =>
+                      onChange({
+                        ...table,
+                        rows: table.rows.map((row, k) =>
+                          k === i ? table.head.map((__, m) => (m === j ? e.target.value : (row[m] ?? ""))) : row,
+                        ),
+                      })
+                    }
+                  />
+                </td>
+              ))}
+              <td className="text-center">
+                <button
+                  className="p-1 text-mute hover:text-danger"
+                  aria-label="행 삭제"
+                  onClick={() => onChange({ ...table, rows: table.rows.filter((_, k) => k !== i) })}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <Button
+        size="sm"
+        variant="ghost"
+        className="mt-1"
+        onClick={() => onChange({ ...table, rows: [...table.rows, table.head.map(() => "")] })}
+      >
+        <Plus size={16} /> 행 추가
+      </Button>
+    </div>
+  );
+}

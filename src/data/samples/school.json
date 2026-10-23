@@ -1,0 +1,898 @@
+{
+  "key": "school",
+  "hazard": "학교시설",
+  "manual": {
+    "docTitle": "「학교시설 재난 및 사고」 현장조치 행동매뉴얼 (2022. 6.)",
+    "scope": "SIDO",
+    "region": "전라남도교육청",
+    "version": "2022.6."
+  },
+  "scenario": {
+    "titleCore": "태풍 영향 목포 관내 학교시설 피해 대응",
+    "sido": "전라남도",
+    "areas": [
+      "목포시"
+    ],
+    "alertLevel": "심각",
+    "step": "비상대응",
+    "dept": "안전복지과",
+    "currentStatus": "태풍이 전남 서해안을 통과하면서 목포 관내 초·중학교 4곳에서 체육관 지붕 파손과 운동장 침수 피해가 접수되었다. 인명피해는 없으나 일부 학교의 다음 날 등교 여부 결정이 필요하다.",
+    "weather": {
+      "active": [
+        {
+          "name": "태풍경보",
+          "areas": "전라남도 목포시 등 서해안",
+          "kind": "warning"
+        }
+      ],
+      "preliminary": [],
+      "infoLines": []
+    }
+  },
+  "missions": [
+    {
+      "missionCode": "3",
+      "missionName": "상황접수"
+    },
+    {
+      "missionCode": "4",
+      "missionName": "상황전파 및 보고"
+    },
+    {
+      "missionCode": "5",
+      "missionName": "상황판단회의"
+    },
+    {
+      "missionCode": "6",
+      "missionName": "상황관리전담반"
+    },
+    {
+      "missionCode": "7",
+      "missionName": "언론 대응"
+    },
+    {
+      "missionCode": "8",
+      "missionName": "지역사고수습본부 운영"
+    }
+  ],
+  "actions": [
+    {
+      "actionCode": "3-1",
+      "actionName": "상황접수",
+      "missionCode": "3",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "기상특보·신고·교육지원청 일일상황보고를 접수하고 재난 개요와 피해현황을 정리한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "시설과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "유초등/중등교육과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "기상청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "전남도청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "기상청 등 유관기관 특보 및 신고 접수"
+        },
+        {
+          "seq": 2,
+          "title": "교육지원청 일일상황보고 접수(안전메일·안전복지과·야간 당직실)"
+        },
+        {
+          "seq": 3,
+          "title": "당직실은 접수 즉시 안전복지과 담당자에게 통보"
+        },
+        {
+          "seq": 4,
+          "title": "재난개요·피해상황·학사일정 조정 현황·피해사진을 보고양식으로 접수"
+        },
+        {
+          "seq": 5,
+          "title": "인명피해·시설피해·학사일정 조정 현황 정리"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 61
+    },
+    {
+      "actionCode": "4-1",
+      "actionName": "상황전파",
+      "missionCode": "4",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 필요 시 현장대응팀 파견",
+        "※ 단, 긴급사항의 경우 선 구두보고 및 관련기관 전파"
+      ],
+      "summary": "교육부·관련부서·교육지원청·각급학교에 상황과 긴급대응조치 지시를 전파한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "시설과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "전남도청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "전파시간: β시간 + 최단시간(즉시)"
+        },
+        {
+          "seq": 2,
+          "title": "관련부서 전파: 학사운영·시설안전·심리지원·언론대응 부서"
+        },
+        {
+          "seq": 3,
+          "title": "교육부, 교육지원청, 각급기관(학교)에 전파"
+        },
+        {
+          "seq": 4,
+          "title": "긴급대응조치 공문 발송: 전기·가스 차단 등 2차 피해 방지, 필요시 긴급대피"
+        },
+        {
+          "seq": 5,
+          "title": "일일상황보고 요청(9시, 17시 기준 1일 2회)"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "교육지원청·각급학교",
+          "targetType": "ORG",
+          "channelHint": "SMS",
+          "messageTemplate": "발생일자 및 시간 / 발생장소 및 원인 / 피해발생 현황(인명·시설·학사일정 조정) / 현장조치 사항 / 추가피해 발생 가능성 / 긴급대응조치 지시(전기·가스 차단, 행동요령 교육, 필요시 긴급대피, 일일상황보고 9시·17시)"
+        },
+        {
+          "target": "교육부",
+          "targetType": "ORG",
+          "channelHint": "PHONE"
+        }
+      ],
+      "resources": [],
+      "page": 63
+    },
+    {
+      "actionCode": "4-2",
+      "actionName": "상황보고",
+      "missionCode": "4",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "교육감·부교육감·국장과 교육부·행정안전부에 피해현황과 도교육청 조치사항을 즉시 보고한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "재정과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "시설과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "유초등/중등교육과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "전남도청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "보고시간: β시간 + 최단시간(즉시)"
+        },
+        {
+          "seq": 2,
+          "title": "보고대상: 교육감·부교육감, 국장, 교육부·행정안전부"
+        },
+        {
+          "seq": 3,
+          "title": "보고내용: 발생일시·장소·원인, 피해현황, 현장조치, 추가피해 가능성, 도교육청 조치사항"
+        },
+        {
+          "seq": 4,
+          "title": "보고방법: 선(先) 유·무선, 후(後) 문서(전자문서, 메일 등)"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "교육부 학교안전총괄과",
+          "targetType": "ORG",
+          "channelHint": "PHONE"
+        }
+      ],
+      "resources": [],
+      "page": 64
+    },
+    {
+      "actionCode": "5-1",
+      "actionName": "상황판단회의 준비 및 개최",
+      "missionCode": "5",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "condition": "필요시",
+      "notes": [
+        "※ 상황판단회의는 재난상황에 따라 탄력적으로 개최·운영",
+        "※ 상황판단회의는 재난상황에 따라 별도 문서자료 없이 구두로도 진행 가능"
+      ],
+      "summary": "재난 상황을 분석하고 지역사고수습본부 운영 여부와 학생 안전조치를 결정한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "시설과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "기상청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "단계별 회의 주재: 1단계 안전복지과장, 2단계 정책국장, 3단계 교육감·부교육감"
+        },
+        {
+          "seq": 2,
+          "title": "재난발생 개요·피해 및 학사일정 조정 현황 발표"
+        },
+        {
+          "seq": 3,
+          "title": "피해 확산 범위·2차 피해 가능성 분석·토론"
+        },
+        {
+          "seq": 4,
+          "title": "지역사고수습본부 운영 여부, 휴업·등하교시간 조정 등 결정"
+        },
+        {
+          "seq": 5,
+          "title": "회의결과 조치사항을 교육지원청 및 관련기관에 전파"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 65
+    },
+    {
+      "actionCode": "6-1",
+      "actionName": "상황관리전담반 구성 및 운영",
+      "missionCode": "6",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 위기경보 단계 상 \"경계\"단계 대응에 해당함",
+        "※ 재난진행 상황에 따라 안전책임관(상황실장)이 근무자(부서) 변경·추가 편성 지시"
+      ],
+      "summary": "상황총괄반·사고처리반·홍보지원반·당직실로 상황관리전담반을 꾸려 운영한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "시설과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "기상청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "총괄담당관(재난분야 담당국장) 아래 실무반 편성"
+        },
+        {
+          "seq": 2,
+          "title": "상황총괄반: 피해·대처상황 파악·전파, 상황보고서 작성, 초기 상황판단회의 개최"
+        },
+        {
+          "seq": 3,
+          "title": "사고처리반: 학교 피해현황 파악, 피해시설 긴급 안전점검, 응급복구 관리"
+        },
+        {
+          "seq": 4,
+          "title": "홍보지원반: 언론 대응 창구 일원화, 당직실: 피해상황 접수·전파 지원"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 67
+    },
+    {
+      "actionCode": "7-1",
+      "actionName": "보도자료 작성 및 배포",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "사고상황·대응상황·당부사항을 담은 보도자료를 언론 마감 전에 배포한다.",
+      "organizations": [
+        {
+          "name": "홍보담당관",
+          "role": "LEAD"
+        },
+        {
+          "name": "안전복지과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "기상청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "배포일시, 담당자를 명확히 기입"
+        },
+        {
+          "seq": 2,
+          "title": "사고상황 요약, 대응상황·수습복구 계획, 당부사항 작성"
+        },
+        {
+          "seq": 3,
+          "title": "언론 마감시간(조간 오후5시, 석간 오전10시) 이전 배포"
+        },
+        {
+          "seq": 4,
+          "title": "필요시 주기적으로 배포하되 보도시점 명확히"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "언론사",
+          "targetType": "PUBLIC",
+          "channelHint": "EMAIL"
+        }
+      ],
+      "resources": [],
+      "page": 68
+    },
+    {
+      "actionCode": "8-1",
+      "actionName": "지역사고수습본부 편성",
+      "missionCode": "8",
+      "phaseLabel": "3단계 비상대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 재난진행 상황에 따라 안전책임관이 근무자 변경·추가 편성 등 재난대응기구를 탄력적으로 운영할 수 있음"
+      ],
+      "summary": "교육감을 본부장으로 상황총괄·사고처리·복구지원·홍보행정지원반을 편성한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "지수본 구성 부서",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "도청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "본부장 교육감, 부본부장 부교육감, 상황실장 재난분야 담당국장"
+        },
+        {
+          "seq": 2,
+          "title": "상황총괄반(안전복지과): 종합상황관리·재난상황 분석·전파"
+        },
+        {
+          "seq": 3,
+          "title": "사고처리반(유초등/중등교육과 등): 피해현황 파악, 긴급학사운영 지원"
+        },
+        {
+          "seq": 4,
+          "title": "복구지원반(시설과 등): 의료서비스·시설응급복구 지원"
+        },
+        {
+          "seq": 5,
+          "title": "홍보·행정지원반(홍보담당관·총무과): 언론대응, 비상근무 인력·물자 지원"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 70
+    },
+    {
+      "actionCode": "8-2",
+      "actionName": "상황실 운영",
+      "missionCode": "8",
+      "phaseLabel": "3단계 비상대응",
+      "category": "RESPONSE",
+      "summary": "도교육청 상황실을 주·야간 운영하며 내·외 상황관리체계를 유지한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "총무과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "전남도청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "장소: 도교육청 5층 중회의실(변동 가능)"
+        },
+        {
+          "seq": 2,
+          "title": "4개 반 11~13명 근무"
+        },
+        {
+          "seq": 3,
+          "title": "교육부 등 중앙부처와 협조체계 유지, 일일 상황보고서 종합·작성"
+        },
+        {
+          "seq": 4,
+          "title": "주·야간 상황실 운영, 필요시 교육부·교육지원청 영상회의"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "시설",
+          "name": "상황실(도교육청 5층 중회의실)"
+        }
+      ],
+      "page": 73
+    },
+    {
+      "actionCode": "8-3",
+      "actionName": "상황총괄",
+      "missionCode": "8",
+      "phaseLabel": "3단계 비상대응",
+      "category": "RESPONSE",
+      "summary": "재난 정보를 수집·분석·전파하고 일일상황보고서를 작성하며 유관기관과 협업한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "재정과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "시설과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "전남도청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "재난상황 접수·전파, 상황판단회의 준비 및 개최"
+        },
+        {
+          "seq": 2,
+          "title": "중앙사고수습본부(교육부) 지시사항·지휘부 특별지시사항 처리"
+        },
+        {
+          "seq": 3,
+          "title": "일일상황보고서 9시·17시 기준 1일 2회 정기보고"
+        },
+        {
+          "seq": 4,
+          "title": "필요시 지자체 지역대책본부 회의 참석"
+        },
+        {
+          "seq": 5,
+          "title": "고립지역(학교) 교통로 확보 등 재난관리자원 집중투입 요청(지대본 등)"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 74
+    },
+    {
+      "actionCode": "8-4",
+      "actionName": "사고처리",
+      "missionCode": "8",
+      "phaseLabel": "3단계 비상대응",
+      "category": "RESPONSE",
+      "summary": "지역·학교급별 피해와 학사일정 조정 현황을 파악하고 휴업 등 안전한 학사운영을 지원한다.",
+      "organizations": [
+        {
+          "name": "안전복지과",
+          "role": "LEAD"
+        },
+        {
+          "name": "유초등/중등교육과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "재정과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "시설과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "전남도청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "지역별·학교급별 인명·시설 피해 및 학사일정 조정 현황 파악"
+        },
+        {
+          "seq": 2,
+          "title": "휴업 또는 학사운영 조정 결정(휴업명령: 교육감)"
+        },
+        {
+          "seq": 3,
+          "title": "휴업명령은 지자체와 협조해 긴급재난문자(CBS)로 도내 학교 전파"
+        },
+        {
+          "seq": 4,
+          "title": "이재민 구호소 지정 시설 및 재난대응자원 집결지(운동장 등) 지원"
+        },
+        {
+          "seq": 5,
+          "title": "(필요시) 현장대응팀 편성·운용"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "도내 학교",
+          "targetType": "ORG",
+          "channelHint": "BROADCAST"
+        }
+      ],
+      "resources": [],
+      "page": 75
+    },
+    {
+      "actionCode": "8-5",
+      "actionName": "복구 및 수습 지원",
+      "missionCode": "8",
+      "phaseLabel": "3단계 비상대응",
+      "category": "DAMAGE",
+      "summary": "심리·의료 지원과 피해시설 응급복구를 지원하고 피해 학교구성원 지원대책을 마련한다.",
+      "organizations": [
+        {
+          "name": "시설과",
+          "role": "LEAD"
+        },
+        {
+          "name": "재정과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "민주시민생활교육과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "예산과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "지자체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "사상자 구호·구급상황 모니터링 및 유관부처 협조요청"
+        },
+        {
+          "seq": 2,
+          "title": "Wee클래스 등을 활용한 학교구성원 심리상담 지원"
+        },
+        {
+          "seq": 3,
+          "title": "피해상황 조사 및 피해금액 산정, 학습·급식용 임시수용시설 설치 지원"
+        },
+        {
+          "seq": 4,
+          "title": "피해시설 긴급 복구지원 계획안 마련"
+        },
+        {
+          "seq": 5,
+          "title": "(필요 시) 피해학생 학업물품·본인부담금 지원 검토"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 77
+    },
+    {
+      "actionCode": "8-6",
+      "actionName": "언론 모니터링 및 대응",
+      "missionCode": "8",
+      "phaseLabel": "3단계 비상대응",
+      "category": "RESPONSE",
+      "summary": "여론·방송을 모니터링해 잘못된 정보에 즉각 대응하고 국민행동요령을 홍보한다.",
+      "organizations": [
+        {
+          "name": "홍보담당관",
+          "role": "LEAD"
+        },
+        {
+          "name": "안전복지과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "교육부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "전남도청",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "각종 여론정보 수집 및 방송 모니터링"
+        },
+        {
+          "seq": 2,
+          "title": "유언비어 등 잘못된 정보 수집 시 즉각 대응"
+        },
+        {
+          "seq": 3,
+          "title": "국민행동요령 홍보 및 전파"
+        },
+        {
+          "seq": 4,
+          "title": "보도자료 배포(조간 전날 오후3시, 석간 오전10시 이전)"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "국민",
+          "targetType": "PUBLIC",
+          "channelHint": "BROADCAST"
+        }
+      ],
+      "resources": [],
+      "page": 78
+    },
+    {
+      "actionCode": "8-7",
+      "actionName": "행정지원 등",
+      "missionCode": "8",
+      "phaseLabel": "3단계 비상대응",
+      "category": "RESPONSE",
+      "summary": "비상근무 소집, 상황실 장비·후생 관리, 관계기관 파견근무를 지원한다.",
+      "organizations": [
+        {
+          "name": "총무과",
+          "role": "LEAD"
+        },
+        {
+          "name": "예산과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "행정안전부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "교육지원청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "지방자치단체",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "비상근무 소집"
+        },
+        {
+          "seq": 2,
+          "title": "상황실 장비 및 비상근무자 후생관리"
+        },
+        {
+          "seq": 3,
+          "title": "지역재난안전대책본부(전남도청) 연락관·현장대응팀 파견근무 요청 및 관리"
+        },
+        {
+          "seq": 4,
+          "title": "교육부·유관기관 (영상)회의 준비"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 79
+    }
+  ],
+  "execution": {
+    "doneCodes": [
+      "3-1",
+      "4-1",
+      "4-2",
+      "5-1",
+      "6-1",
+      "8-1"
+    ],
+    "doingCode": "8-4",
+    "results": {
+      "3-1": "06:30 목포교육지원청 상황보고 접수, 학교 4곳 시설피해(지붕 파손 2, 침수 2) 정리.",
+      "4-1": "07:00 교육지원청·각급학교에 2차 피해 방지와 9시 상황보고 요청 공문 발송.",
+      "4-2": "07:20 교육감·부교육감·정책국장 유선 보고, 교육부 학교안전총괄과 1보 보고.",
+      "5-1": "08:00 정책국장 주재 상황판단회의, 지역사고수습본부 운영과 피해학교 휴업 검토 결정.",
+      "6-1": "07:30 상황관리전담반 구성(상황총괄반 4명, 사고처리반 4명, 홍보지원반 2명).",
+      "8-1": "08:30 지역사고수습본부 편성 완료, 5층 중회의실에 상황실 설치."
+    },
+    "propagateCode": "4-1",
+    "propagateMessage": "[전남교육청 안전복지과] 태풍경보 발효 중. 각급학교는 전기·가스 차단 등 2차 피해 방지 조치를 하고, 학생·교직원 긴급대피가 필요하면 즉시 시행 바랍니다. 피해현황과 학사일정 조정 현황을 오늘 9시까지 교육지원청을 거쳐 보고해 주십시오.",
+    "fieldNotes": [
+      "목포교육지원청: ○○초 체육관 지붕 패널 일부 이탈, 출입통제선 설치 완료.",
+      "○○중: 운동장 침수로 내일 원격수업 전환 요청, 교육지원청 검토 중.",
+      "시설과: 피해학교 4곳 긴급 안전점검반 10시 출발 예정."
+    ]
+  }
+}

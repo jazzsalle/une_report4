@@ -1,0 +1,724 @@
+{
+  "key": "livestock",
+  "hazard": "가축질병",
+  "manual": {
+    "docTitle": "울주군 가축질병 재난 현장조치 행동매뉴얼 (2020.11.)",
+    "scope": "SIGUNGU",
+    "region": "울산광역시 울주군",
+    "version": "2020.11."
+  },
+  "scenario": {
+    "titleCore": "울주군 고병원성 조류인플루엔자 의심축 신고 대응",
+    "sido": "울산광역시",
+    "areas": [
+      "울주군"
+    ],
+    "alertLevel": "심각",
+    "step": "초기대응",
+    "dept": "축수산과",
+    "currentStatus": "겨울철새 도래기에 오늘 07:40 두서면 산란계 농장에서 닭 120여 마리가 폐사했다는 의심축 신고가 접수되었다. 동물위생시험소 간이검사 결과 H5형 양성이 확인되어 정밀검사를 의뢰했고, 농장 출입 통제와 초동방역을 진행 중이다.",
+    "weather": {
+      "active": [],
+      "preliminary": [],
+      "infoLines": []
+    }
+  },
+  "missions": [
+    {
+      "missionCode": "4",
+      "missionName": "상황접수 및 파악"
+    },
+    {
+      "missionCode": "5",
+      "missionName": "상황전파 및 보고"
+    },
+    {
+      "missionCode": "6",
+      "missionName": "현장출동 및 초기대응 조치"
+    },
+    {
+      "missionCode": "7",
+      "missionName": "재난안전상황실(지대본 상황실) 가동"
+    },
+    {
+      "missionCode": "46",
+      "missionName": "재난방송"
+    },
+    {
+      "missionCode": "47",
+      "missionName": "언론대응"
+    }
+  ],
+  "actions": [
+    {
+      "actionCode": "4-1",
+      "actionName": "상황접수",
+      "missionCode": "4",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "⇨ 당직실 및 읍․면사무소에서는 징후 접수 즉시 축수산과 담당자에게 접수내용 통보"
+      ],
+      "summary": "축수산과·읍면사무소·당직실로 들어온 의심축 신고를 접수하고 신고 내용을 확인한다.",
+      "organizations": [
+        {
+          "name": "상황실",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "축수산과·12개 읍면사무소·당직실 경로로 의심축 신고 접수"
+        },
+        {
+          "seq": 2,
+          "title": "당직실·읍면사무소는 접수 즉시 축수산과 질병별 담당자(AI·구제역·ASF)에게 통보"
+        },
+        {
+          "seq": 3,
+          "title": "신고 접수장소·시간, 신고자 및 발생농가 인적사항 확인"
+        },
+        {
+          "seq": 4,
+          "title": "축종·사육두수·발생두수·폐사두수, 증상 및 병력, 응급 방역조치 내용 확인(의사환축신고서)"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 21
+    },
+    {
+      "actionCode": "5-1",
+      "actionName": "상황보고",
+      "missionCode": "5",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "군 지휘부와 울산시청 상황실·농축산과에 즉시 보고한다.",
+      "organizations": [
+        {
+          "name": "상황실",
+          "role": "LEAD"
+        },
+        {
+          "name": "울산시청",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "7765부대",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "보고시간: 즉시"
+        },
+        {
+          "seq": 2,
+          "title": "내부 보고: 군수, 부군수, 경제산업국장, 안전건설국장, 축수산과장, 안전총괄과장"
+        },
+        {
+          "seq": 3,
+          "title": "상급기관 보고: 울산시청 상황실, 농축산과"
+        },
+        {
+          "seq": 4,
+          "title": "보고내용: 발생일시·장소·원인, 피해발생 현황, 현장조치 사항"
+        },
+        {
+          "seq": 5,
+          "title": "보고방법: 先 유·무선, 後 문서(전자문서, NDMS 등)"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "군 지휘부(군수·부군수·경제산업국장)",
+          "targetType": "ROLE",
+          "channelHint": "PHONE",
+          "method": "先 유·무선, 後 문서",
+          "messageTemplate": "[울주군 상황실] 가축질병 의심축 발생 일시·장소, 피해발생 현황, 현장조치 사항을 보고드립니다."
+        },
+        {
+          "target": "울산시청 상황실·농축산과",
+          "targetType": "ORG",
+          "channelHint": "PHONE",
+          "method": "先 유·무선, 後 문서(전자문서, NDMS 등)",
+          "messageTemplate": "[울주군] 가축질병 의심축 발생 일시·장소·원인, 피해발생 현황, 현장조치 사항을 보고합니다."
+        }
+      ],
+      "resources": [],
+      "page": 21
+    },
+    {
+      "actionCode": "5-2",
+      "actionName": "상황전파",
+      "missionCode": "5",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 단, 긴급사항의 경우 선 구두보고 및 관련기관 전파",
+        "※긴급할 경우 재난안전상황실(OOO-OOOO) 유선요청(사후 공문발송)"
+      ],
+      "summary": "소관부서·읍면과 유관기관에 발생상황을 전파하고, 필요하면 긴급재난문자로 군민에게 알린다.",
+      "organizations": [
+        {
+          "name": "상황실",
+          "role": "LEAD"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "육군 제7765부대",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "전파시간: 1시간 내"
+        },
+        {
+          "seq": 2,
+          "title": "상황실 → 보건소·안전총괄과·12개 읍면장 전파"
+        },
+        {
+          "seq": 3,
+          "title": "유관기관(7765부대·경찰서·울산축협·소방서·가축위생방역지원본부·축산단체) 전파"
+        },
+        {
+          "seq": 4,
+          "title": "송출기준 해당 시 긴급재난문자로 군민 상황안내(재난안전상황실 요청)"
+        },
+        {
+          "seq": 5,
+          "title": "전파내용: 발생일시·장소·원인, 피해발생 현황, 현장조치 사항"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "보건소·안전총괄과·12개 읍면장",
+          "targetType": "ORG",
+          "channelHint": "PHONE",
+          "method": "유·무선",
+          "messageTemplate": "[울주군 상황실] 가축질병 의심축 발생 일시·장소, 피해발생 현황, 현장조치 사항을 전파합니다."
+        },
+        {
+          "target": "유관기관(7765부대·울주경찰서·울산축협·가축위생방역지원본부·축산단체)",
+          "targetType": "ORG",
+          "channelHint": "SMS",
+          "method": "유·무선",
+          "messageTemplate": "[울주군 상황실] 관내 가축질병 의심축 발생, 발생장소·현장조치 사항을 공유하니 기관별 방역 대응에 협조 바랍니다."
+        },
+        {
+          "target": "울주군민",
+          "targetType": "PUBLIC",
+          "channelHint": "SMS",
+          "method": "긴급재난문자(CBS)",
+          "messageTemplate": "(울주군 재난안전대책본부) 금일 00:00, ○○군(읍‧면)에서 AI(구제역)가 발생하였습니다. 전파, 확산 방지를 위해 사람이 많이 모이는 행사, 모임, 집회 등 참가를 자제하여 주시기 바랍니다.(문의전화 OOO-OOOO)"
+        }
+      ],
+      "resources": [],
+      "page": 21
+    },
+    {
+      "actionCode": "6-1",
+      "actionName": "현장출동 지시 및 요청",
+      "missionCode": "6",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "초기대응반(초동방역팀)을 발생농장에 출동시키고 유관기관 현장출동을 요청한다.",
+      "organizations": [
+        {
+          "name": "축수산과",
+          "role": "LEAD"
+        },
+        {
+          "name": "안전총괄과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "가축위생방역지원본부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "초기대응반(읍·면장, 축수산과 직원, 가축위생방역지원본부 등) 구성 및 현장출동 지시"
+        },
+        {
+          "seq": 2,
+          "title": "초기대응반 임무: 사고원인·피해상황 파악, 장비·인력 동원, 동물위생시험소 협조 요청사항 보고"
+        },
+        {
+          "seq": 3,
+          "title": "초기대응반 현장상황 보고 지시(상황실·축수산과·안전총괄과)"
+        },
+        {
+          "seq": 4,
+          "title": "소방서·경찰서·한전·전기안전공사·가스안전공사 등 현장출동 요청"
+        },
+        {
+          "seq": 5,
+          "title": "필요시 단체장·부단체장, 주관부서장 현장이동"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "초기대응반(초동방역팀)"
+        }
+      ],
+      "page": 23
+    },
+    {
+      "actionCode": "6-2",
+      "actionName": "긴급 현장지원 요청",
+      "missionCode": "6",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "동물위생시험소 정밀진단, 방역지원본부 농장통제, 경찰 현장통제 등 긴급 지원을 요청한다.",
+      "organizations": [
+        {
+          "name": "축수산과",
+          "role": "LEAD"
+        },
+        {
+          "name": "안전총괄과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "동물위생시험소",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "KT언양지점",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "가축위생방역지원본부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "동물위생시험소에 정밀진단 요청: 가축방역관 즉시 파견, 발생상황 파악 및 초기 진단"
+        },
+        {
+          "seq": 2,
+          "title": "가축위생방역지원본부에 초동방역팀 출동 및 농장통제 요청"
+        },
+        {
+          "seq": 3,
+          "title": "울주경찰서에 주민대피·현장통제(police line, 비상로 확보) 지원 요청"
+        },
+        {
+          "seq": 4,
+          "title": "가스·전기 차단 등 2차 피해 방지, 현장응급의료소 설치(울주보건소) 요청"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "가축방역관"
+        },
+        {
+          "category": "인력",
+          "name": "초동방역팀"
+        }
+      ],
+      "page": 24
+    },
+    {
+      "actionCode": "6-3",
+      "actionName": "현장 대처 상황 파악",
+      "missionCode": "6",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "가축방역관 임상검사로 의사환축 여부를 판단하고 역학조사·농장소독 등 초기대응을 한다.",
+      "organizations": [
+        {
+          "name": "축수산과",
+          "role": "LEAD"
+        },
+        {
+          "name": "안전총괄과",
+          "role": "SUPPORT"
+        },
+        {
+          "name": "가축위생방역지원본부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "동물위생시험소",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "가축방역관 임상검사 및 의사환축 여부 판단"
+        },
+        {
+          "seq": 2,
+          "title": "정밀검사용 시료채취"
+        },
+        {
+          "seq": 3,
+          "title": "농장현황 파악, 역학조사, 농장소독 등 초기대응"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 25
+    },
+    {
+      "actionCode": "7-1",
+      "actionName": "현장피해 및 대처상황 파악",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "확산 여부와 초동방역 현황을 점검하고 긴급방역비 확보와 살처분·매몰을 준비한다.",
+      "organizations": [
+        {
+          "name": "상황실",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "예찰반을 이용한 발생농가 인근지역 예찰로 추가피해(확산여부) 파악"
+        },
+        {
+          "seq": 2,
+          "title": "일시 이동중지(Standstill) 시행 준비: 농가·축산시설·축산차량 종사자 연락처 파악"
+        },
+        {
+          "seq": 3,
+          "title": "초동방역 조치 및 정밀검사 시료 검사 현황 파악"
+        },
+        {
+          "seq": 4,
+          "title": "긴급방역비 확보(살처분·매몰, 이동통제초소·거점소독장소, 방역대책본부 운영)"
+        },
+        {
+          "seq": 5,
+          "title": "살처분·매몰 준비: 소규모는 전문업체 동원 여부, 대규모는 실과소 동원명령"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "예찰반"
+        },
+        {
+          "category": "인력",
+          "name": "살처분 전문업체"
+        }
+      ],
+      "page": 25
+    },
+    {
+      "actionCode": "7-4",
+      "actionName": "필요자원 파악 및 지원요청",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "장비 현황을 파악하고 살처분 인력 교육과 거점소독시설·이동통제초소 운영인력 지원을 요청한다.",
+      "organizations": [
+        {
+          "name": "상황실",
+          "role": "LEAD"
+        },
+        {
+          "name": "울산울주경찰서",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "중부/온산소방서",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "육군제7765부대",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "응급대응 중장비·기타장비 보유현황 파악"
+        },
+        {
+          "seq": 2,
+          "title": "보유자원 소진·부족 시 인근 시군구 및 중앙기관에 응원 요청"
+        },
+        {
+          "seq": 3,
+          "title": "살처분 현장 예비인력 전체 백신접종 및 살처분 인력 교육(1시간, 군청 회의실)"
+        },
+        {
+          "seq": 4,
+          "title": "7765부대·경찰서에 살처분 인력·통제초소 운영인력, 소방서에 소독초소 급수 지원 요청"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "인력",
+          "name": "통제초소 운영인력(1명/초소/일 3교대)"
+        },
+        {
+          "category": "인력",
+          "name": "살처분 인력"
+        },
+        {
+          "category": "장비",
+          "name": "소독초소 급수 지원"
+        }
+      ],
+      "page": 26
+    },
+    {
+      "actionCode": "7-5",
+      "actionName": "상황판단회의 개최",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "notes": [
+        "※ 상황에 따라 건설교통국장이 상황판단회의 및 대책회의 주재"
+      ],
+      "summary": "상황판단회의에서 비상기구 운영 여부, 긴급조치, 지원요청 사항을 결정하고 후속조치를 전파한다.",
+      "organizations": [
+        {
+          "name": "상황실",
+          "role": "LEAD"
+        },
+        {
+          "name": "동물위생시험소",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "방역본부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "군부대",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "회의주재: 수습주관부서 실·국장"
+        },
+        {
+          "seq": 2,
+          "title": "비상기구(통지본·지대본) 운영 여부 결정, (필요시) 위기경보단계 결정"
+        },
+        {
+          "seq": 3,
+          "title": "현장연락관 임명, 2차 피해확산 방지 긴급조치 결정"
+        },
+        {
+          "seq": 4,
+          "title": "유관기관·상급기관 지원요청 사항 검토"
+        },
+        {
+          "seq": 5,
+          "title": "회의결과 조치·지시사항을 관련 실과 및 해당기관에 전파"
+        }
+      ],
+      "propagation": [],
+      "resources": [],
+      "page": 26
+    },
+    {
+      "actionCode": "7-6",
+      "actionName": "관계기관 대책 회의 준비 및 개최",
+      "missionCode": "7",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "condition": "필요시",
+      "notes": [
+        "※ 상황에 따라 부군수가 대책회의 주재"
+      ],
+      "summary": "필요시 군수 주재 관계기관 대책회의에서 방역대 설정, 통제초소 설치, 살처분 준비를 협의한다.",
+      "organizations": [
+        {
+          "name": "상황실",
+          "role": "LEAD"
+        },
+        {
+          "name": "동물위생시험소",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "방역본부",
+          "role": "COOPERATE"
+        },
+        {
+          "name": "울주경찰서",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "회의주재: 군수(상황에 따라 부군수)"
+        },
+        {
+          "seq": 2,
+          "title": "방역대 설정 및 긴급초동방역 협의·결정"
+        },
+        {
+          "seq": 3,
+          "title": "방역통제초소 설치위치·개소수·필요인력 협의"
+        },
+        {
+          "seq": 4,
+          "title": "살처분 인력·장비·물품 점검, 가축질병방역대책본부 반별 임무 부여"
+        }
+      ],
+      "propagation": [],
+      "resources": [
+        {
+          "category": "시설",
+          "name": "방역통제초소"
+        }
+      ],
+      "page": 27
+    },
+    {
+      "actionCode": "46-3",
+      "actionName": "국민행동요령 및 주의사항등 홍보",
+      "missionCode": "46",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "방송보도·신문광고·SNS로 차단방역 수칙과 행동요령을 홍보한다.",
+      "organizations": [
+        {
+          "name": "총무과",
+          "role": "LEAD"
+        },
+        {
+          "name": "지역언론사 등",
+          "role": "COOPERATE"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "홍보방법: 방송보도, 신문광고, SNS (행동요령·차단방역 수칙 요약)"
+        },
+        {
+          "seq": 2,
+          "title": "홍보내용: 축사 내·외부 및 기구 소독, 해외여행 시 주의사항"
+        },
+        {
+          "seq": 3,
+          "title": "외국인 근로자 관리 방안, 구제역 예방접종 요령 홍보"
+        },
+        {
+          "seq": 4,
+          "title": "지역 언론사(UBC, 울산MBC, KBS울산방송국) 협조"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "지역 언론사(UBC·울산MBC·KBS울산방송국)",
+          "targetType": "ORG",
+          "channelHint": "BROADCAST",
+          "method": "방송보도, 신문광고, SNS",
+          "messageTemplate": "축사 내·외부 및 기구 소독, 해외여행 시 주의사항, 외국인 근로자 관리, 구제역 예방접종 요령 등 차단방역 수칙 홍보"
+        }
+      ],
+      "resources": [],
+      "page": 28
+    },
+    {
+      "actionCode": "47-2",
+      "actionName": "보도자료 작성 및 배포",
+      "missionCode": "47",
+      "phaseLabel": "2단계 초기대응",
+      "category": "RESPONSE",
+      "summary": "발생·추진상황과 차단방역 계획, 주민 당부사항을 담은 보도자료를 언론 마감시간 전에 배포한다.",
+      "organizations": [
+        {
+          "name": "총무과",
+          "role": "LEAD"
+        }
+      ],
+      "detailTasks": [
+        {
+          "seq": 1,
+          "title": "배포일시·담당자를 명확히 기입"
+        },
+        {
+          "seq": 2,
+          "title": "발생 및 추진상황 요약, 차단방역 계획, 주민 당부사항 작성"
+        },
+        {
+          "seq": 3,
+          "title": "언론 마감시간(조간 오후5시, 석간 오전10시) 이전 배포"
+        },
+        {
+          "seq": 4,
+          "title": "방송은 화면 제작 시간 고려, 주기 배포 시 보도시점 명확히"
+        }
+      ],
+      "propagation": [
+        {
+          "target": "지역 언론사",
+          "targetType": "ORG",
+          "channelHint": "BROADCAST",
+          "method": "보도자료 배포",
+          "messageTemplate": "'00년 0월 00일 00:00경 ◯◯시 △△구 XX동에서 가축전염병이 발생되어 정밀검사 의뢰"
+        }
+      ],
+      "resources": [],
+      "page": 31
+    }
+  ],
+  "execution": {
+    "doneCodes": [
+      "4-1",
+      "5-1",
+      "5-2",
+      "6-1"
+    ],
+    "doingCode": "6-2",
+    "results": {
+      "4-1": "07:40 두서면 산란계 농장주로부터 폐사 신고 접수(산란계 3만 수 중 120여 수 폐사), 축수산과 AI 담당자에게 즉시 통보함.",
+      "5-1": "08:00 군수·부군수·경제산업국장·축수산과장에게 유선 보고, 울산시청 농축산과 유선 보고 후 문서 송부.",
+      "5-2": "08:30 보건소·안전총괄과·12개 읍면과 7765부대·울주경찰서·울산축협·가축위생방역지원본부에 발생상황 전파 완료.",
+      "6-1": "두서면장·축수산과 직원·방역지원본부 동부사무소로 초동방역팀 구성, 08:50 농장 도착하여 출입 통제 시작."
+    },
+    "propagateCode": "5-2",
+    "propagateMessage": "[울주군 상황실] 07:40 두서면 산란계 농장에서 고병원성 AI 의심축 신고가 접수되어 정밀검사를 의뢰했습니다. 각 읍면은 관내 가금농가에 출입 통제와 소독 강화를 즉시 안내하고, 울주경찰서와 7765부대는 이동통제초소 운영인력 지원을 준비해 주시기 바랍니다.",
+    "fieldNotes": [
+      "두서면: 발생농장 입구 통제선 설치, 출입차량 소독 실시 중",
+      "가축위생방역지원본부: 초동방역팀 4명 현장 도착, 농장 내부 소독 및 시료 채취 완료",
+      "축수산과: 반경 3km 내 가금농가 7곳 전화 예찰 결과 이상 없음"
+    ]
+  }
+}

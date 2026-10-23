@@ -1,0 +1,262 @@
+[
+  {
+    "category": "AGENCY",
+    "org": "울주경찰서",
+    "dept": "",
+    "title": "",
+    "name": "이○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "온산소방서",
+    "dept": "",
+    "title": "",
+    "name": "성○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "중부소방서",
+    "dept": "",
+    "title": "",
+    "name": "김○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "울산해양경찰서",
+    "dept": "",
+    "title": "",
+    "name": "조○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "육군 제7765부대",
+    "dept": "1대대",
+    "title": "",
+    "name": "곽○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "KT 언양지점",
+    "dept": "",
+    "title": "",
+    "name": "장○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국가스안전공사",
+    "dept": "",
+    "title": "",
+    "name": "이○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전기안전공사",
+    "dept": "",
+    "title": "",
+    "name": "김○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "강남교육지원청",
+    "dept": "",
+    "title": "",
+    "name": "최○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국수자원공사",
+    "dept": "",
+    "title": "",
+    "name": "고○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "대한적십자사",
+    "dept": "",
+    "title": "",
+    "name": "최○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 17
+  },
+  {
+    "category": "AGENCY",
+    "org": "한국전력공사 울산지사",
+    "dept": "",
+    "title": "",
+    "name": "박○○",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "OOO-OOOO-OOOO",
+    "fax": [],
+    "note": "",
+    "page": 18
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "안전총괄과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 31
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "재난안전상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 31
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "당직실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 31
+  },
+  {
+    "category": "INTERNAL",
+    "org": "울주군",
+    "dept": "보건소 보건과",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "OOO-OOO-OOOO~6",
+    "page": 33
+  },
+  {
+    "category": "LOCAL_GOV",
+    "org": "울산광역시",
+    "dept": "재난안전상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [
+      "OOO-OOO-OOOO"
+    ],
+    "note": "",
+    "page": 31
+  },
+  {
+    "category": "HIGHER",
+    "org": "행정안전부",
+    "dept": "중앙재난안전상황실",
+    "title": "",
+    "name": "",
+    "phones": [
+      "OOO-OOO-OOOO"
+    ],
+    "mobile": "",
+    "fax": [],
+    "note": "",
+    "page": 32
+  }
+]
