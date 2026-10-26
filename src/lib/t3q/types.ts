@@ -1,6 +1,7 @@
 /**
  * T3Q 연계 API 계약.
- * API-02 SOP는 T3Q 납품본(API-SOP v2, 2026-10-21 수정본 · etc/T3Q_API/6…/(261021)MOIS_API-SOP_v2_openapi.json)이 정본이다.
+ * API-02 SOP는 T3Q 납품본(API-SOP v2, 2026-10-26 수정본 · (261026)MOIS_API-SOP_v2_openapi.json)이 정본이다.
+ * (261026: REQ-6 주관 자동 채움·REQ-7 departments 정리·REQ-8 phaseLabel 단일화 — 구조·필드는 그대로, 서버 동작·설명만 갱신)
  * API-03 인증은 아직 T3Q가 제공하지 않았다 — docs/T3Q_API_요청서.md 의 요청안 그대로. (API-04 연락망은 철회 — 연락망은 엑셀·직접 입력)
  * 계약을 바꾸면 public/api-docs/t3q.yaml · docs/T3Q_API_요청서.md 를 함께 고친다.
  */
@@ -121,7 +122,7 @@ export interface SopAction {
   actionName: string;
   missionCode: string;
   responseStep: ResponseStepCode;
-  /** 매뉴얼 원문 단계명 (예: 1단계 징후감지, 심각 단계) */
+  /** 매뉴얼 원문 단계명 하나 — 표준 단계명을 덧붙이지 않는다 (예: 지대본 비상 1단계). 단계 판단은 responseStep */
   phaseLabel: string;
   category: "NORMAL" | "DAMAGE";
   /** 수행 조건 원문 — 있으면 「필요시 임무」, 없으면 "" */
