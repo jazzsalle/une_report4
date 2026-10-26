@@ -6,6 +6,7 @@ import { Button } from "@/components/ui";
 import type { Mission } from "@/lib/types";
 import { STEP_LABEL } from "@/lib/types";
 import { currentMission, isOnDemand, missionKind } from "@/lib/sop/kind";
+import { isUnfinished } from "@/components/badges";
 import { fmtTime } from "@/lib/format";
 
 /** 대응단계 묶음 이름 — 매뉴얼 원문 단계명 그대로(1단계 징후감지, 심각 단계 …), 단계 없는 직접 추가 임무는 끝에 */
@@ -65,6 +66,8 @@ export function SopFlow({
     const kind = missionKind(m);
     const st = m.status;
     const cur = current?.id === m.id;
+    // 생략 + 미완료(완료했지만 수행 확인 미체크)는 회색으로
+    const dim = st === "skipped" || isUnfinished(m);
     return (
       <div
         key={m.id}
@@ -95,10 +98,10 @@ export function SopFlow({
                 kind === "decision" ? "rotate-45 rounded-[5px]" : "rounded-full",
                 cur
                   ? "border-white bg-[#ff3d8b] shadow-[0_0_12px_rgba(255,61,139,.7)]"
-                  : st === "done"
-                    ? clsx("bg-[#4f8cff]", kind === "decision" ? "border-[#fbbf24]" : kind === "propagation" ? "border-[#22d3ee]" : "border-white")
-                    : st === "skipped"
-                      ? "border-white/40 bg-white/20 text-white/60"
+                  : dim
+                    ? "border-white/40 bg-white/20 text-white/60"
+                    : st === "done"
+                      ? clsx("bg-[#4f8cff]", kind === "decision" ? "border-[#fbbf24]" : kind === "propagation" ? "border-[#22d3ee]" : "border-white")
                       : kind === "decision"
                         ? "border-[#fbbf24] bg-[#141a52]"
                         : kind === "propagation"
@@ -116,10 +119,10 @@ export function SopFlow({
               "leading-snug",
               cur
                 ? "inline-block rounded-full bg-[#ff3d8b] px-3 py-1 font-bold text-white shadow-[0_0_16px_rgba(255,61,139,.6)]"
-                : st === "done"
-                  ? "font-semibold text-white"
-                  : st === "skipped"
-                    ? "text-white/40"
+                : dim
+                  ? "text-white/40"
+                  : st === "done"
+                    ? "font-semibold text-white"
                     : "text-white/80",
             )}
           >

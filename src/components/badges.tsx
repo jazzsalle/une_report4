@@ -1,5 +1,13 @@
 import clsx from "clsx";
-import type { Sop } from "@/lib/types";
+import type { Sop, Mission } from "@/lib/types";
+
+/**
+ * 미완료 임무 — 「조치 완료」했지만 수행 확인(세부항목)을 다 체크하지 않은 임무.
+ * 흐름도에서 생략처럼 회색으로 표시한다. 세부항목이 없는 임무는 체크할 게 없어 정상 완료로 본다.
+ */
+export function isUnfinished(m: Pick<Mission, "status" | "details">): boolean {
+  return m.status === "done" && m.details.length > 0 && m.details.some((d) => !d.done);
+}
 
 /** SOP 상태 — SOP 화면 배지와 같은 이름 (M-03). 점 + 글자 */
 export type SopState = "none" | "ready" | "running" | "ended";
