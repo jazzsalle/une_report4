@@ -75,7 +75,7 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/clsx/dist/clsx.mjs [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/check.mjs [app-client] (ecmascript) <export default as Check>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-right.mjs [app-client] (ecmascript) <export default as ChevronRight>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$external$2d$link$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ExternalLink$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/external-link.mjs [app-client] (ecmascript) <export default as ExternalLink>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Plus$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/plus.mjs [app-client] (ecmascript) <export default as Plus>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Send$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/send.mjs [app-client] (ecmascript) <export default as Send>");
@@ -1019,57 +1019,28 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                 lineNumber: 160,
                 columnNumber: 7
             }, this),
-            run && running && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            run && running && (m.status === "todo" || m.status === "doing") && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex items-center justify-end gap-2 border-t border-line-weak px-6 py-4",
-                children: [
-                    m.status !== "todo" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                        variant: "ghost",
-                        onClick: ()=>setStatus("todo"),
-                        children: "대기로"
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 438,
-                        columnNumber: 13
-                    }, this),
-                    (m.status === "todo" || m.status === "doing") && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                        onClick: ()=>setStatus("skipped"),
-                        children: "생략"
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 442,
-                        columnNumber: 61
-                    }, this),
-                    m.status === "todo" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                        variant: "primary",
-                        "data-tour": "mission-start",
-                        onClick: ()=>setStatus("doing"),
-                        children: "착수"
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 444,
-                        columnNumber: 13
-                    }, this),
-                    m.status === "doing" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                        variant: sendFirst ? "secondary" : "primary",
-                        "data-tour": "mission-done",
-                        onClick: ()=>setStatus("done"),
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__["Check"], {
-                                size: 18
-                            }, void 0, false, {
-                                fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                lineNumber: 450,
-                                columnNumber: 15
-                            }, this),
-                            " 조치 완료"
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 449,
-                        columnNumber: 13
-                    }, this)
-                ]
-            }, void 0, true, {
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                    variant: "primary",
+                    "data-tour": "mission-done",
+                    onClick: ()=>setStatus("done"),
+                    children: [
+                        "다음 ",
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
+                            size: 18
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
+                            lineNumber: 438,
+                            columnNumber: 16
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
+                    lineNumber: 437,
+                    columnNumber: 11
+                }, this)
+            }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
                 lineNumber: 436,
                 columnNumber: 9
@@ -1092,7 +1063,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                 }
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 456,
+                lineNumber: 443,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Modal"], {
@@ -1107,7 +1078,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                             children: sendError
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 476,
+                            lineNumber: 463,
                             columnNumber: 27
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1115,7 +1086,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                             children: "취소"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 477,
+                            lineNumber: 464,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1146,7 +1117,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                     size: 17
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 497,
+                                    lineNumber: 484,
                                     columnNumber: 15
                                 }, this),
                                 " ",
@@ -1155,13 +1126,13 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 478,
+                            lineNumber: 465,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                    lineNumber: 475,
+                    lineNumber: 462,
                     columnNumber: 11
                 }, this),
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1174,7 +1145,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                     children: "전파 내용"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 504,
+                                    lineNumber: 491,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1182,7 +1153,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                     children: m.propagation.message
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 505,
+                                    lineNumber: 492,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -1190,7 +1161,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                     children: "발송 방법"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 506,
+                                    lineNumber: 493,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1217,19 +1188,19 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                                             }))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                    lineNumber: 515,
+                                                    lineNumber: 502,
                                                     columnNumber: 19
                                                 }, this),
                                                 label
                                             ]
                                         }, k, true, {
                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                            lineNumber: 514,
+                                            lineNumber: 501,
                                             columnNumber: 17
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 507,
+                                    lineNumber: 494,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -1241,7 +1212,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 525,
+                                    lineNumber: 512,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -1254,7 +1225,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                                     children: r.name
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                    lineNumber: 529,
+                                                    lineNumber: 516,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1262,7 +1233,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                                     children: r.unit
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                    lineNumber: 530,
+                                                    lineNumber: 517,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1272,45 +1243,45 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                                             children: r.phone
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                            lineNumber: 532,
+                                                            lineNumber: 519,
                                                             columnNumber: 45
                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             className: "text-danger",
                                                             children: "전화번호 없음"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                            lineNumber: 532,
+                                                            lineNumber: 519,
                                                             columnNumber: 70
                                                         }, this)),
                                                         ways.email && (r.email ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             children: r.email
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                            lineNumber: 533,
+                                                            lineNumber: 520,
                                                             columnNumber: 47
                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             className: "text-danger",
                                                             children: "이메일 없음"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                            lineNumber: 533,
+                                                            lineNumber: 520,
                                                             columnNumber: 72
                                                         }, this))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                    lineNumber: 531,
+                                                    lineNumber: 518,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, r.id, true, {
                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                            lineNumber: 528,
+                                            lineNumber: 515,
                                             columnNumber: 17
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 526,
+                                    lineNumber: 513,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1318,13 +1289,13 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                     children: "수신자마다 응답 링크가 함께 발송됩니다."
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 538,
+                                    lineNumber: 525,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 503,
+                            lineNumber: 490,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1334,7 +1305,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                     children: "현장 담당자 화면"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 541,
+                                    lineNumber: 528,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1357,34 +1328,34 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                             }
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                            lineNumber: 544,
+                                            lineNumber: 531,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                        lineNumber: 543,
+                                        lineNumber: 530,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 542,
+                                    lineNumber: 529,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 540,
+                            lineNumber: 527,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                    lineNumber: 502,
+                    lineNumber: 489,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 469,
+                lineNumber: 456,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Modal"], {
@@ -1398,7 +1369,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                     children: "확인"
                 }, void 0, false, {
                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                    lineNumber: 571,
+                    lineNumber: 558,
                     columnNumber: 11
                 }, this),
                 children: [
@@ -1407,7 +1378,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                         children: "문자·메일 발송 모듈 연계 전입니다. 아래 링크를 현장 담당자에게 보내면 응답을 받을 수 있습니다."
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 576,
+                        lineNumber: 563,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -1416,18 +1387,18 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                                 l: l
                             }, l.id, false, {
                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                lineNumber: 581,
+                                lineNumber: 568,
                                 columnNumber: 13
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 579,
+                        lineNumber: 566,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 565,
+                lineNumber: 552,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Modal"], {
@@ -1442,7 +1413,7 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                             children: "취소"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 593,
+                            lineNumber: 580,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1454,13 +1425,13 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                             children: "삭제"
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 594,
+                            lineNumber: 581,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                    lineNumber: 592,
+                    lineNumber: 579,
                     columnNumber: 11
                 }, this),
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1468,12 +1439,12 @@ function MissionDetail({ mission: m, mode, running, started, editable, me, conta
                     children: m.title
                 }, void 0, false, {
                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                    lineNumber: 606,
+                    lineNumber: 593,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 586,
+                lineNumber: 573,
                 columnNumber: 7
             }, this)
         ]
@@ -1497,14 +1468,14 @@ _c = MissionDetail;
                 children: title
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 616,
+                lineNumber: 603,
                 columnNumber: 7
             }, this),
             children
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-        lineNumber: 615,
+        lineNumber: 602,
         columnNumber: 5
     }, this);
 }
@@ -1518,7 +1489,7 @@ _c1 = Group;
                 children: label
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 626,
+                lineNumber: 613,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1526,13 +1497,13 @@ _c1 = Group;
                 children: children
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 627,
+                lineNumber: 614,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-        lineNumber: 625,
+        lineNumber: 612,
         columnNumber: 5
     }, this);
 }
@@ -1561,7 +1532,7 @@ _c2 = InfoRow;
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 652,
+                        lineNumber: 639,
                         columnNumber: 9
                     }, this),
                     waiting > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1572,13 +1543,13 @@ _c2 = InfoRow;
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 655,
+                        lineNumber: 642,
                         columnNumber: 25
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 650,
+                lineNumber: 637,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1595,7 +1566,7 @@ _c2 = InfoRow;
                                         children: "이름 · 소속"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                        lineNumber: 661,
+                                        lineNumber: 648,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1603,7 +1574,7 @@ _c2 = InfoRow;
                                         children: "수신"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                        lineNumber: 662,
+                                        lineNumber: 649,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1611,7 +1582,7 @@ _c2 = InfoRow;
                                         children: "완료"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                        lineNumber: 663,
+                                        lineNumber: 650,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1619,7 +1590,7 @@ _c2 = InfoRow;
                                         children: "현장 조치사항"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                        lineNumber: 664,
+                                        lineNumber: 651,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1627,18 +1598,18 @@ _c2 = InfoRow;
                                         children: "상황실 확인"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                        lineNumber: 665,
+                                        lineNumber: 652,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                lineNumber: 660,
+                                lineNumber: 647,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 659,
+                            lineNumber: 646,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -1654,7 +1625,7 @@ _c2 = InfoRow;
                                                     children: d.name
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                    lineNumber: 672,
+                                                    lineNumber: 659,
                                                     columnNumber: 19
                                                 }, this),
                                                 " ",
@@ -1663,13 +1634,13 @@ _c2 = InfoRow;
                                                     children: d.unit
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                    lineNumber: 672,
+                                                    lineNumber: 659,
                                                     columnNumber: 65
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                            lineNumber: 671,
+                                            lineNumber: 658,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1679,12 +1650,12 @@ _c2 = InfoRow;
                                                 children: "미수신"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                lineNumber: 674,
+                                                lineNumber: 661,
                                                 columnNumber: 93
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                            lineNumber: 674,
+                                            lineNumber: 661,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1694,12 +1665,12 @@ _c2 = InfoRow;
                                                 children: "미완료"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                lineNumber: 675,
+                                                lineNumber: 662,
                                                 columnNumber: 93
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                            lineNumber: 675,
+                                            lineNumber: 662,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1709,12 +1680,12 @@ _c2 = InfoRow;
                                                 children: "-"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                lineNumber: 676,
+                                                lineNumber: 663,
                                                 columnNumber: 103
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                            lineNumber: 676,
+                                            lineNumber: 663,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1726,47 +1697,47 @@ _c2 = InfoRow;
                                                 children: "확인"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                lineNumber: 681,
+                                                lineNumber: 668,
                                                 columnNumber: 21
                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "text-mute",
                                                 children: "-"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                                lineNumber: 685,
+                                                lineNumber: 672,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                            lineNumber: 677,
+                                            lineNumber: 664,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, d.id, true, {
                                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                    lineNumber: 670,
+                                    lineNumber: 657,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                            lineNumber: 668,
+                            lineNumber: 655,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                    lineNumber: 658,
+                    lineNumber: 645,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 657,
+                lineNumber: 644,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-        lineNumber: 649,
+        lineNumber: 636,
         columnNumber: 5
     }, this);
 }
@@ -1779,14 +1750,14 @@ function Field({ label, children }) {
                 children: label
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 700,
+                lineNumber: 687,
                 columnNumber: 7
             }, this),
             children
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-        lineNumber: 699,
+        lineNumber: 686,
         columnNumber: 5
     }, this);
 }
@@ -1807,7 +1778,7 @@ _c4 = Field;
                         children: l.name
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 714,
+                        lineNumber: 701,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1815,7 +1786,7 @@ _c4 = Field;
                         children: l.unit
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 715,
+                        lineNumber: 702,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1823,7 +1794,7 @@ _c4 = Field;
                         children: l.phone
                     }, void 0, false, {
                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 716,
+                        lineNumber: 703,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1839,7 +1810,7 @@ _c4 = Field;
                                 children: copied ? "복사됨" : "링크 복사"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                lineNumber: 718,
+                                lineNumber: 705,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1851,7 +1822,7 @@ _c4 = Field;
                                 children: "QR"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                lineNumber: 728,
+                                lineNumber: 715,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -1862,19 +1833,19 @@ _c4 = Field;
                                 children: "열기"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                                lineNumber: 731,
+                                lineNumber: 718,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                        lineNumber: 717,
+                        lineNumber: 704,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 713,
+                lineNumber: 700,
                 columnNumber: 7
             }, this),
             qr && // eslint-disable-next-line @next/next/no-img-element
@@ -1884,13 +1855,13 @@ _c4 = Field;
                 className: "mt-2 h-[180px] w-[180px]"
             }, void 0, false, {
                 fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-                lineNumber: 743,
+                lineNumber: 730,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(app)/s/[id]/sop/MissionDetail.tsx",
-        lineNumber: 712,
+        lineNumber: 699,
         columnNumber: 5
     }, this);
 }
