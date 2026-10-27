@@ -146,8 +146,11 @@ export interface Mission {
   status: MissionStatus;
   startedAt?: string;
   doneAt?: string;
-  /** 매뉴얼 원문 위치 (T3Q sources[0]) — 「매뉴얼 원문 p.34」 링크. page 는 표기 쪽수, pdfIndex 는 PDF 안 0부터 */
-  ref?: { docId: string; page: number; pdfIndex: number };
+  /**
+   * 매뉴얼 원문 위치 — 「원문 p.N」 링크. page 는 표기 쪽수, pdfIndex 는 PDF 안 0부터.
+   * cards: 행동카드 후보 쪽(프로세스 표처럼 여러 조치에 반복되는 쪽을 뺀 sources). 「행동카드 상세보기」가 이 중 카드 머리가 있는 쪽을 연다
+   */
+  ref?: { docId: string; page: number; pdfIndex: number; cards?: { page: number; pdfIndex: number }[] };
   /** 조치결과 */
   result: string;
   /** 피해조치 / 복구 내용 */

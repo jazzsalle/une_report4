@@ -97,12 +97,27 @@ export function emptyMission(phase: "대응" | "복구" = "대응"): Mission {
 /** PDF 줄바꿈이 한글 낱말 가운데 남은 것을 잇는다 (예: 「발효⏎됨에」) */
 const joinBroken = (t: string) => t.replace(/([가-힣])\n([가-힣])/g, "$1$2");
 
-/** 세부항목 한 줄 — 제목 + (다르면) 내용 + (있으면) 비고 */
+/**
+ * 세부항목 한 줄 — 제목 + (있으면) 비고. 내용(content)은 행동카드 본문이라 길고 표가 뒤섞여 오므로 넣지 않는다
+ * (카드 본문은 「행동카드 상세보기」 원문 그림으로 본다). 제목이 없을 때만 내용 첫 줄
+ */
 function detailText(d: SopAction["detailTasks"][number]) {
-  const title = d.title?.trim() ?? "";
-  const content = d.content?.trim() ?? "";
-  const body = !title ? content : content && content !== title ? `${title} — ${content}` : title;
-  return d.note?.trim() ? `${body} (${d.note.trim()})` : body;
+  const title = d.title?.trim() || (d.content?.trim().split("\n")[0] ?? "");
+  return d.note?.trim() ? `${title} (${d.note.trim()})` : title;
+}
+
+/**
+ * 원문 위치 — sources 는 [프로세스 표 쪽, 행동카드 쪽…] 으로 오지만 순서 보장이 없고, 표 없는 조치·다른 표 쪽이 섞인 조치도 있다.
+ * 응답 안에서 2개 이상 조치에 반복되는 쪽(프로세스 표 등)을 빼면 카드 후보가 남는다 (T3Q 실응답 137건 검증, 2026-10-27)
+ */
+function refOf(a: SopAction, repeat: Map<string, number>): Mission["ref"] {
+  const src = a.sources?.filter((s) => s.docId) ?? [];
+  if (!src.length) return undefined;
+  const cards = src
+    .filter((s) => s.docId === src[0].docId && (repeat.get(`${s.docId}:${s.pdfIndex}`) ?? 0) < 2)
+    .map((s) => ({ page: s.page, pdfIndex: s.pdfIndex }));
+  const first = cards[0] ?? src[0];
+  return { docId: src[0].docId, page: first.page, pdfIndex: first.pdfIndex, ...(cards.length ? { cards } : {}) };
 }
 
 /** T3Q 응답(API-SOP v2, 조치 목록+상세) → SOP 임무 목록. source 는 호출부가 정한다 */
@@ -112,6 +127,9 @@ export function responseToSop(res: SopActionsResponse): Sop {
   // (현장조치 매뉴얼 departments 는 머리글이 섞일 수 있어 주관으로 쓰지 않는다).
   const rowOrg = res.manual?.manualKind === "표준" ? (res.manual.departments?.[0] ?? "") : "";
   const groupOf = new Map(res.missions.map((g) => [g.missionCode, { code: g.missionCode, name: g.missionName }]));
+  const repeat = new Map<string, number>();
+  for (const a of res.actions)
+    for (const k of new Set(a.sources?.map((s) => `${s.docId}:${s.pdfIndex}`))) repeat.set(k, (repeat.get(k) ?? 0) + 1);
   const missions: Mission[] = res.actions
     .slice()
     .sort((a, b) => a.orderHint - b.orderHint)
@@ -120,7 +138,7 @@ export function responseToSop(res: SopActionsResponse): Sop {
       // 표준문안은 문안이 있는 첫 전파 행에서 (전파 행마다 문안이 있는 것은 아니다)
       const template = a.propagation.find((p) => p.messageTemplate?.trim())?.messageTemplate ?? "";
       const leads = a.organizations.filter((o) => o.role === "LEAD").map((o) => o.name);
-      const src = a.sources?.[0];
+      const ref = refOf(a, repeat);
       return {
         ...emptyMission(a.phase === "RECOVERY" || a.category === "DAMAGE" ? "복구" : "대응"),
         code: a.actionCode,
@@ -143,7 +161,7 @@ export function responseToSop(res: SopActionsResponse): Sop {
           channel: prop?.channelHint === "EMAIL" ? "EMAIL" : "SMS",
         },
         resources: a.resources.map((r) => (r.quantity ? `${r.name} ${r.quantity}${r.unit ?? ""}` : r.name)),
-        ...(src?.docId ? { ref: { docId: src.docId, page: src.page, pdfIndex: src.pdfIndex } } : {}),
+        ...(ref ? { ref } : {}),
       };
     });
   return {

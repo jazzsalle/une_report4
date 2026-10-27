@@ -14,6 +14,7 @@ import { fmtTime } from "@/lib/format";
 import { MISSION_STATUS } from "./SopWorkspace";
 import { RecipientPicker, resolveRecipients, SelectionChips } from "./RecipientPicker";
 import { KindIcon } from "./KindIcon";
+import { CardPages } from "./CardPages";
 import { KIND_LABEL, missionKind } from "@/lib/sop/kind";
 
 /** 매뉴얼 전파대상 문구와 비슷한 전파그룹 추천 */
@@ -65,6 +66,7 @@ export function MissionDetail({
   preview: { orgName: string; situationTitle: string };
 }) {
   const [picking, setPicking] = useState(false);
+  const [showCard, setShowCard] = useState(false);
   const [confirmSend, setConfirmSend] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [sent, setSent] = useState<DispatchLink[] | null>(null);
@@ -226,17 +228,27 @@ export function MissionDetail({
                 </div>
               </InfoRow>
             )}
-            {/* T3Q 매뉴얼 원문 PDF 해당 쪽 (새 창) */}
+            {/* T3Q 매뉴얼 원문 — 행동카드 쪽 그림(상세보기) · PDF 해당 쪽 (새 창) */}
             {m.ref && (
               <InfoRow label="매뉴얼 원문">
-                <a
-                  href={`/manual/${encodeURIComponent(m.ref.docId)}#page=${m.ref.pdfIndex + 1}`}
-                  target="_blank"
-                  rel="noopener"
-                  className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
-                >
-                  p.{m.ref.page} 열기 <ExternalLink size={16} />
-                </a>
+                <div className="flex flex-wrap items-center gap-4">
+                  {!!m.ref.cards?.length && (
+                    <Button variant="secondary" onClick={() => setShowCard(true)}>
+                      행동카드 상세보기
+                    </Button>
+                  )}
+                  <a
+                    href={`/manual/${encodeURIComponent(m.ref.docId)}#page=${m.ref.pdfIndex + 1}`}
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                  >
+                    p.{m.ref.page} 새 창 <ExternalLink size={16} />
+                  </a>
+                </div>
+                {showCard && (
+                  <CardPages open onClose={() => setShowCard(false)} title={`행동카드 ${m.code} ${m.title}`} docRef={m.ref} />
+                )}
               </InfoRow>
             )}
           </div>
