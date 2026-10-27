@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { Check, CircleCheck, Megaphone, Users, Zap } from "lucide-react";
 import type { Mission } from "@/lib/types";
 import { KIND_LABEL, currentMission, isOnDemand, missionKind } from "@/lib/sop/kind";
+import { isUnfinished } from "@/components/badges";
 import { fmtTime } from "@/lib/format";
 
 /**
@@ -278,6 +279,8 @@ function OnDemandView({
   onClick: () => void;
 }) {
   const st = m.status;
+  // 생략 + 미완료(완료했지만 수행 확인 미체크)는 회색으로
+  const dim = st === "skipped" || isUnfinished(m);
   return (
     <button
       onClick={onClick}
@@ -287,17 +290,17 @@ function OnDemandView({
       onBlur={onLeave}
       className={clsx(
         "relative flex max-w-[320px] items-center gap-2.5 rounded-lg border-2 px-4 py-2.5 text-left outline-none transition hover:scale-[1.03]",
-        st === "done"
-          ? "border-[#fb923c] bg-[#fb923c] text-[#0e1240]"
-          : st === "doing"
-            ? "animate-pulse border-[#fb923c] bg-[#fb923c]/30"
-            : st === "skipped"
-              ? "border-dashed border-white/30 text-white/40 line-through"
+        dim
+          ? "border-dashed border-white/30 text-white/40"
+          : st === "done"
+            ? "border-[#fb923c] bg-[#fb923c] text-[#0e1240]"
+            : st === "doing"
+              ? "animate-pulse border-[#fb923c] bg-[#fb923c]/30"
               : "border-dashed border-[#fb923c] bg-[#fb923c]/10",
         selected && "ring-4 ring-white/60",
       )}
     >
-      {st === "done" ? <Check size={18} strokeWidth={3} className="shrink-0" /> : <Zap size={17} className="shrink-0 text-[#fdba74]" />}
+      {st === "done" && !dim ? <Check size={18} strokeWidth={3} className="shrink-0" /> : <Zap size={17} className="shrink-0 text-[#fdba74]" />}
       <span className="min-w-0">
         <span className="line-clamp-2 text-[15px] font-semibold leading-snug">{m.title}</span>
         <span className={clsx("block text-[14px]", st === "done" ? "text-[#0e1240]/80" : "text-[#fdba74]")}>
@@ -326,6 +329,8 @@ function StationView({
 }) {
   const kind = missionKind(s.m);
   const st = s.m.status;
+  // 생략 + 미완료(완료했지만 수행 확인 미체크)는 회색으로
+  const dim = st === "skipped" || isUnfinished(s.m);
   // 위기경보 단계(심각 단계 등)처럼 표에 없는 단계명은 기본 파랑
   const laneColor = LANE_COLOR[s.lane] ?? "#4f8cff";
   return (
@@ -360,10 +365,10 @@ function StationView({
             kind === "decision" ? "rotate-45 rounded-[6px]" : "rounded-full",
             current
               ? "border-white bg-[#ff3d8b]"
-              : st === "done"
-                ? clsx("bg-[#4f8cff]", kind === "decision" ? "border-[#fbbf24]" : kind === "propagation" ? "border-[#22d3ee]" : "border-white")
-                : st === "skipped"
-                  ? "border-white/40 bg-white/20"
+              : dim
+                ? "border-white/40 bg-white/20"
+                : st === "done"
+                  ? clsx("bg-[#4f8cff]", kind === "decision" ? "border-[#fbbf24]" : kind === "propagation" ? "border-[#22d3ee]" : "border-white")
                   : kind === "decision"
                     ? "border-[#fbbf24] bg-[#141a52]"
                     : kind === "propagation"
@@ -382,10 +387,10 @@ function StationView({
           "mt-2.5 line-clamp-2 max-w-[156px] text-center text-[15px] leading-snug",
           current
             ? "rounded-full bg-[#ff3d8b] px-3 py-1 font-bold text-white shadow-[0_0_16px_rgba(255,61,139,.6)]"
-            : st === "done"
-              ? "font-semibold text-white"
-              : st === "skipped"
-                ? "text-white/40 line-through"
+            : dim
+              ? "text-white/40"
+              : st === "done"
+                ? "font-semibold text-white"
                 : "text-white/75",
         )}
       >

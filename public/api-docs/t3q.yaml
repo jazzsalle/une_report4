@@ -8,7 +8,7 @@ info:
 
     | API | 상태 | 우리가 보내는 것 | T3Q가 돌려줄 것 |
     |---|---|---|---|
-    | API-02 SOP 콘텐츠 | **T3Q 납품 (API-SOP v2, 2026-10-19 · 10-21 수정본) — 이 문서의 정본은 T3Q OpenAPI** | 재난유형·발생지역·**대응단계**·**담당부서** (위기경보는 위기경보 매뉴얼에서만) | 고른 매뉴얼 + 그 대응단계의 임무·조치·세부행동·기관·전파대상·필요자원·근거 쪽 |
+    | API-02 SOP 콘텐츠 | **T3Q 납품 (API-SOP v2, 2026-10-19 · 10-21 · 10-26 수정본) — 이 문서의 정본은 T3Q OpenAPI** | 재난유형·발생지역·**대응단계**·**담당부서** (위기경보는 위기경보 매뉴얼에서만) | 고른 매뉴얼 + 그 대응단계의 임무·조치·세부행동·기관·전파대상·필요자원·근거 쪽 |
     | API-03 사용자 인증 | 요청안 (T3Q 미제공) | T3Q 링크에 붙은 1회용 토큰 | 토큰 확인 결과 + 사용자 정보 |
 
     **API-02 (납품본) 공통 규칙** — T3Q 재난안전계획서 API와 같음
@@ -1530,7 +1530,7 @@ components:
         currentSituation:
           type: string
           nullable: true
-          description: (참고용) 현재상황 자유 텍스트. 사실로 취급하지 않는다
+          description: '현재상황 자유 텍스트. 상황 반영에 사용: 상황 설명을 읽어 관련 조치의 `summary`를 상황에 맞춘 문장으로 바꾼다(서버 설정으로 켜짐, 기본 켜짐). 매뉴얼 선택·조치 집합·순서에는 쓰지 않는다. `title`과 합쳐 2,000자를 넘으면 반영하지 않는다(응답은 원문 그대로). 바뀌는 값은 `actions[].summary`·`propagation[].messageTemplate`'
         title:
           type: string
           nullable: true
@@ -1647,7 +1647,7 @@ components:
           type: array
           items:
             type: string
-          description: 응답 조치의 부서(없으면 부서 칸) 원문
+          description: '응답 조치의 부서(없으면 부서 칸) 원문. 실제 부서·기관명만 싣는다: 「주관부서」·「초기대응부서」 같은 역할 라벨(…부서)과 괄호로 시작하거나 「등)」인 잘린 값은 빼고, 「상황실 및 안전재난하천과」는 두 부서로, 괄호 안 열거는 각 부서로 나눈다'
         manualKind:
           type: string
           enum:
@@ -1751,7 +1751,7 @@ components:
           - RECOVERY
         phaseLabel:
           type: string
-          description: 매뉴얼 원문 단계명
+          description: '매뉴얼 원문 단계명 하나(표준 단계명을 덧붙이지 않는다. 예: 영천시 초기대응 `지대본 비상 1단계`). 단계 판단은 `responseStep`으로 한다'
         category:
           type: string
           enum:
@@ -1763,6 +1763,7 @@ components:
           description: 조치 전체에 붙은 조건 원문(R8). 있으면 「필요시 임무」
         summary:
           type: string
+          description: '매뉴얼 조치내용. 상황 설명이 있고 그 조치가 상황과 직접 관련되면 상황을 반영한 한 문장(80자 이내; 조치 원문과 상황 설명의 어구로만 구성; 조건부 조치는 상황이 조건을 명시하면 `(상황 보고상 조건 충족) `/`(상황 보고상 조건 미충족) ` 머리말)으로 바뀐다. 관련 없는 조치·상황 설명이 없는 요청은 원문 그대로. `condition`은 원문 유지'
         detailTasks:
           type: array
           items:
@@ -1778,6 +1779,7 @@ components:
                 type: string
         organizations:
           type: array
+          description: '조치의 주관·지원 기관. 매뉴얼에서 주관(LEAD)이 정해진 조치(행동카드 주관부서, 표준매뉴얼 지자체 칸)는 그대로 둔다. 주관이 없는 조치는 그 조치가 속한 부서 칸의 부서명으로 채운다: 요청 `department`와 일치하는 부서가 LEAD, 나머지 SUPPORT, 일치하는 부서가 없으면(부서 미지정 포함) 칸의 부서 모두 LEAD. 채울 때 역할 라벨(「주관부서」·「초기대응부서」 등 …부서)은 쓰지 않고, 칸에 부서명이 없으면 행 라벨의 조직(예: `상황총괄반`)을 쓴다. 매뉴얼에 있던 SUPPORT·COOPERATE는 LEAD 뒤에 두며, 넣을 이름이 없으면 비워 둔다'
           items:
             type: object
             properties:

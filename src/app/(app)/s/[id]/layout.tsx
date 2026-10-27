@@ -6,8 +6,9 @@ import { SituationInfo } from "./SituationInfo";
 import { STEP_LABEL, type ResponseStep } from "@/lib/types";
 import { ORG_SIDO } from "@/lib/regions";
 import { Badge } from "@/components/ui";
-import { LevelBadge } from "@/components/badges";
+import { LevelBadge, sopState } from "@/components/badges";
 import { SituationTabs } from "./SituationTabs";
+import { TourResume } from "@/components/Tour";
 
 export default async function SituationLayout({ children, params }: LayoutProps<"/s/[id]">) {
   const { id } = await params;
@@ -19,6 +20,8 @@ export default async function SituationLayout({ children, params }: LayoutProps<
   const sido = s.sido || ORG_SIDO[s.orgId] || "부산광역시";
   return (
     <div>
+      {/* 따라하기 상황을 다시 열면 그 진행도에 맞춰 따라하기 말풍선을 이어서 켠다 */}
+      {s.tutorial && <TourResume sid={s.id} state={sopState(s.sop)} />}
       <div className="no-print bg-white px-6 pt-6">
         <div className="mx-auto max-w-[1680px]">
           <div className="flex flex-wrap items-center gap-2">

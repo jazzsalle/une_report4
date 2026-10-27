@@ -49,7 +49,7 @@ export default async function NewPage({ searchParams }: PageProps<"/new">) {
     const t = (await getTutorialSeed()).situation;
     const now = toLocalInput(new Date());
     tutorial = {
-      title: `${now.slice(2, 10).replace(/-/g, ".")}. ${t.titleSuffix}`,
+      title: t.titleSuffix,
       kind: t.kind as "real" | "drill",
       hazard: t.hazard,
       alertLevel: t.alertLevel,

@@ -487,11 +487,12 @@ export async function renameSituation(id: string, title: string): Promise<{ erro
 }
 
 /**
- * 상황 복사 (홈 목록) — 상황정보·기상특보·SOP·수행 이력·상황전파·현장 응답·상황일지(한글 저장본 포함)를 통째로 복사한다.
- * 기상 그림·한글 파일이 커서 서버로 옮기지 않고 DB 안에서 한 문장으로 복사한다(한 문장이라 중간에 실패해도 반쪽 사본이 남지 않는다).
- * 현장 응답 링크(토큰)는 새로 만들어 원본 링크로 사본이 바뀌지 않게 하고, 예시·따라하기 표시는 떼어 낸다.
- * 상황일지 제목이 원래 상황 제목으로 시작하면 그 부분을 새 제목으로 바꾼다.
- * SOP 편집 잠금(firstEndedAt)은 복사하지 않는다 — 사본은 「실행 재개」 후 편집할 수 있다.
+ * 상황 복사 (홈 목록) — 상황정보·기상특보·SOP(임무 구성)를 복사하되 「실행 전」 상태로 만든다.
+ * 복사하는 것: 상황정보, 기상특보, SOP 임무 구성(세부항목·상황전파 대상 등 편집 내용 포함).
+ * 복사하지 않는 것(실행 이력): 수행 이력(events), 상황전파·현장 응답(dispatches), 작성한 상황일지(reports),
+ *   그리고 임무 진행상태·착수/완료 시각·조치결과·전파 결과·실행 시작/종료 시각 — resetSopRun 과 같은 방식으로 비운다.
+ * 기상 그림이 커서 서버로 옮기지 않고 DB 안에서 한 문장으로 복사한다(한 문장이라 중간에 실패해도 반쪽 사본이 남지 않는다).
+ * 예시·따라하기 표시는 떼어 내고, 사본은 실행 전(status='sop')이라 바로 「SOP 편집」·「SOP 실행 시작」을 할 수 있다.
  */
 export async function copySituation(id: string, title: string): Promise<{ error?: string }> {
   const u = await requireUser();
@@ -500,40 +501,30 @@ export async function copySituation(id: string, title: string): Promise<{ error?
   const t = title.trim();
   if (!t) return { error: "상황 제목을 입력하세요." };
   const nid = nanoid(10);
-  const newId = sql`${nid}::text || '-' || id`;
-  const renamed = (col: ReturnType<typeof sql>) =>
-    sql`case when left(${col}, length(${s.title}::text)) = ${s.title}::text then ${t}::text || substr(${col}, length(${s.title}::text) + 1) else ${col} end`;
+  // SOP 를 실행 전 상태로 되돌린 값 (resetSopRun 과 동일) — 실행 이력을 지운 사본의 SOP
+  const sopReset = sql`case when sop is null then null else jsonb_set(
+      sop - 'startedAt' - 'endedAt' - 'firstEndedAt',
+      '{missions}',
+      (select coalesce(jsonb_agg(
+         (e - 'startedAt' - 'doneAt')
+           || jsonb_build_object('status', 'todo', 'result', '', 'damage', '',
+                'details', case when jsonb_typeof(e->'details') = 'array'
+                  then coalesce((select jsonb_agg((d - 'doneAt') || '{"done": false}'::jsonb order by k)
+                                 from jsonb_array_elements(e->'details') with ordinality u(d, k)), '[]'::jsonb)
+                  else '[]'::jsonb end)
+           || case when jsonb_typeof(e->'propagation') = 'object'
+                then jsonb_build_object('propagation', (e->'propagation') - 'sentAt' - 'sentTo') else '{}'::jsonb end
+         order by o), '[]'::jsonb)
+       from jsonb_array_elements(coalesce(sop->'missions', '[]'::jsonb)) with ordinality t(e, o))) end`;
   const db = await getDb();
   await db.execute(sql`
-    with
-    sit as (
+    with sit as (
       insert into situations (id, org_id, owner_id, title, kind, hazard, alert_level, response_step, sido, areas, dept,
         tutorial, locked, period_start, period_end, current_status, weather, weather_images, sop, status, created_at, updated_at)
       select ${nid}::text, org_id, ${u.id}::text, ${t}::text, kind, hazard, alert_level, response_step, sido, areas, dept,
-        false, false, period_start, period_end, current_status, weather, weather_images, sop - 'firstEndedAt', status, now(), now()
+        false, false, period_start, period_end, current_status, weather, weather_images, ${sopReset},
+        case when sop is null then status else 'sop' end, now(), now()
       from situations where id = ${id}
-    ),
-    dis as (
-      insert into dispatches (id, token, situation_id, mission_id, contact_id, name, unit, phone, email, channel, message,
-        sent_at, read_at, done_at, note, note_at, ack_at, ack_by)
-      select ${newId}, replace(gen_random_uuid()::text, '-', ''), ${nid}::text, mission_id, contact_id, name, unit, phone, email, channel, message,
-        sent_at, read_at, done_at, note, note_at, ack_at, ack_by
-      from dispatches where situation_id = ${id}
-    ),
-    evt as (
-      insert into events (id, situation_id, at, type, title, body, mission_id, user_name, meta)
-      select ${newId}, ${nid}::text, at, type, title, body, mission_id, user_name,
-        case when meta->>'dispatchId' is not null
-          then jsonb_set(meta, '{dispatchId}', to_jsonb(${nid}::text || '-' || (meta->>'dispatchId'))) else meta end
-      from events where situation_id = ${id}
-    ),
-    rep as (
-      insert into reports (id, situation_id, org_id, owner_id, title, content, hwpx_data, hwpx_saved_at, status, locked, created_at, updated_at)
-      select ${newId}, ${nid}::text, org_id, ${u.id}::text, ${renamed(sql`title`)},
-        case when content->>'title' is null then content
-          else jsonb_set(content, '{title}', to_jsonb(${renamed(sql`(content->>'title')`)})) end,
-        hwpx_data, hwpx_saved_at, status, false, now(), now()
-      from reports where situation_id = ${id} and deleted_at is null
     )
     insert into events (id, situation_id, type, title, body, user_name)
     values (${nanoid(12)}, ${nid}, 'start', '문서 복사', ${`원본: ${s.title}`}, ${u.name})

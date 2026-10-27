@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, useTransition } from "react";
 import clsx from "clsx";
-import { Check, ExternalLink, Plus, Send, Trash2, UserPlus, X } from "lucide-react";
+import { ChevronRight, ExternalLink, Plus, Send, Trash2, UserPlus, X } from "lucide-react";
 import { nanoid } from "nanoid";
 import { Badge, Button, Modal } from "@/components/ui";
 import type { Mission } from "@/lib/types";
@@ -192,17 +192,20 @@ export function MissionDetail({
                 <p className="leading-relaxed">{m.content || "-"}</p>
               )}
             </InfoRow>
+            {/* 지원·협업기관은 데이터로는 보존하되 보기 화면에서는 숨긴다(담당부서 몫에 집중). 편집 모드에서만 노출·수정 */}
             {(
               [
                 ["주관", m.lead, (v: string) => set({ lead: v })],
                 ["지원", m.support.join(", "), (v: string) => set({ support: v.split(/,\s*/) })],
                 ["협업기관", m.collab.join(", "), (v: string) => set({ collab: v.split(/,\s*/) })],
               ] as const
-            ).map(([label, value, onSet]) => (
-              <InfoRow key={label} label={label}>
-                {edit ? <input className="input" value={value} onChange={(e) => onSet(e.target.value)} /> : <p>{value || "-"}</p>}
-              </InfoRow>
-            ))}
+            )
+              .filter(([label]) => edit || label === "주관")
+              .map(([label, value, onSet]) => (
+                <InfoRow key={label} label={label}>
+                  {edit ? <input className="input" value={value} onChange={(e) => onSet(e.target.value)} /> : <p>{value || "-"}</p>}
+                </InfoRow>
+              ))}
             {m.notes && m.notes.length > 0 && (
               <InfoRow label="비고">
                 <ul className="space-y-1 leading-snug">
@@ -431,25 +434,12 @@ export function MissionDetail({
         )}
       </div>
 
-      {/* 상태 버튼 — 상태 순서대로, 주 버튼 하나 (P-02) */}
-      {run && running && (
+      {/* 상태 버튼 — 「다음」 하나: 이 임무를 완료 처리하고 다음 임무로 이동 (todo·doing 공통) */}
+      {run && running && (m.status === "todo" || m.status === "doing") && (
         <div className="flex items-center justify-end gap-2 border-t border-line-weak px-6 py-4">
-          {m.status !== "todo" && (
-            <Button variant="ghost" onClick={() => setStatus("todo")}>
-              대기로
-            </Button>
-          )}
-          {(m.status === "todo" || m.status === "doing") && <Button onClick={() => setStatus("skipped")}>생략</Button>}
-          {m.status === "todo" && (
-            <Button variant="primary" data-tour="mission-start" onClick={() => setStatus("doing")}>
-              착수
-            </Button>
-          )}
-          {m.status === "doing" && (
-            <Button variant={sendFirst ? "secondary" : "primary"} data-tour="mission-done" onClick={() => setStatus("done")}>
-              <Check size={18} /> 조치 완료
-            </Button>
-          )}
+          <Button variant="primary" data-tour="mission-done" onClick={() => setStatus("done")}>
+            다음 <ChevronRight size={18} />
+          </Button>
         </div>
       )}
 

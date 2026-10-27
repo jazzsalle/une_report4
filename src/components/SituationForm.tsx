@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import clsx from "clsx";
 import { FieldRow } from "./ui";
-import { HAZARDS, ALERT_LEVELS, RESPONSE_STEPS, STEP_LABEL, STEP_BY_LEVEL, type AlertLevel } from "@/lib/types";
+import { HAZARDS, RESPONSE_STEPS, STEP_LABEL } from "@/lib/types";
 import { sidoShort } from "@/lib/regions";
 import { RegionPicker } from "./RegionPicker";
 import { toLocalInput } from "@/lib/format";
@@ -10,9 +10,8 @@ import type { SituationInput } from "@/app/actions/situation";
 
 export function defaultInput(sido: string, hazard: string): SituationInput {
   const now = toLocalInput(new Date());
-  const ymd = now.slice(0, 10).replace(/-/g, ".").slice(2);
   return {
-    title: `${ymd}. ${sidoShort(sido)} ${hazard} 대응`,
+    title: `${sidoShort(sido)} ${hazard} 대응`,
     kind: "real",
     hazard,
     alertLevel: "주의",
@@ -66,19 +65,6 @@ export function SituationFields({
               }
             >
               {h}
-            </Chip>
-          ))}
-        </div>
-      </FieldRow>
-      <FieldRow label="위기경보" required>
-        <div className="flex flex-wrap gap-2">
-          {ALERT_LEVELS.map((l) => (
-            <Chip
-              key={l}
-              on={value.alertLevel === l}
-              onClick={() => onChange({ ...value, alertLevel: l, step: STEP_BY_LEVEL[l as AlertLevel] })}
-            >
-              {l}
             </Chip>
           ))}
         </div>

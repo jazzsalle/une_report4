@@ -219,8 +219,10 @@ export function composeReport(input: ComposeInput): ReportContent {
   plan.push("□ 기상특보 해제 시까지 상황관리 체계 유지 및 피해 발생 시 즉시 보고");
   sec("향후 계획", plan);
 
+  // 상황명 앞의 날짜(예: "26.10.23. ")는 상황일지 이름에서 뺀다
+  const titleNoDate = s.title.replace(/^\d{2}\.\d{1,2}\.\d{1,2}\.\s*/, "");
   return {
-    title: `${s.title} 상황일지`,
+    title: `${titleNoDate} 상황일지`,
     reporter: input.reporter,
     dept: input.dept,
     reportedAt: new Date().toISOString(),
