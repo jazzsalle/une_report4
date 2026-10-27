@@ -192,17 +192,20 @@ export function MissionDetail({
                 <p className="leading-relaxed">{m.content || "-"}</p>
               )}
             </InfoRow>
+            {/* 지원·협업기관은 데이터로는 보존하되 보기 화면에서는 숨긴다(담당부서 몫에 집중). 편집 모드에서만 노출·수정 */}
             {(
               [
                 ["주관", m.lead, (v: string) => set({ lead: v })],
                 ["지원", m.support.join(", "), (v: string) => set({ support: v.split(/,\s*/) })],
                 ["협업기관", m.collab.join(", "), (v: string) => set({ collab: v.split(/,\s*/) })],
               ] as const
-            ).map(([label, value, onSet]) => (
-              <InfoRow key={label} label={label}>
-                {edit ? <input className="input" value={value} onChange={(e) => onSet(e.target.value)} /> : <p>{value || "-"}</p>}
-              </InfoRow>
-            ))}
+            )
+              .filter(([label]) => edit || label === "주관")
+              .map(([label, value, onSet]) => (
+                <InfoRow key={label} label={label}>
+                  {edit ? <input className="input" value={value} onChange={(e) => onSet(e.target.value)} /> : <p>{value || "-"}</p>}
+                </InfoRow>
+              ))}
             {m.notes && m.notes.length > 0 && (
               <InfoRow label="비고">
                 <ul className="space-y-1 leading-snug">
