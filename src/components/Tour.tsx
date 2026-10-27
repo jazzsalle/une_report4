@@ -103,18 +103,9 @@ export const TOUR_STEPS: Step[] = [
     path: /^\/s\/[^/]+\/sop$/,
     href: SOP,
     select: "1-1",
-    target: "mission-start",
-    title: "임무 착수",
-    body: "첫 임무 「기상정보 모니터링」을 「착수」합니다.",
-    advance: "click",
-  },
-  {
-    path: /^\/s\/[^/]+\/sop$/,
-    href: SOP,
-    select: "1-1",
     target: "mission-done",
-    title: "조치 완료",
-    body: "세부항목을 체크하고 조치결과를 적은 뒤 「조치 완료」를 누릅니다. 조치결과를 비워 두면 체크한 세부항목으로 채워집니다.",
+    title: "임무 수행",
+    body: "첫 임무 「기상정보 모니터링」입니다. 세부항목을 체크하고 조치결과를 적은 뒤 「다음」을 누르면 이 임무가 완료되고 다음 임무로 넘어갑니다. 조치결과를 비워 두면 체크한 세부항목으로 채워집니다.",
     advance: "click",
   },
   {
@@ -123,7 +114,7 @@ export const TOUR_STEPS: Step[] = [
     select: "2-2",
     target: "propagation",
     title: "상황전파",
-    body: "「기상특보 전파」 임무입니다. 추천 전파그룹 「+ 유관기관」을 눌러 대상에 넣고, 「착수」한 뒤 「전파」 → 발송 방법(문자·이메일)을 고르고 「n명에게 전파」를 누르면 현장 담당자에게 응답 링크가 갑니다. 보낸 뒤 「다음」.",
+    body: "「기상특보 전파」 임무입니다. 추천 전파그룹 「+ 유관기관」을 눌러 대상에 넣고 「전파」 → 발송 방법(문자·이메일)을 고르고 「n명에게 전파」를 누르면 현장 담당자에게 응답 링크가 갑니다. 보낸 뒤 「다음」.",
     advance: "next",
   },
   {
@@ -209,8 +200,8 @@ export function startTour(push: (href: string) => void) {
 /** SOP 진행 상태별 재개 단계 (TOUR_STEPS 인덱스) — 상황을 다시 열 때 그 진행도에 맞춰 이어 간다 */
 const RESUME_STEP: Record<"ready" | "running" | "ended", number> = {
   ready: 3, // SOP 생성됨, 실행 전 → SOP 흐름 설명
-  running: 9, // 실행 중 → 임무 착수
-  ended: 13, // 실행 종료 → 상황일지 탭
+  running: 9, // 실행 중 → 임무 수행(「다음」)
+  ended: 12, // 실행 종료 → 상황일지 탭
 };
 
 /**
