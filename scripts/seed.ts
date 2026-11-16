@@ -20,13 +20,29 @@ config({ path: ".env.local" });
 
 async function getDb() {
   const url = process.env.DATABASE_URL;
-  if (url) {
+  const neonHost = (() => {
+    try {
+      return !!url && new URL(url).hostname.endsWith(".neon.tech");
+    } catch {
+      return false;
+    }
+  })();
+  if (url && (process.env.DB_DRIVER === "neon" || (process.env.DB_DRIVER !== "pg" && neonHost))) {
     const { neon } = await import("@neondatabase/serverless");
     const { drizzle } = await import("drizzle-orm/neon-http");
     const { migrate } = await import("drizzle-orm/neon-http/migrator");
     const db = drizzle(neon(url), { schema });
     await migrate(db, { migrationsFolder: "drizzle" });
     return db;
+  }
+  if (url) {
+    // 사내 배포서버 등 일반 Postgres
+    const { Pool } = await import("pg");
+    const { drizzle } = await import("drizzle-orm/node-postgres");
+    const { migrate } = await import("drizzle-orm/node-postgres/migrator");
+    const db = drizzle(new Pool({ connectionString: url }), { schema });
+    await migrate(db, { migrationsFolder: "drizzle" });
+    return db as unknown as Awaited<ReturnType<typeof import("drizzle-orm/neon-http").drizzle>>;
   }
   const { PGlite } = await import("@electric-sql/pglite");
   const { drizzle } = await import("drizzle-orm/pglite");

@@ -22,6 +22,7 @@
 - 한글 편집: `@rhwp/editor` (rhwp-studio iframe)
 - 문서 생성: `src/lib/export/hwpx.ts`(AI 행정문서 템플릿 기반), `docx.ts`
 - 배포: Vercel (서울 리전 `icn1`), 휴지통 정리 크론 매일 03:00
+- 사내 배포서버: `server.js`로 실행(127.0.0.1, 휴지통 정리 내장) — [사내서버 배포](docs/사내서버_배포.md)
 
 ## 로컬 실행
 
