@@ -10,6 +10,12 @@ process.env.NODE_ENV = process.env.NODE_ENV || "production";
 const { loadEnvConfig } = require("@next/env");
 loadEnvConfig(__dirname, false);
 
+// 설정 파일에 KEY="값" 처럼 따옴표째 들어가도 값만 쓰도록 바깥 따옴표를 벗긴다(Vercel 에서 복사한 형식 그대로 붙여도 되게).
+for (const [k, v] of Object.entries(process.env)) {
+  const m = /^(["'])([\s\S]*)\1$/.exec(v ?? "");
+  if (m) process.env[k] = m[2];
+}
+
 const http = require("node:http");
 const next = require("next");
 
