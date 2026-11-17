@@ -4,7 +4,7 @@
  * Neon 은 PostgreSQL 18 이라 서버의 pg_dump 17 로는 덤프할 수 없어서(버전 불일치), 표 단위로 직접 복사한다.
  *
  *   cd /Volumes/UNES2/apps/disaster-report
- *   node scripts/copy-from-neon.mjs "postgresql://<사용자>@<Neon 주소>/<DB>?sslmode=require"
+ *   node scripts/copy-from-neon.mjs "postgresql://<사용자>@<Neon 주소>/<DB>?sslmode=verify-full"
  *     → 「Neon 비밀번호:」 가 나오면 비밀번호를 붙여 넣고 Enter (화면에 안 보임)
  *
  * 하는 일
@@ -70,7 +70,7 @@ async function count(client, table) {
 
 async function main() {
   if (!sourceArg) {
-    console.error('사용법: node scripts/copy-from-neon.mjs "postgresql://<사용자>@<Neon 주소>/<DB>?sslmode=require"');
+    console.error('사용법: node scripts/copy-from-neon.mjs "postgresql://<사용자>@<Neon 주소>/<DB>?sslmode=verify-full"');
     process.exit(2);
   }
   const src = new URL(sourceArg);
