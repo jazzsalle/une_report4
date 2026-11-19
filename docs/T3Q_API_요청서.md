@@ -20,14 +20,14 @@
 > | 오류 | `{error:{code,message,detail}, meta}` | `{error:{code,message,retryable,retryAfter,requestId}}` — 422 입력 오류, 404 맞는 매뉴얼 없음 |
 > | 인증서 | — | **사설 인증기관(`*.t3q.ai`) 발급 — 일반 클라이언트(Node·브라우저)에서 검증 실패(2026-10-20 확인).** 우리 쪽은 지문 고정으로 임시 연결, 원문 PDF는 우리 서버가 중계. T3Q에 공인 인증서(또는 루트 인증서 파일) 요청 필요 |
 
-> **최종 규격(정본)은 Swagger 문서입니다:** https://unereport4.vercel.app/api-docs (① T3Q 연계 API 요청서)
+> **최종 규격(정본)은 Swagger 문서입니다:** https://disaster-report.demo.unes.kr/api-docs (① T3Q 연계 API 요청서)
 > 원본 파일 `public/api-docs/t3q.yaml` · 코드 계약 `src/lib/t3q/types.ts` — 이 문서는 배경 설명용입니다.
 >
 > v2.0 반영 사항: **약 80개 매뉴얼(표준·실무·현장조치 행동) 검증** 결과로 일반 규칙 R20~R24와 **R25 예외 원칙**(정할 수 없으면 만들지 않고 `warnings`로 알림) 추가. **API-04 매뉴얼 연락망** 신설(연락망 규칙 C1~C10, 성명·휴대전화 포함). `OrgRef.phones` 추가.
 > v1.9 반영 사항: **담당부서** `SituationContext.department` 추가 — 재난대응 프로세스 표의 부서 칸 중 **요청 부서의 행만** 추출(규칙 R19, 기본 「자연재난과」 → 초기대응부서). 응답 `manual.departments`·`departmentMatched` 추가.
 > v1.8 반영 사항: **매뉴얼 고르기 규칙**(재난유형 → 발생 시군구 → 시도 → 중앙) 명시, `alertLevel`을 선택 항목으로(위기경보로 단계를 나눈 매뉴얼에서만 사용), 응답 `manual`(고른 매뉴얼) 추가, 규칙 R18(제목 일부의 조건은 `condition` 아님) 추가 — 앱은 `condition` 조치를 「필요시 임무」로 따로 배치.
 > v1.7 반영 사항: 추출 규칙 R10~R17 추가(다른 매뉴얼 4종 검증), `SopMission.functionCode/functionName`, `SopAction.linkedActionCodes` 추가.
-> v1.6 반영 사항: **API-01 기상요약 폐지** (기상청 기상정보 원문 사용). SOP 응답에 `condition`·`notes`·`SopMission.responseStep`·`PropagationTarget.method` 추가, [매뉴얼 ↔ JSON 대응 설명서](https://unereport4.vercel.app/api-docs/mapping.html) 추가.
+> v1.6 반영 사항: **API-01 기상요약 폐지** (기상청 기상정보 원문 사용). SOP 응답에 `condition`·`notes`·`SopMission.responseStep`·`PropagationTarget.method` 추가, [매뉴얼 ↔ JSON 대응 설명서](https://disaster-report.demo.unes.kr/api-docs/mapping.html) 추가.
 > v1.3 반영 사항: `SituationContext.responseStep`(대응단계: 징후감지·초기대응·비상대응·수습복구) 추가 — API-02는 이 단계의 조치만 반환, `SopAction.responseStep` 추가.
 > v1.0 반영 사항: `SituationContext.period`(대응 기간) 추가, API-01 요청에 `weatherInfoText`(기상청 기상정보 본문) 추가, `WeatherAlert.level`에 `PRELIMINARY`(예비특보) 추가.
 
@@ -213,7 +213,7 @@ export interface SopActionsRequest {
 
 ### 4.3 응답
 
-> **매뉴얼 ↔ JSON 대응 설명서**: [/api-docs/mapping.html](https://unereport4.vercel.app/api-docs/mapping.html)
+> **매뉴얼 ↔ JSON 대응 설명서**: [/api-docs/mapping.html](https://disaster-report.demo.unes.kr/api-docs/mapping.html)
 > 매뉴얼 캡처에 번호 상자로 어느 칸이 어느 필드인지 표시하고, 추출 규칙(SOP R1~R25, 연락망 C1~C10)과 **우리 화면에 어떻게 적용되는지**를 정리했습니다.
 > 부산 풍수해 매뉴얼은 예시이며, 다른 재난유형·지자체 매뉴얼에도 같은 규칙을 적용해 주세요.
 
@@ -503,7 +503,7 @@ T3Q 플랫폼에서 링크로 들어온 사용자를 **별도 로그인 없이**
 
 ### 흐름
 1. 사용자가 T3Q 플랫폼에서 「재난상황일지」 링크 클릭
-2. T3Q가 1회용 토큰을 만들어 브라우저를 `https://unereport4.vercel.app/sso/t3q?token={토큰}&next={이동할 화면, 선택}` 으로 보냄
+2. T3Q가 1회용 토큰을 만들어 브라우저를 `https://disaster-report.demo.unes.kr/sso/t3q?token={토큰}&next={이동할 화면, 선택}` 으로 보냄
 3. 우리 서버가 `POST /t3q/v1/auth/verify` 로 토큰 확인 → 사용자 정보 수신
 4. 우리 계정과 연결(처음이면 자동 생성) → 업무 화면으로 이동
 

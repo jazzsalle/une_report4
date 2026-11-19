@@ -41,7 +41,7 @@ tags:
       **흐름**
       1. 사용자가 T3Q 플랫폼에서 「재난상황일지」 링크 클릭
       2. T3Q가 1회용 토큰을 만들어 브라우저를 아래 주소로 보냄
-         `https://unereport4.vercel.app/sso/t3q?token={1회용 토큰}&next={선택: 이동할 화면, 기본 /}`
+         `https://disaster-report.demo.unes.kr/sso/t3q?token={1회용 토큰}&next={선택: 이동할 화면, 기본 /}`
       3. 우리 서버가 `POST /auth/verify` 로 토큰을 확인하고 사용자 정보를 받음
       4. 우리 계정과 연결(처음이면 자동 생성) → 로그인 화면 없이 업무 화면으로 이동
 
